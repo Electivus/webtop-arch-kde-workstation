@@ -38,9 +38,10 @@ EOF
     chown abc:abc /config/.config/kxkbrc
 fi
 
-# Replace upstream's wildcard self-signed certificate once. The private key
-# remains in this installation's home volume; no certificate is in the image.
-if [[ ! -f /config/.local/state/electivus/localhost-certificate-v1 ]]; then
+# Replace the upstream certificate, then renew on startup within 30 days of
+# expiry. The private key remains in the home volume, outside image layers.
+if [[ ! -f /config/.local/state/electivus/localhost-certificate-v1 || ! -s /config/ssl/cert.key ]] ||
+    ! openssl x509 -in /config/ssl/cert.pem -checkend 2592000 -noout >/dev/null 2>&1; then
     install -d -m 700 -o abc -g abc /config/ssl
     openssl req -new -x509 -newkey rsa:3072 -sha256 -days 825 -noenc \
         -subj /CN=localhost \

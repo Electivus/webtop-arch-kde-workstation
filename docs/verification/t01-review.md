@@ -21,3 +21,9 @@ O acompanhamento não encontrou nova omissão, regressão material ou ampliaçã
 Os agentes inspecionaram o diff, fontes, documentação e evidências congeladas; não repetiram os testes. Os ensaios executados pelo coordenador estão em [T01 desktop](t01-desktop.md). A execução real em Hyper-V e o teclado físico do destino continuam no escopo de T12.
 
 Resultado: Standards teve uma recomendação opcional atendida, sem violação; Spec teve uma lacuna P2 corrigida, sem novo achado no acompanhamento.
+
+## Acompanhamento do PR #15
+
+O revisor automático apontou dois problemas de certificados, reproduzidos antes da correção: o marcador permanente impedia renovação e `untrust` exigia Docker para recuperar um certificado já salvo. O início agora renova a folha dentro de 30 dias do vencimento e preserva seu histórico público; a remoção usa esse histórico, inclusive vencido, sem acessar Docker. Os testes exercitam as duas regressões e passaram no Windows.
+
+O terceiro comentário pediu retornar a cobertura de DEC-036 para `pending`. O contrato de Planning exige avanço monotônico da cobertura já checkpointada. A evidência foi ampliada com o limite explícito de T01: todos os comandos posteriores continuam sujeitos à decisão CMD, e diagnóstico, backup, recuperação e atualização ainda dependem de seus tickets e da aceitação T12/T13. A marca desta etapa não comprova essas operações futuras. Nenhum gate desses tickets foi dispensado.

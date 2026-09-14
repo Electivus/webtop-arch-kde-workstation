@@ -48,12 +48,15 @@ def accept_matching_dialog(thumbprint):
     return bool(handled)
 
 
-def with_certificate_dialog(thumbprint, action):
+def with_certificate_dialog(thumbprints, action):
+    if isinstance(thumbprints, str):
+        thumbprints = [thumbprints]
     finished = threading.Event()
 
     def observe():
         while not finished.wait(0.2):
-            accept_matching_dialog(thumbprint)
+            for thumbprint in thumbprints:
+                accept_matching_dialog(thumbprint)
 
     worker = threading.Thread(target=observe, daemon=True)
     worker.start()

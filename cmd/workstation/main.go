@@ -122,7 +122,7 @@ func run(args []string) (any, error) {
 	}
 	switch args[0] {
 	case "start":
-		return start(p, opts.openBrowser)
+		return start(p, directory, opts.openBrowser)
 	case "status":
 		return status(p)
 	case "stop":
@@ -136,7 +136,9 @@ func run(args []string) (any, error) {
 			}
 		}
 		return status(p)
-	case "certificate", "trust", "untrust":
+	case "untrust":
+		return untrust(directory)
+	case "certificate", "trust":
 		details, cert, err := certificate(p, directory)
 		if err != nil {
 			return nil, err
@@ -144,15 +146,10 @@ func run(args []string) (any, error) {
 		if args[0] == "certificate" {
 			return details, nil
 		}
-		remove := args[0] == "untrust"
-		if err := setCertificateTrust(cert, remove); err != nil {
+		if err := setCertificateTrust(cert, false); err != nil {
 			return nil, err
 		}
-		state := "trusted"
-		if remove {
-			state = "untrusted"
-		}
-		return map[string]any{"state": state, "store": "CurrentUser/Root", "certificate": details}, nil
+		return map[string]any{"state": "trusted", "store": "CurrentUser/Root", "certificate": details}, nil
 	default:
 		return nil, fmt.Errorf("unknown command %q", args[0])
 	}
@@ -390,7 +387,7 @@ func status(p profile) (any, error) {
 		"url": url(p), "engine": info, "limits": map[string]int{"memoryMiB": p.MemoryMiB, "cpus": p.CPUs}}, nil
 }
 
-func start(p profile, open bool) (any, error) {
+func start(p profile, directory string, open bool) (any, error) {
 	info, err := engine(p)
 	if err != nil {
 		return nil, err
@@ -461,6 +458,14 @@ func start(p profile, open bool) (any, error) {
 			return nil, fmt.Errorf("desktop stopped during startup; inspect docker --context %s logs %s", p.DockerContext, p.Name)
 		}
 		if c.State.Health != nil && c.State.Health.Status == "healthy" {
+			previous, _ := os.ReadFile(filepath.Join(directory, "localhost.crt"))
+			_, cert, err := certificate(p, directory)
+			if err != nil {
+				return nil, err
+			}
+			if old, err := parseLocalCertificate(previous, true); err == nil && !bytes.Equal(old.Raw, cert.Raw) {
+				fmt.Fprintln(os.Stderr, "The localhost certificate was renewed. Run untrust, then trust for this profile to refresh Windows trust.")
+			}
 			if open {
 				if err := openURL(url(p)); err != nil {
 					return nil, err
@@ -481,30 +486,115 @@ func certificate(p profile, directory string) (map[string]any, *x509.Certificate
 	if c == nil {
 		return nil, nil, errors.New("start the workstation once to generate its localhost certificate")
 	}
-	path := filepath.Join(directory, "localhost.crt")
-	if _, err := docker(p.DockerContext, "cp", p.Name+":/config/ssl/cert.pem", path); err != nil {
-		return nil, nil, err
-	}
-	data, err := os.ReadFile(path)
+	fetched, err := os.CreateTemp(directory, ".localhost-*.crt")
 	if err != nil {
 		return nil, nil, err
 	}
+	fetchedPath := fetched.Name()
+	if err := fetched.Close(); err != nil {
+		return nil, nil, err
+	}
+	defer os.Remove(fetchedPath)
+	if _, err := docker(p.DockerContext, "cp", p.Name+":/config/ssl/cert.pem", fetchedPath); err != nil {
+		return nil, nil, err
+	}
+	data, err := os.ReadFile(fetchedPath)
+	if err != nil {
+		return nil, nil, err
+	}
+	cert, err := parseLocalCertificate(data, false)
+	if err != nil {
+		return nil, nil, err
+	}
+	path := filepath.Join(directory, "localhost.crt")
+	// Preserve a certificate cached by an older controller before replacing it.
+	if previous, err := os.ReadFile(path); err == nil {
+		if err := archiveCertificate(directory, previous); err != nil {
+			return nil, nil, err
+		}
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return nil, nil, err
+	}
+	if err := archiveCertificate(directory, data); err != nil {
+		return nil, nil, err
+	}
+	if err := os.Rename(fetchedPath, path); err != nil {
+		return nil, nil, err
+	}
+	return certificateDetails(cert, path), cert, nil
+}
+
+func parseLocalCertificate(data []byte, allowExpired bool) (*x509.Certificate, error) {
 	block, _ := pem.Decode(data)
 	if block == nil {
-		return nil, nil, errors.New("invalid certificate PEM")
+		return nil, errors.New("invalid certificate PEM")
 	}
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	if !cert.BasicConstraintsValid || cert.IsCA || len(cert.DNSNames) != 1 || cert.DNSNames[0] != "localhost" ||
-		len(cert.IPAddresses) != 1 || !cert.IPAddresses[0].Equal(net.IPv4(127, 0, 0, 1)) || time.Now().After(cert.NotAfter) || time.Now().Before(cert.NotBefore) {
-		return nil, nil, errors.New("certificate must be a valid localhost-only server leaf")
+		len(cert.IPAddresses) != 1 || !cert.IPAddresses[0].Equal(net.IPv4(127, 0, 0, 1)) {
+		return nil, errors.New("certificate must be a localhost-only server leaf")
+	}
+	if !allowExpired && (time.Now().After(cert.NotAfter) || time.Now().Before(cert.NotBefore)) {
+		return nil, errors.New("localhost certificate is outside its validity period; restart to renew it, then run trust")
 	}
 	if err := cert.CheckSignature(cert.SignatureAlgorithm, cert.RawTBSCertificate, cert.Signature); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
+	return cert, nil
+}
+
+func certificateDetails(cert *x509.Certificate, path string) map[string]any {
 	fingerprint, thumbprint := sha256.Sum256(cert.Raw), sha1.Sum(cert.Raw)
 	return map[string]any{"file": path, "dnsName": "localhost", "subject": cert.Subject.String(), "sha256": strings.ToUpper(hex.EncodeToString(fingerprint[:])),
-		"thumbprint": strings.ToUpper(hex.EncodeToString(thumbprint[:])), "expires": cert.NotAfter.UTC().Format(time.RFC3339)}, cert, nil
+		"thumbprint": strings.ToUpper(hex.EncodeToString(thumbprint[:])), "expires": cert.NotAfter.UTC().Format(time.RFC3339)}
+}
+
+func archiveCertificate(directory string, data []byte) error {
+	cert, err := parseLocalCertificate(data, true)
+	if err != nil {
+		return err
+	}
+	archive := filepath.Join(directory, "certificates")
+	if err := os.MkdirAll(archive, 0700); err != nil {
+		return err
+	}
+	fingerprint := sha256.Sum256(cert.Raw)
+	return os.WriteFile(filepath.Join(archive, strings.ToUpper(hex.EncodeToString(fingerprint[:]))+".crt"), data, 0600)
+}
+
+func untrust(directory string) (any, error) {
+	paths, err := filepath.Glob(filepath.Join(directory, "certificates", "*.crt"))
+	if err != nil {
+		return nil, err
+	}
+	paths = append([]string{filepath.Join(directory, "localhost.crt")}, paths...)
+	seen := map[[32]byte]bool{}
+	removed := []map[string]any{}
+	for _, path := range paths {
+		data, err := os.ReadFile(path)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		// Removing obsolete trust must also work after a leaf has expired.
+		cert, err := parseLocalCertificate(data, true)
+		if err != nil {
+			return nil, fmt.Errorf("read cached certificate %s: %w", path, err)
+		}
+		fingerprint := sha256.Sum256(cert.Raw)
+		if seen[fingerprint] {
+			continue
+		}
+		if err := setCertificateTrust(cert, true); err != nil {
+			return nil, err
+		}
+		seen[fingerprint] = true
+		removed = append(removed, certificateDetails(cert, path))
+	}
+	return map[string]any{"state": "untrusted", "store": "CurrentUser/Root", "certificates": removed}, nil
 }

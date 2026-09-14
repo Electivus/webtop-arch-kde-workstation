@@ -26,6 +26,8 @@ workstation.cmd start --open-browser
 
 O comando `trust` instala **apenas o certificado de servidor desta instalação**, limitado a `localhost` e `127.0.0.1`, no armazenamento de confiança do usuário Windows atual. Não requer administrador. `certificate` mostra SHA-256, impressão SHA-1 (`thumbprint`), validade e arquivo público. Na confirmação de segurança do Windows, confira `localhost` e a impressão SHA-1 antes de aceitar. A chave privada é criada no volume pessoal, nunca no build. Nenhum comando desativa a verificação TLS. Se a política corporativa impedir a instalação da confiança, apresente esse certificado ao suporte responsável antes de continuar.
 
+Ao iniciar, a workstation renova o certificado quando restam até 30 dias de validade, inclusive se ele já venceu. O comando informa quando a impressão digital mudou. Nesse caso, execute `untrust` e `trust` para atualizar a confiança Windows. Cópias públicas dos certificados anteriores ficam no perfil para permitir a remoção da confiança mesmo após a renovação.
+
 O desktop abre em `https://localhost:3001/`, sem outra senha. Somente `127.0.0.1` recebe a porta publicada; o acesso não é disponibilizado na rede do notebook. Fechar a aba desconecta o vídeo e preserva a sessão e seus processos. O container não inicia automaticamente com Docker ou com Windows.
 
 ```bat
@@ -55,6 +57,8 @@ Para remover a confiança local posteriormente, execute `untrust` e confirme a r
 ```bat
 workstation.cmd untrust
 ```
+
+`untrust` usa os certificados públicos salvos no perfil, incluindo os anteriores e vencidos. Funciona com o container removido, com Docker Desktop parado ou sem o comando Docker disponível. Mantenha o perfil até concluir essa limpeza.
 
 ## Verificar
 

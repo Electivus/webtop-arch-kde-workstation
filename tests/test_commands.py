@@ -22,14 +22,22 @@ def invoke(program, *args, **kwargs):
     return subprocess.run(invocation, text=True, encoding="utf-8", capture_output=True, timeout=300, **kwargs)
 
 
-def command(*args, cli=CLI):
+def command(*args, cli=CLI, env=None):
     if WINDOWS and args[0] in {"trust", "untrust"}:
         from windows_certificate_dialog import with_certificate_dialog
         profile = args[args.index("--profile") + 1]
-        certificate = command("certificate", "--profile", profile, cli=cli)
-        result = with_certificate_dialog(certificate["thumbprint"], lambda: invoke(cli, *args))
+        if args[0] == "trust":
+            certificate = command("certificate", "--profile", profile, cli=cli)
+            fingerprints = [certificate["thumbprint"]]
+        else:
+            import hashlib
+            import ssl
+            files = [Path(profile) / "localhost.crt", *Path(profile).glob("certificates/*.crt")]
+            fingerprints = [hashlib.sha1(ssl.PEM_cert_to_DER_cert(path.read_text())).hexdigest().upper()
+                            for path in files if path.is_file()]
+        result = with_certificate_dialog(fingerprints, lambda: invoke(cli, *args, env=env))
     else:
-        result = invoke(cli, *args)
+        result = invoke(cli, *args, env=env)
     if result.returncode:
         raise AssertionError(result.stderr or result.stdout)
     return json.loads(result.stdout)
@@ -80,6 +88,18 @@ class CommandAcceptance(unittest.TestCase):
             docker("cp", str(ROOT / "tests" / "keyboard-abnt2.py"), name + ":/config/keyboard-abnt2.py")
             keyboard = json.loads(docker("exec", "--user", "abc", name, "python3", "/config/keyboard-abnt2.py"))
             self.assertEqual(keyboard["received"], "á ã ç ê ü @ / ? |")
+            # The marker already exists. Shorten validity to exercise the
+            # renewal boundary without changing the notebook's clock.
+            docker("exec", name, "bash", "-c",
+                   "openssl x509 -in /config/ssl/cert.pem -signkey /config/ssl/cert.key "
+                   "-days 1 -out /config/ssl/short.crt && mv /config/ssl/short.crt /config/ssl/cert.pem")
+            short_certificate = command("certificate", "--profile", profile)
+            command("stop", "--profile", profile)
+            self.assertTrue(command("start", "--profile", profile)["healthy"])
+            renewed = command("certificate", "--profile", profile)
+            self.assertNotEqual(short_certificate["sha256"], renewed["sha256"], "startup must renew a near-expiry leaf")
+            docker("exec", name, "openssl", "x509", "-in", "/config/ssl/cert.pem", "-checkend", "31536000", "-noout")
+            self.assertTrue((profile / "certificates" / (short_certificate["sha256"] + ".crt")).is_file())
             (profile / "lifecycle-result.json").write_text(json.dumps(
                 {"test": "lifecycle-via-cmd", "result": "passed", "status": restarted, "keyboard": keyboard},
                 indent=2), encoding="utf-8")
@@ -140,8 +160,15 @@ class CommandAcceptance(unittest.TestCase):
             # A fresh default TLS context loads the current-user Windows trust store.
             with urllib.request.urlopen(state["url"], context=ssl.create_default_context()) as response:
                 self.assertEqual(response.status, 200)
-            command("untrust", "--profile", profile)
-            command("untrust", "--profile", profile)  # removing an absent leaf is idempotent
+            docker("exec", name, "openssl", "x509", "-in", "/config/ssl/cert.pem", "-signkey",
+                   "/config/ssl/cert.key", "-not_before", "20010101000000Z", "-not_after",
+                   "20010102000000Z", "-out", "/tmp/expired-fixture.crt")
+            docker("cp", name + ":/tmp/expired-fixture.crt", str(profile / "certificates" / "expired-fixture.crt"))
+            docker("container", "rm", "--force", name)
+            offline_env = dict(os.environ, PATH=str(Path(os.environ["SystemRoot"]) / "System32"))
+            removed = command("untrust", "--profile", profile, env=offline_env)
+            self.assertEqual(len(removed["certificates"]), 2)
+            command("untrust", "--profile", profile, env=offline_env)  # absent leaf is idempotent
             fingerprint = bytes.fromhex(certificate["thumbprint"])
             import hashlib
             self.assertFalse(any(hashlib.sha1(der).digest() == fingerprint
