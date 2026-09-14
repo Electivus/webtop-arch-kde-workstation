@@ -1,19 +1,19 @@
 # Família de imagens - Planning context
 
-Status em 2026-09-14: escolhas da entrevista registradas; entendimento consolidado aguardando confirmação global do usuário. O [Decision ledger](decision-ledger.md) registra as escolhas confirmadas; este documento não as substitui. DEC-009 inclui Salesforce, DEC-010 limita a entrega atual a duas imagens e DEC-018 define dois repositórios Docker Hub com versões coordenadas, tags fixas e alias stable. A implementação e os testes de execução estão pendentes.
+Status em 2026-09-14: entendimento consolidado confirmado pelo usuário em Q27; entrevista encerrada. O [Decision ledger](decision-ledger.md) registra as escolhas confirmadas; este documento não as substitui. DEC-009 inclui Salesforce, DEC-010 limita a entrega atual a duas imagens, DEC-018 define dois repositórios Docker Hub com versões coordenadas, tags fixas e alias stable, e DEC-035 fixa os nomes públicos. A especificação, os tickets, a implementação e os testes de execução permanecem como próximas etapas.
 
 ## Variante e versão
 
 Uma variante atende a um perfil de uso. Uma versão identifica uma entrega daquele perfil. Cada combinação pode resultar em uma imagem publicada. Várias tags também podem apontar para a mesma imagem, sem criar uma cópia de suas camadas.
 
-Proposta de nomes, ainda não criados nem verificados com autenticação no Docker Hub:
+Nomes confirmados em DEC-035, ainda não criados nem verificados com autenticação no Docker Hub; as tags abaixo são ilustrativas:
 
 | Variante | Conteudo pretendido | Referencia ilustrativa |
 | --- | --- | --- |
 | Base | Arch, KDE, Webtop, Chrome oficial, Git, Zsh, Oh My Zsh e ajustes comuns | `electivus/webtop-arch-kde-base:1.0.0` |
 | Salesforce | Base mais VS Code Stable/Insiders, Salesforce CLI, extensoes, Java e Node necessarios | `electivus/webtop-arch-kde-salesforce:1.0.0` |
 
-Conforme DEC-018, serão dois repositórios Docker Hub, um por imagem. O código e as rotinas de construção podem continuar neste único repositório Git. Os nomes exatos acima ainda são propostas e precisam ser verificados no registry. A separação dos repositórios não impede o compartilhamento das camadas.
+Conforme DEC-018, serão dois repositórios Docker Hub, um por imagem. O código e as rotinas de construção podem continuar neste único repositório Git. Os nomes acima estão confirmados em DEC-035; a existência, a criação e as permissões de publicação precisam ser verificadas no registry. A separação dos repositórios não impede o compartilhamento das camadas.
 
 ## Herança confirmada
 

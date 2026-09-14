@@ -551,3 +551,19 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
   - specification: none
   - tickets: none
   - verification: none
+
+## DEC-035
+- Status: active
+- Decision: Usar electivus/webtop-arch-kde-base e electivus/webtop-arch-kde-salesforce como nomes dos dois repositorios publicos no Docker Hub.
+- Context: Na resposta Q27, o usuario confirmou o entendimento consolidado em image-family-proposal.md, que apresenta esses nomes para as duas variantes; a criacao e a verificacao autenticada de publicacao ainda estao pendentes.
+- Rationale: Definir a identidade publica dos artefatos que sera utilizada pelos comandos de instalacao, pela documentacao e pela automacao de entrega.
+- ADR: none
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: pending
+  - tickets: pending
+  - verification: pending
+- Evidence:
+  - specification: none
+  - tickets: none
+  - verification: none

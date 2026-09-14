@@ -1,6 +1,6 @@
 # Descoberta e entrevista - Planning context
 
-Observações técnicas de 2026-09-13 e entrevista atualizada em 2026-09-14, horário de America/Bahia. Este documento reúne evidências e perguntas; o [Decision ledger](decision-ledger.md) é a fonte das decisões confirmadas. As rodadas de escolhas foram respondidas; a confirmação do entendimento consolidado está pendente, sem especificação final.
+Observações técnicas de 2026-09-13 e entrevista encerrada em 2026-09-14, horário de America/Bahia. Este documento reúne evidências e perguntas; o [Decision ledger](decision-ledger.md) é a fonte das decisões confirmadas. O usuário confirmou o entendimento consolidado na resposta Q27. A especificação final permanece como próxima etapa de planejamento.
 
 ## Evidência local
 
@@ -68,7 +68,8 @@ Workstation Arch/KDE via Webtop
 |   |-- Duas imagens: base -> Salesforce [DEC-010]
 |   |-- Dois repositorios, versoes coordenadas, tags fixas e stable [DEC-018]
 |   |-- Publicacao automatica semanal e sob demanda apos testes [DEC-026]
-|   |-- Nomes de trabalho e linux/amd64 [escolhas tecnicas para revisao final]
+|   |-- Nomes dos repositorios Docker Hub [DEC-035]
+|   |-- Perfil inicial linux/amd64 [entendimento confirmado em Q27]
 |   `-- Atualizacao da imagem e dos aplicativos por comando [DEC-027, DEC-028]
 |-- Estado e dados
 |   |-- Preservar programas pacman/AUR se viavel [DEC-019]
@@ -84,7 +85,7 @@ Workstation Arch/KDE via Webtop
 
 Decisões já explícitas no pedido: DEC-001, DEC-002, DEC-003, DEC-004, DEC-005.
 
-1. **Q1 — Respondida.** Desenvolvimento com editor, navegador, terminal e ferramentas de projeto. Registrada como DEC-006. Aplicativos e linguagens específicos ainda serão definidos.
+1. **Q1 — Respondida.** Desenvolvimento com editor, navegador, terminal e ferramentas de projeto. Registrada como DEC-006. Os aplicativos e suas dependências foram definidos nas rodadas seguintes.
 2. **Q2 — Respondida.** Uma pessoa, somente no próprio notebook. Registrada como DEC-007.
 3. **Q3 — Respondida.** Imagem pública e genérica, reutilizável por outras pessoas. Registrada como DEC-008.
 
@@ -92,13 +93,13 @@ Decisões registradas nesta rodada: DEC-006, DEC-007, DEC-008.
 
 ## Ampliação para Salesforce e discussão de versões
 
-O usuário acrescentou que também será criada uma imagem para desenvolvimento Salesforce: DEC-009. Na resposta Q4, confirmou somente duas imagens, base e desenvolvimento Salesforce, com Salesforce derivando diretamente da base: DEC-010. DEC-018 definiu depois dois repositórios, versões coordenadas, tags fixas e alias stable. Os nomes exatos no registry ainda precisam ser verificados.
+O usuário acrescentou que também será criada uma imagem para desenvolvimento Salesforce: DEC-009. Na resposta Q4, confirmou somente duas imagens, base e desenvolvimento Salesforce, com Salesforce derivando diretamente da base: DEC-010. DEC-018 definiu depois dois repositórios, versões coordenadas, tags fixas e alias stable. DEC-035 registra os nomes confirmados em Q27; a verificação autenticada dos repositórios permanece para a preparação da publicação.
 
-A [família de imagens e proposta de versões](image-family-proposal.md) distingue a composição já confirmada das recomendações de publicação ainda pendentes. Uma eventual ampliação da hierarquia fica para uma necessidade futura, conforme DEC-010. A fronteira da entrevista está aberta.
+A [família de imagens e política de versões](image-family-proposal.md) consolida as escolhas confirmadas. Uma eventual ampliação da hierarquia fica para uma necessidade futura, conforme DEC-010. As rodadas seguintes documentam as respostas que concluíram a entrevista.
 
 ## Segunda rodada respondida
 
-Decisão adicional registrada antes desta rodada: DEC-009. As respostas de Q4-Q11 estão registradas abaixo; ainda é necessário resolver o mecanismo de preservação dos programas, os detalhes de atualização, dimensionamento, backup/restauração e critérios de validação.
+Decisão adicional registrada antes desta rodada: DEC-009. As respostas de Q4-Q11 estão registradas abaixo; as rodadas seguintes resolveram as escolhas sobre preservação dos programas, atualização, dimensionamento, backup/restauração e validação.
 
 | Pergunta | Estado ou escolha pendente | Resposta ou recomendacao |
 | --- | --- | --- |
@@ -130,7 +131,7 @@ Decisões já registradas desde o início da segunda rodada: DEC-010, DEC-011, D
 | Q16 | Respondida: DEC-024 | VS Code Insiders como padrao; Stable separado e disponivel |
 | Q17 | Respondida: DEC-025 | Sob demanda por comando ou atalho no Windows |
 
-Decisões registradas nesta rodada: DEC-020, DEC-021, DEC-022, DEC-023, DEC-024, DEC-025. Q12-Q17 foram respondidas. Atualizações, backup/restauração, fluxo de instalação no destino e critérios finais de validação ainda precisam ser definidos; a entrevista permanece aberta.
+Decisões registradas nesta rodada: DEC-020, DEC-021, DEC-022, DEC-023, DEC-024, DEC-025. Q12-Q17 foram respondidas. As escolhas sobre atualizações, backup/restauração e validação foram resolvidas nas rodadas seguintes; o fluxo de instalação foi incluído no entendimento confirmado em Q27.
 
 ## Quarta rodada respondida
 
@@ -143,7 +144,7 @@ Decisões registradas nesta rodada: DEC-020, DEC-021, DEC-022, DEC-023, DEC-024,
 | Q22 | Respondida: DEC-030 | Publicar apos testes VMM locais, declarar Hyper-V real pendente e entregar roteiro executavel para o destino |
 | Q23 | Respondida: DEC-031 | Uma tela Full HD, Insiders com projeto Salesforce e Chrome |
 
-Decisões registradas nesta rodada: DEC-026, DEC-027, DEC-028, DEC-029, DEC-030, DEC-031. Q18-Q23 foram respondidas. A publicação e a implementação não começaram. As respostas permitem definir agora o comportamento após falhas de restauração de pacotes pessoais e o encerramento da sessão.
+Decisões registradas nesta rodada: DEC-026, DEC-027, DEC-028, DEC-029, DEC-030, DEC-031. Q18-Q23 foram respondidas. As respostas subsidiaram a quinta rodada, que definiu o comportamento após falhas de restauração de pacotes pessoais e o encerramento da sessão.
 
 ## Quinta rodada respondida
 
@@ -155,8 +156,10 @@ Decisões registradas nesta rodada: DEC-026, DEC-027, DEC-028, DEC-029, DEC-030,
 
 Decisões registradas nesta rodada: DEC-032, DEC-033, DEC-034. Q24-Q26 foram respondidas em 2026-09-14, após serem reapresentadas a pedido do usuário. Q24 trata de programas extras; falhas nos componentes fornecidos pelas imagens continuam sujeitas aos testes de entrega.
 
-## Revisão do entendimento
+## Entendimento confirmado e encerramento
 
-A fronteira de escolhas funcionais da entrevista está vazia. O entendimento consolidado está em [Família de imagens](image-family-proposal.md), com as decisões materiais no ledger. As escolhas técnicas apresentadas para a revisão incluem os nomes `electivus/webtop-arch-kde-base` e `electivus/webtop-arch-kde-salesforce`, a arquitetura `linux/amd64` correspondente ao notebook e comandos PowerShell para instalação e manutenção.
+A fronteira de escolhas funcionais da entrevista está vazia. O entendimento consolidado está em [Família de imagens](image-family-proposal.md), com as decisões materiais no ledger. Em 2026-09-14, o usuário respondeu Q27 com "Confirmar o entendimento consolidado e encerrar a entrevista". A entrevista está concluída, sem perguntas pendentes.
 
-A confirmação global desse entendimento ainda está pendente. Não há especificação ou tickets com cobertura concluída, imagens construídas, testes de execução ou publicação. A implementação deverá resolver e verificar os mecanismos de armazenamento e caminhos Docker/Compose, preparo de aplicativos, recuperação e desempenho; essas questões técnicas têm requisitos definidos e não são provas de viabilidade já obtidas. Caso uma restrição confirmada não possa ser atendida, será necessário retornar ao planejamento.
+DEC-035 registra os nomes públicos confirmados: `electivus/webtop-arch-kde-base` e `electivus/webtop-arch-kde-salesforce`. O entendimento inclui o perfil inicial `linux/amd64` correspondente ao notebook e comandos PowerShell para instalação e manutenção. A confirmação global reafirma as demais decisões ativas, sem duplicá-las no ledger. DEC-014 permanece substituída por DEC-019.
+
+O encerramento da entrevista é um checkpoint intermediário de planejamento: a especificação e os tickets ainda precisam cobrir as decisões aplicáveis antes do checkpoint final. Não há imagens construídas, testes de execução ou publicação. A implementação deverá resolver e verificar os mecanismos de armazenamento e caminhos Docker/Compose, preparo de aplicativos, recuperação e desempenho; essas questões técnicas têm requisitos definidos e não são provas de viabilidade já obtidas. Caso uma restrição confirmada não possa ser atendida, será necessário retornar ao planejamento.
