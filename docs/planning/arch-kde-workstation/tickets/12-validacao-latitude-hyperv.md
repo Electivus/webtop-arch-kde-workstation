@@ -11,12 +11,12 @@ O candidato é instalado e medido no VMM em Full HD, o perfil de recursos é aju
 ## Acceptance criteria
 
 - [ ] Instalar e exercitar no notebook de teste o candidato identificável produzido pelo CI, registrando seus digests, o backend VMM e o hardware.
-- [ ] Validar o fluxo Windows completo disponível: início e parada, aplicações, projetos e Compose, conectividade opcional, backup, recuperação e atualizações.
+- [ ] Validar pelo CMD o fluxo Windows completo disponível: início e parada, aplicações, projetos e Compose, conectividade opcional, backup, recuperação e atualizações, sem executar PowerShell.
 - [ ] Medir o uso em uma tela 1920 x 1080 com Insiders, projeto Salesforce e Chrome, incluindo resposta do desktop, CPU e RAM.
 - [ ] Separar medições de preparo inicial das partidas seguintes e considerar a carga do Windows e dos demais containers.
 - [ ] Partir da proposta de 8 GiB e 6 CPUs lógicas para a VM e entregar o perfil ajustado com as medições que o sustentam e as limitações observadas.
 - [ ] Identificar o modo de renderização efetivamente utilizado e comprovar o perfil funcional sem assumir aceleração gráfica não demonstrada.
-- [ ] Entregar um roteiro executável de instalação/verificação para o notebook Hyper-V, com diagnóstico de pré-requisitos e resultados identificáveis.
+- [ ] Entregar um roteiro executável pelo CMD de instalação/verificação para o notebook Hyper-V, com diagnóstico de pré-requisitos e resultados identificáveis, funcionando com PowerShell bloqueado.
 - [ ] Marcar a execução real no destino como pendente até haver evidência; a conclusão deste ticket não depende de obter acesso remoto ao notebook indisponível nesta sessão.
 - [ ] Se o ajuste mudar o candidato, produzir e verificar o candidato resultante antes de associar o relatório à primeira publicação.
 
@@ -37,6 +37,7 @@ O candidato é instalado e medido no VMM em Full HD, o perfil de recursos é aju
 - `DEC-023`: Escolher o dimensionamento com base nas medições da carga conjunta.
 - `DEC-030`: Preparar evidência local e roteiro de destino mantendo a validação Hyper-V real identificada como pendente.
 - `DEC-031`: Usar o cenário Full HD com Insiders, projeto Salesforce e Chrome na avaliação.
+- `DEC-036`: Verificar todos os comandos e o atalho pelo CMD e preparar o roteiro Hyper-V sem dependência direta ou indireta de PowerShell.
 
 ## Blocked by
 

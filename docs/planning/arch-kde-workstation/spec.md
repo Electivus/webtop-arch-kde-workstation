@@ -17,7 +17,7 @@ Distribuir duas imagens públicas e genéricas no Docker Hub da Electivus. A wor
 | Base | electivus/webtop-arch-kde-base | Arch Linux, KDE, Webtop, Chrome oficial, Git, Zsh e Oh My Zsh |
 | Salesforce, derivada da base | electivus/webtop-arch-kde-salesforce | Conteudo da base, VS Code Stable e Insiders, Salesforce CLI, extensoes Salesforce, Java e Node necessarios |
 
-O perfil inicial será linux/amd64. O usuário instalará e administrará a workstation por comandos PowerShell e poderá iniciá-la por um atalho no Windows, partindo de Docker Desktop já disponível e configurado para containers Linux. O desktop será acessível apenas pelo navegador do próprio notebook, por HTTPS e sem senha adicional. Fechar a aba manterá a sessão e seus processos; o comando de parar encerrará a execução da workstation.
+O perfil inicial será linux/amd64. O usuário instalará e administrará a workstation por comandos CMD e poderá iniciá-la por um atalho no Windows, partindo de Docker Desktop já disponível e configurado para containers Linux. PowerShell é bloqueado no notebook de destino: os comandos e o atalho não podem chamá-lo direta ou indiretamente. Essa restrição se aplica também a diagnóstico, backup, restauração e atualizações. O desktop será acessível apenas pelo navegador do próprio notebook, por HTTPS e sem senha adicional. Fechar a aba manterá a sessão e seus processos; o comando de parar encerrará a execução da workstation.
 
 Chrome e os dois canais oficiais do VS Code serão obtidos diretamente dos fornecedores durante a preparação automática inicial, em armazenamento persistente, com progresso e retomada. A imagem pública fornecerá a preparação e as dependências correspondentes. O ambiente terá interface em inglês, formatos brasileiros, teclado ABNT2 e fuso America/Bahia. Insiders será o editor padrão.
 
@@ -46,7 +46,7 @@ As imagens terão versões coordenadas, tags fixas e um alias stable. GitHub Act
 17. Como usuário com uma conexão interrompida, quero retomar a preparação, para completar a instalação sem descartar etapas já concluídas.
 18. Como usuário, quero reutilizar os aplicativos persistidos ao reiniciar ou recriar a workstation, para evitar downloads e configurações desnecessários.
 19. Como usuário, quero consultar as versões e a origem dos aplicativos instalados, para identificar o ambiente efetivamente em uso.
-20. Como usuário do Windows, quero instalar e administrar a workstation por comandos PowerShell documentados, para operar o ambiente a partir do notebook.
+20. Como usuário do Windows com PowerShell bloqueado, quero instalar e administrar a workstation por comandos CMD documentados, para operar o ambiente a partir do notebook.
 21. Como usuário, quero iniciar a workstation sob demanda por comando ou atalho, para consumir seus recursos quando decidir trabalhar.
 22. Como único usuário do desktop local, quero entrar diretamente pela sessão Windows, para evitar uma segunda autenticação na workstation.
 23. Como usuário, quero que o acesso ao desktop fique limitado ao próprio notebook, para manter o modelo de uso pessoal acordado.
@@ -122,6 +122,7 @@ A implementação será organizada em três responsabilidades: composição e pr
 - DEC-033: Preservar sessão e processos quando a aba for fechada e encerrar a execução apenas pelo comando de parar ou por encerramento do próprio ambiente anfitrião.
 - DEC-034: Receber proxy e certificados necessários por configuração opcional assistida, manter os dados no notebook e diagnosticar a conectividade preservando TLS.
 - DEC-035: Usar electivus/webtop-arch-kde-base e electivus/webtop-arch-kde-salesforce nos artefatos publicados, comandos, documentação e automação.
+- DEC-036: Implementar todos os comandos de operação e o atalho usando CMD, sem executar PowerShell no notebook de destino; distribuir os componentes necessários e verificar o fluxo nessa condição.
 
 JDK 21 e Node.js Active LTS são os candidatos levantados para atender às dependências Salesforce; as versões exatas devem ser resolvidas e registradas com a verificação de compatibilidade da entrega. Pacotes Arch precisam de uma estratégia coerente de atualização, inclusive para recompilações AUR, sem combinar uma base nova com partes arbitrárias de um sistema antigo.
 
@@ -153,6 +154,7 @@ Os cenários devem usar projetos, dados e recursos Docker dedicados à validaç�
 14. **Contrato da entrega:** verificar os nomes públicos, arquitetura, digests, versões coordenadas, relação entre base e Salesforce, preservação de tags fixas e destino de stable. Uma falha nos testes deve impedir a promoção; uma falha parcial de publicação deve ser visível e não pode ser anunciada como entrega coordenada concluída.
 15. **Automação e conteúdo público:** exercitar o acionamento sob demanda e validar a configuração semanal, além das instruções que permitem usar a distribuição pública. Inspecionar os artefatos para confirmar a estratégia de obtenção dos aplicativos oficiais e a ausência de configurações, credenciais e conteúdo corporativos embutidos.
 16. **Evidência de plataforma:** produzir relatório da validação VMM local e fornecer o roteiro executável Hyper-V com resultados e limitações identificáveis. A primeira publicação pode ocorrer com a execução no destino pendente; sucesso no VMM não deve ser reportado como teste real em Hyper-V.
+17. **Operação pelo CMD:** executar instalação, atalho e comandos de operação a partir de `cmd.exe`, sem invocar `powershell.exe` ou `pwsh.exe`; o roteiro de destino e as instruções públicas devem exercer o mesmo contrato.
 
 Os testes dos componentes fornecidos são critérios de aprovação da entrega. A tolerância à restauração parcial se limita aos programas extras do usuário. Não foi acordado um número fixo de latência, consumo ou tempo de instalação; o perfil deverá ser escolhido a partir das medições do cenário confirmado.
 
@@ -160,6 +162,7 @@ Os testes dos componentes fornecidos são critérios de aprovação da entrega. 
 
 - Uma terceira imagem de desenvolvimento geral ou uma hierarquia preparada para necessidades futuras.
 - Dependência de WSL2, instalação de um segundo engine Docker dentro da workstation ou habilitação automática de Hyper-V no Windows.
+- Dependência de PowerShell para instalar, operar, diagnosticar ou recuperar a workstation no notebook de destino.
 - Desktop compartilhado por várias pessoas, acesso pela rede ou exposição pública do endpoint sem a revisão do modelo de acesso local.
 - Substituição dos produtos oficiais solicitados por Chromium, VSCodium ou code-server; redistribuição dos binários de Chrome e VS Code na imagem pública.
 - Preservação incondicional de todos os programas, versões binárias, pacotes indisponíveis ou modificações arbitrárias no sistema; a recuperação de programas extras segue a avaliação de viabilidade e o fluxo assistido.
@@ -174,7 +177,7 @@ Os testes dos componentes fornecidos são critérios de aprovação da entrega. 
 
 O escopo resulta da entrevista Q1–Q27, encerrada e confirmada em 2026-09-14. O levantamento técnico anterior identificou a variante upstream Arch/KDE, o hardware local e Docker VMM; não executou uma workstation derivada nem demonstrou desempenho, restauração, integração Compose ou compatibilidade real no notebook de destino. Esses resultados são entregáveis da implementação.
 
-Todas as 34 decisões ativas do ledger declaram as obrigações specification, tickets e verification. Cada uma possui uma consequência acionável em Implementation Decisions e está incluída no marcador abaixo. Não há decisão ativa sem obrigação de especificação que exija nota de inaplicabilidade. DEC-014 está substituída por DEC-019 e não constitui uma obrigação ativa desta especificação.
+As 35 decisões ativas do ledger declaram as obrigações specification, tickets e verification. Cada uma possui uma consequência acionável em Implementation Decisions e está incluída no marcador abaixo. Não há decisão ativa sem obrigação de especificação que exija nota de inaplicabilidade. DEC-014 está substituída por DEC-019 e não constitui uma obrigação ativa desta especificação. DEC-036 registra a correção do usuário em 2026-09-14: a operação no destino deve usar CMD, pois PowerShell é bloqueado.
 
 A publicação desta especificação conclui a cobertura de specification, após seu registro no ledger. A decomposição em tickets e as evidências de execução são etapas posteriores; o checkpoint de planejamento usado aqui é intermediário. O marcador deverá ser atualizado para o checkpoint final quando a cobertura dos tickets estiver concluída, antes de uma nova sessão de implementação.
 

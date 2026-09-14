@@ -567,3 +567,20 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/14
   - verification: none
+
+## DEC-036
+- Status: active
+- Decision: Instalar, iniciar, parar, diagnosticar, atualizar e recuperar a workstation por comandos CMD no Windows, sem executar PowerShell no notebook de destino.
+- Context: Em 2026-09-14, durante a implementacao de T01, o usuario corrigiu a especificacao: PowerShell e bloqueado no notebook de destino e somente comandos CMD podem ser executados.
+- Rationale: O fluxo entregue precisa funcionar com as restricoes reais do notebook, incluindo atalho e todas as operacoes dos tickets seguintes.
+- ADR: none
+- Constraints: Os comandos e o atalho nao podem chamar powershell.exe ou pwsh.exe, direta ou indiretamente.
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: complete
+  - tickets: complete
+  - verification: pending
+- Evidence:
+  - specification: docs/planning/arch-kde-workstation/spec.md
+  - tickets: docs/planning/arch-kde-workstation/tickets/01-desktop-local.md; docs/planning/arch-kde-workstation/tickets/12-validacao-latitude-hyperv.md; docs/planning/arch-kde-workstation/tickets/13-publicacao-docker-hub.md
+  - verification: none
