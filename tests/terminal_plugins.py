@@ -14,34 +14,40 @@ def main():
         os.environ["TERM"] = "xterm-256color"
         os.execlp("zsh", "zsh", "-i")
 
-    def read_for(seconds=0.5):
+    def plain_text(output):
+        output = re.sub(rb"\x1b\].*?(?:\x07|\x1b\\)", b"", output, flags=re.S)
+        return re.sub(rb"\x1b\[[0-?]*[ -/]*[@-~]", b"", output)
+
+    def read_until(expected, plain=False):
         output = bytearray()
-        until = time.monotonic() + seconds
+        until = time.monotonic() + 20
         while time.monotonic() < until:
             readable, _, _ = select.select([terminal], [], [], min(0.1, max(0, until - time.monotonic())))
             if readable:
                 output.extend(os.read(terminal, 65536))
-        return bytes(output)
+                observed = plain_text(bytes(output)) if plain else bytes(output)
+                if expected in observed:
+                    return bytes(output)
+        raise AssertionError(f"Terminal did not produce {expected!r}; received {bytes(output)!r}")
 
-    def type_text(value):
+    def type_text(value, expected, plain=False):
         os.write(terminal, value)
-        return read_for()
+        return read_until(expected, plain=plain)
 
     try:
-        read_for(2)
-        valid = type_text(b"printf")
+        # Zsh enables bracketed paste when its line editor is ready. This
+        # survives slow user startup commands and CPU contention in CI.
+        read_until(b"\x1b[?2004h")
+        valid = type_text(b"printf", b"\x1b[32m")
         assert b"\x1b[32m" in valid, repr(valid)
-        type_text(b"\x15")
-        invalid = type_text(b"workstation_command_does_not_exist")
+        invalid = type_text(b"\x15workstation_command_does_not_exist", b"\x1b[31m")
         assert b"\x1b[31m" in invalid, repr(invalid)
-        type_text(b"\x15")
-        type_text(b"printf 'workstation-suggestion-accepted\\n'\r")
-        suggestion = type_text(b"printf 'workstation-sugg")
+        type_text(b"\x15printf 'workstation-suggestion-accepted\\n'\r", b"\x1b[?2004h")
+        suggestion = type_text(b"printf 'workstation-sugg", b"estion-accepted")
         assert b"estion-accepted" in suggestion, repr(suggestion)
         # Right Arrow must accept the history suffix, including the closing quote.
-        accepted = type_text(b"\x1b[C\r")
-        plain = re.sub(rb"\x1b\].*?(?:\x07|\x1b\\)", b"", accepted, flags=re.S)
-        plain = re.sub(rb"\x1b\[[0-?]*[ -/]*[@-~]", b"", plain)
+        accepted = type_text(b"\x1b[C\r", b"\r\nworkstation-suggestion-accepted\r\n", plain=True)
+        plain = plain_text(accepted)
         assert b"\r\nworkstation-suggestion-accepted\r\n" in plain, repr(accepted)
         print(json.dumps({"syntaxHighlighting": "valid-green/invalid-red",
                           "autosuggestion": "history suffix displayed and accepted with Right Arrow"}))

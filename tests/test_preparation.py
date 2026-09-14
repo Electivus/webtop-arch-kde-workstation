@@ -75,6 +75,9 @@ class PreparationAcceptance(unittest.TestCase):
             self.assertEqual(docker("exec", "--user", "abc", name, "zsh", "-c", "printf plain"), "plain")
             probe = "mkdir -p ~/shell-project && cd ~/shell-project && git init -q && touch example.txt && gst --short"
             self.assertIn("?? example.txt", docker("exec", "--user", "abc", name, "zsh", "-ic", probe))
+            # A slow user startup command must not make the PTY driver send
+            # editing keys before Zsh has entered its line editor.
+            docker("exec", "--user", "abc", name, "bash", "-c", "printf '\\nsleep 3\\n' >> ~/.zshrc")
             docker("cp", str(ROOT / "tests/terminal_plugins.py"), name + ":/tmp/terminal_plugins.py")
             plugins = json.loads(docker("exec", "--user", "abc", name, "python3", "/tmp/terminal_plugins.py"))
             self.assertIn("accepted", plugins["autosuggestion"])
