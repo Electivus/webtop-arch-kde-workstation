@@ -40,6 +40,9 @@ def main():
                              for der, encoding, trust in ssl.enum_certificates("ROOT"))
         command("trust", "--profile", profile)
         playwright("open", state["url"], "--browser=chrome")
+        command("prepare", "--profile", profile)
+        docker("cp", str(ROOT / "tests/desktop_terminal.py"), name + ":/config/desktop_terminal.py")
+        docker("exec", "--user", "abc", name, "python3", "/config/desktop_terminal.py")
         playwright("run-code", "--filename=tests/Browser-Session.js")
         typed = docker("exec", "--user", "abc", name, "cat", "/config/t01-typing.txt")
         assert typed == "ação ç áéíóú ãõ ê ü @ / ? |", typed

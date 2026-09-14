@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Prepare applications
+Exec=workstation-apps --window
+Icon=system-software-install
+Terminal=false
+OnlyShowIn=KDE;

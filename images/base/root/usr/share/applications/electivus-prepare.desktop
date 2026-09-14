@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Prepare applications
+Comment=Prepare or resume the workstation applications
+Exec=konsole --hold -e workstation-apps --console
+Icon=system-software-install
+Terminal=false
+Categories=System;

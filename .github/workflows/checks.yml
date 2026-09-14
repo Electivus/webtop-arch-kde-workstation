@@ -11,14 +11,23 @@ concurrency:
 jobs:
   desktop-lifecycle:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
+    env:
+      WORKSTATION_TEST_IMAGE: electivus/webtop-arch-kde-base:ci
+      WORKSTATION_SALESFORCE_TEST_IMAGE: electivus/webtop-arch-kde-salesforce:ci
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Check Bash
-        run: shellcheck images/base/root/custom-cont-init.d/*.sh images/base/root/usr/local/bin/workstation-healthcheck
+        run: shellcheck images/base/root/custom-cont-init.d/*.sh images/base/root/usr/local/bin/workstation-healthcheck images/base/root/usr/local/bin/google-chrome images/salesforce/root/usr/local/bin/*
       - name: Build and export native commands
         run: docker build --file images/base/Dockerfile --target commands-export --output type=local,dest=.local/cli .
       - name: Build desktop image
-        run: docker build --file images/base/Dockerfile --build-arg VERSION=ci --build-arg REVISION="$GITHUB_SHA" --tag electivus/webtop-arch-kde-base:t01 .
+        run: docker build --file images/base/Dockerfile --build-arg VERSION=ci --build-arg REVISION="$GITHUB_SHA" --tag "$WORKSTATION_TEST_IMAGE" .
+      - name: Build Salesforce from the matching base
+        run: docker build --file images/salesforce/Dockerfile --build-arg BASE_IMAGE="$WORKSTATION_TEST_IMAGE" --build-arg VERSION=ci --build-arg REVISION="$GITHUB_SHA" --tag "$WORKSTATION_SALESFORCE_TEST_IMAGE" .
       - name: Exercise public lifecycle commands
         run: python3 tests/test_commands.py
+      - name: Exercise browser preparation and terminal
+        run: python3 tests/test_preparation.py
+      - name: Exercise both editors, Salesforce services and interrupted preparation
+        run: python3 tests/test_salesforce.py

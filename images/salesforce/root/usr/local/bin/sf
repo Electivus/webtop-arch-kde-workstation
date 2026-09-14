@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -eu
+cli="$HOME/.local/share/electivus/apps/salesforce-cli/current/node_modules/.bin/sf"
+if [ ! -x "$cli" ]; then
+    printf '%s\n' 'Salesforce CLI is not ready. Run workstation-apps or use Prepare applications.' >&2
+    exit 1
+fi
+exec "$cli" "$@"

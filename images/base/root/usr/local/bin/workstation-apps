@@ -1,0 +1,421 @@
+#!/usr/bin/env python3
+"""Prepare vendor applications in the user's persistent home."""
+import argparse
+import base64
+from datetime import datetime, timezone
+import fcntl
+from functools import cmp_to_key
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.error
+import urllib.request
+
+PERSONAL_HOME = Path.home()
+STATE = PERSONAL_HOME / ".local/state/electivus/preparation.json"
+CACHE = PERSONAL_HOME / ".cache/electivus/downloads"
+APPS = PERSONAL_HOME / ".local/share/electivus/apps"
+
+
+def configuration():
+    result = {"repositories": {}, "apps": []}
+    for path in sorted(Path("/etc/electivus/applications.d").glob("*.json")):
+        entry = read_json(path)
+        result["repositories"].update(entry.get("repositories", {}))
+        result["apps"].extend(entry.get("apps", []))
+        if "salesforce" in entry:
+            result["salesforce"] = entry["salesforce"]
+    return result
+
+
+def now():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def read_json(path, default=None):
+    try:
+        return json.loads(path.read_text())
+    except FileNotFoundError:
+        return default
+
+
+def write_json(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, delete=False) as output:
+        json.dump(value, output, indent=2)
+        output.flush()
+        os.fsync(output.fileno())
+        temporary = Path(output.name)
+    temporary.replace(path)
+
+
+def save(state, step, **details):
+    if step != "download":
+        state.pop("bytes", None)
+        state.pop("totalBytes", None)
+    state.update(state="running", step=step, updated=now(), **details)
+    state.pop("error", None)
+    write_json(STATE, state)
+    print(state.get("app", "Applications") + ": " + step, file=sys.stderr, flush=True)
+
+
+def sha256(path):
+    with path.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def run(*args, **kwargs):
+    result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+    if result.returncode:
+        raise RuntimeError(result.stderr.decode(errors="replace").strip() or "command failed: " + args[0])
+    return result.stdout
+
+
+def fetch(url, destination):
+    with urllib.request.urlopen(url, timeout=45) as response, destination.open("wb") as output:
+        shutil.copyfileobj(response, output)
+
+
+def fields(text):
+    result = {}
+    name = None
+    for line in text.splitlines():
+        if line.startswith(" ") and name:
+            result[name] += "\n" + line.strip()
+        elif ":" in line:
+            name, value = line.split(":", 1)
+            result[name] = value.strip()
+    return result
+
+
+def resolve_deb(app, repository):
+    """Authenticate the APT index, then follow its package SHA-256."""
+    with tempfile.TemporaryDirectory(dir=CACHE) as temporary:
+        directory = Path(temporary)
+        os.chmod(directory, 0o700)
+        fetch(repository["keyUrl"], directory / "vendor.asc")
+        run("gpg", "--batch", "--homedir", str(directory), "--import", str(directory / "vendor.asc"))
+        exported = run("gpg", "--batch", "--homedir", str(directory), "--export", repository["fingerprint"])
+        if not exported:
+            raise RuntimeError("Vendor signing key fingerprint did not match")
+        (directory / "vendor.gpg").write_bytes(exported)
+        base = repository["url"]
+        fetch(base + "dists/stable/Release", directory / "Release")
+        fetch(base + "dists/stable/Release.gpg", directory / "Release.gpg")
+        run("gpgv", "--homedir", str(directory), "--keyring", str(directory / "vendor.gpg"),
+            str(directory / "Release.gpg"), str(directory / "Release"))
+        release = fields((directory / "Release").read_text())
+        index_path = "main/binary-amd64/Packages"
+        entries = [line.split() for line in release["SHA256"].splitlines() if line.strip()]
+        digest, size, _ = next(entry for entry in entries if entry[2] == index_path)
+        fetch(base + "dists/stable/" + index_path, directory / "Packages")
+        packages = directory / "Packages"
+        if packages.stat().st_size != int(size) or sha256(packages) != digest:
+            raise RuntimeError("Vendor package index integrity check failed")
+        candidates = [entry for entry in map(fields, packages.read_text().split("\n\n"))
+                      if entry.get("Package") == app["package"] and entry.get("Architecture") == "amd64"]
+        # Microsoft's signed index includes older versions, in ascending order.
+        package = max(candidates, key=cmp_to_key(lambda a, b: int(run("vercmp", a["Version"], b["Version"]))))
+        filename = package["Filename"]
+        prefix = "pool/main/" + app["package"][0] + "/" + app["package"] + "/"
+        if not filename.startswith(prefix) or ".." in filename or not re.fullmatch(r"[a-f0-9]{64}", package["SHA256"]):
+            raise RuntimeError("Unexpected vendor package location or hash")
+        return {"version": package["Version"], "source": base + filename, "size": int(package["Size"]),
+                "sha256": package["SHA256"], "signingKey": repository["fingerprint"], "architecture": "amd64",
+                "indexSha256": digest, "resolvedAt": now()}
+
+
+def download(manifest, state):
+    destination = CACHE / (manifest["sha256"] + ".deb")
+    if destination.is_file() and sha256(destination) == manifest["sha256"]:
+        return destination
+    partial = destination.with_suffix(".part")
+    offset = partial.stat().st_size if partial.exists() else 0
+    if offset > manifest["size"]:
+        partial.unlink()
+        offset = 0
+    save(state, "download", bytes=offset, totalBytes=manifest["size"])
+    if offset < manifest["size"]:
+        request = urllib.request.Request(manifest["source"], headers={"Range": "bytes=" + str(offset) + "-"} if offset else {})
+        with urllib.request.urlopen(request, timeout=45) as response:
+            resume = offset and response.status == 206 and response.headers.get("Content-Range", "").startswith("bytes " + str(offset) + "-")
+            if not resume:
+                offset = 0
+            with partial.open("ab" if resume else "wb") as output:
+                reported = 0.0
+                while chunk := response.read(1024 * 1024):
+                    output.write(chunk)
+                    offset += len(chunk)
+                    if offset > manifest["size"]:
+                        raise RuntimeError("Package exceeds its signed size")
+                    if time.monotonic() - reported >= 1:
+                        state.update(bytes=offset, updated=now())
+                        write_json(STATE, state)
+                        print(state["app"] + ": download " + str(offset * 100 // manifest["size"]) + "%", file=sys.stderr, flush=True)
+                        reported = time.monotonic()
+    if partial.stat().st_size != manifest["size"] or sha256(partial) != manifest["sha256"]:
+        partial.unlink(missing_ok=True)
+        raise RuntimeError("Package integrity check failed; retry preparation")
+    partial.replace(destination)
+    return destination
+
+
+def promote(staging, root, manifest, identifier):
+    write_json(staging / "manifest.json", manifest)
+    target = root / "versions" / identifier
+    if target.exists():
+        previous = read_json(target / "manifest.json")
+        if not previous or previous["version"] != manifest["version"]:
+            raise RuntimeError("Conflicting application version directory")
+        manifest = previous
+    else:
+        staging.rename(target)
+    pending = root / "current.new"
+    pending.unlink(missing_ok=True)
+    pending.symlink_to(Path("versions") / identifier)
+    pending.replace(root / "current")
+    return manifest
+
+
+def install_deb(app, artifact, manifest):
+    root = APPS / app["id"]
+    versions = root / "versions"
+    versions.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".install-", dir=versions) as temporary:
+        staging = Path(temporary)
+        members = run("ar", "t", str(artifact)).decode().splitlines()
+        data = next(member for member in members if member in {"data.tar.xz", "data.tar.gz", "data.tar.zst"})
+        compression = {"data.tar.xz": "-J", "data.tar.gz": "-z", "data.tar.zst": "--zstd"}[data]
+        producer = subprocess.Popen(["ar", "p", str(artifact), data], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            strip = str(len(app["extract"].split("/")))
+            unpacked = subprocess.run(["tar", compression, "-xf", "-", "-C", str(staging),
+                                       "--strip-components=" + strip, "--no-same-owner", app["extract"]],
+                                      stdin=producer.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            producer.stdout.close()
+            _, error = producer.communicate()
+            if producer.returncode or unpacked.returncode:
+                raise RuntimeError((error + unpacked.stderr).decode(errors="replace"))
+        finally:
+            if producer.poll() is None:
+                producer.kill()
+                producer.wait()
+        actual = run(str(staging / app["executable"]), "--version").decode().strip()
+        version = manifest["version"].rsplit("-", 1)[0]
+        if app["id"] == "chrome":
+            matches = actual == "Google Chrome " + version
+        else:
+            matches = actual.splitlines()[0] in {version, version + "-insider"}
+        if not matches:
+            raise RuntimeError("Installed application version does not match the signed package: " + actual)
+        installed = dict(manifest, installedAt=now(), actualVersion=actual)
+        return promote(staging, root, installed, manifest["sha256"])
+
+
+def prepare_deb(app, repository, state):
+    current = APPS / app["id"] / "current"
+    installed = read_json(current / "manifest.json")
+    if installed:
+        actual = run(str(current / app["executable"]), "--version").decode().strip()
+        if actual != installed["actualVersion"]:
+            raise RuntimeError("Persisted " + app["id"] + " is not compatible with this image")
+    else:
+        source = CACHE / (app["id"] + "-source.json")
+        manifest = read_json(source)
+        if manifest is None:
+            save(state, "resolve")
+            manifest = resolve_deb(app, repository)
+            write_json(source, manifest)
+        try:
+            artifact = download(manifest, state)
+        except urllib.error.HTTPError as error:
+            if error.code not in (404, 410):
+                raise
+            # Vendors can retire a package while an interrupted first prepare
+            # still has its old source cached. Authenticate the new index once.
+            save(state, "resolve")
+            manifest = resolve_deb(app, repository)
+            write_json(source, manifest)
+            artifact = download(manifest, state)
+        save(state, "install")
+        installed = install_deb(app, artifact, manifest)
+    return installed
+
+
+def stream(*args):
+    with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as process:
+        for line in process.stdout:
+            print(line.rstrip(), file=sys.stderr, flush=True)
+        if process.wait():
+            raise RuntimeError("Application installer failed: " + args[0])
+
+
+def prepare_cli(config, state):
+    root = APPS / "salesforce-cli"
+    current = root / "current"
+    installed = read_json(current / "manifest.json")
+    if installed:
+        actual = run(str(current / "node_modules/.bin/sf"), "--version").decode().strip()
+        if "@salesforce/cli/" + installed["version"] + " " not in actual:
+            raise RuntimeError("Persisted Salesforce CLI is not compatible with this image")
+        return installed
+    versions = root / "versions"
+    versions.mkdir(parents=True, exist_ok=True)
+    source = "https://registry.npmjs.org/@salesforce/cli/-/cli-" + config["cliVersion"] + ".tgz"
+    artifact = CACHE / ("salesforce-cli-" + config["cliVersion"] + ".tgz")
+
+    def authentic():
+        if not artifact.is_file():
+            return False
+        with artifact.open("rb") as stream:
+            digest = hashlib.file_digest(stream, "sha512").digest()
+        return "sha512-" + base64.b64encode(digest).decode() == config["cliIntegrity"]
+
+    if not authentic():
+        save(state, "download")
+        fetch(source, artifact)
+    if not authentic():
+        raise RuntimeError("Salesforce CLI download integrity check failed")
+    save(state, "install")
+    with tempfile.TemporaryDirectory(prefix=".install-", dir=versions) as temporary:
+        staging = Path(temporary)
+        stream("npm", "install", "--prefix", str(staging), "--no-audit", "--no-fund", "--save-exact",
+               str(artifact))
+        lock = read_json(staging / "package-lock.json")
+        package = lock["packages"]["node_modules/@salesforce/cli"]
+        if package["integrity"] != config["cliIntegrity"]:
+            raise RuntimeError("Salesforce CLI integrity differs from the selected release")
+        actual = run(str(staging / "node_modules/.bin/sf"), "--version").decode().strip()
+        if "@salesforce/cli/" + config["cliVersion"] + " " not in actual:
+            raise RuntimeError("Salesforce CLI did not report the selected version")
+        installed = {"version": package["version"], "source": source,
+                     "integrity": package["integrity"], "lockSha256": sha256(staging / "package-lock.json"),
+                     "actualVersion": actual, "installedAt": now()}
+        return promote(staging, root, installed, package["version"])
+
+
+def extension_versions(editor):
+    return sorted(line for line in run(editor, "--list-extensions", "--show-versions").decode().splitlines()
+                  if "@" in line)
+
+
+def prepare_extensions(config, state):
+    previous = state["apps"].get("extensions", {})
+    installed = dict(previous)
+    for editor, folder in (("code", "Code"), ("code-insiders", "Code - Insiders")):
+        state["app"] = editor + " extensions"
+        settings = PERSONAL_HOME / ".config" / folder / "User/settings.json"
+        if not settings.exists():
+            write_json(settings, {"update.mode": "none", "extensions.autoCheckUpdates": False,
+                                 "extensions.autoUpdate": False,
+                                 "salesforcedx-vscode-apex.java.home": "/usr/lib/jvm/java-21-openjdk",
+                                 "terminal.integrated.defaultProfile.linux": "zsh"})
+        versions = extension_versions(editor)
+        required = set(config["requiredExtensions"])
+        existing = {entry.split("@", 1)[0] for entry in versions}
+        if not required.issubset(existing):
+            save(state, "install")
+            for extension in config["extensions"]:
+                stream(editor, "--install-extension", extension)
+            versions = extension_versions(editor)
+            if not required.issubset({entry.split("@", 1)[0] for entry in versions}):
+                raise RuntimeError(editor + ": Salesforce extension installation is incomplete")
+        if editor not in installed or installed[editor]["versions"] != versions:
+            installed[editor] = {"source": "https://marketplace.visualstudio.com/",
+                                 "versions": versions, "installedAt": now()}
+        # A second-channel failure must retain the first channel's receipt.
+        state["apps"]["extensions"] = installed
+        write_json(STATE, state)
+    return installed
+
+
+def ready(config, state):
+    if state.get("state") != "completed":
+        return False
+    try:
+        for app in config["apps"]:
+            run(str(APPS / app["id"] / "current" / app["executable"]), "--version")
+        if "salesforce" in config:
+            run("sf", "--version")
+            for editor in ("code", "code-insiders"):
+                if not set(config["salesforce"]["requiredExtensions"]).issubset(
+                        {entry.split("@", 1)[0] for entry in extension_versions(editor)}):
+                    return False
+    except (OSError, RuntimeError):
+        return False
+    return True
+
+
+def prepare(config, state):
+    for app in config["apps"]:
+        state["app"] = app["id"]
+        installed = prepare_deb(app, config["repositories"][app["repository"]], state)
+        state["apps"][app["id"]] = installed
+        save(state, "ready")
+    if "salesforce" in config:
+        state["app"] = "salesforce-cli"
+        state["apps"]["salesforce-cli"] = prepare_cli(config["salesforce"], state)
+        save(state, "ready")
+        state["apps"]["extensions"] = prepare_extensions(config["salesforce"], state)
+        state["runtime"] = {"node": run("node", "--version").decode().strip(),
+                            "java": run("java", "--version").decode().strip()}
+    state.update(state="completed", step="ready", updated=now())
+    state.pop("app", None)
+    state.pop("bytes", None)
+    state.pop("totalBytes", None)
+    state.pop("error", None)
+    write_json(STATE, state)
+    return state
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--status", action="store_true")
+    parser.add_argument("--window", action="store_true", help="show first preparation in the desktop")
+    parser.add_argument("--console", action="store_true", help="show a concise result in a terminal")
+    args = parser.parse_args()
+    config = configuration()
+    if args.window:
+        existing = read_json(STATE, {})
+        if ready(config, existing):
+            return 0
+        return subprocess.run(["konsole", "--hold", "-p", "LocalTabTitleFormat=Application preparation",
+                               "-e", "workstation-apps", "--console"]).returncode
+    STATE.parent.mkdir(parents=True, exist_ok=True)
+    CACHE.mkdir(parents=True, exist_ok=True)
+    with (STATE.parent / "preparation.lock").open("a+") as lock:
+        if args.status:
+            state = read_json(STATE, {"state": "pending", "step": "queued", "apps": {}})
+            if state["state"] == "running":
+                try:
+                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    state.update(state="failed", error="Preparation was interrupted. Run prepare to resume.")
+                except BlockingIOError:
+                    pass
+            print(json.dumps(state))
+            return 0
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        state = read_json(STATE, {"state": "pending", "step": "queued", "apps": {}})
+        try:
+            result = prepare(config, state)
+        except Exception as error:
+            state.update(state="failed", error=str(error), updated=now())
+            write_json(STATE, state)
+            print("Preparation failed: " + str(error) + ". Run prepare to resume.", file=sys.stderr)
+            if not args.console:
+                print(json.dumps(state))
+            return 1
+        print("Applications ready.", file=sys.stderr)
+        print("You can close this window." if args.console else json.dumps(result))
+        return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -19,7 +19,8 @@ def invoke(program, *args, **kwargs):
         # /s removes only the outer pair; quoted executable and profile paths survive.
         invocation = '"{}" /d /s /c "{}"'.format(
             os.environ.get("COMSPEC", "cmd.exe"), subprocess.list2cmdline(invocation))
-    return subprocess.run(invocation, text=True, encoding="utf-8", capture_output=True, timeout=300, **kwargs)
+    return subprocess.run(invocation, text=True, encoding="utf-8", capture_output=True,
+                          timeout=kwargs.pop("timeout", 300), **kwargs)
 
 
 def command(*args, cli=CLI, env=None):
@@ -37,14 +38,17 @@ def command(*args, cli=CLI, env=None):
                             for path in files if path.is_file()]
         result = with_certificate_dialog(fingerprints, lambda: invoke(cli, *args, env=env))
     else:
-        result = invoke(cli, *args, env=env)
+        result = invoke(cli, *args, env=env, timeout=1500 if args[0] == "prepare" else 300)
     if result.returncode:
         raise AssertionError(result.stderr or result.stdout)
     return json.loads(result.stdout)
 
 
 def docker(*args):
-    return subprocess.run(["docker", *args], text=True, encoding="utf-8", capture_output=True, check=True).stdout.strip()
+    result = subprocess.run(["docker", *args], text=True, encoding="utf-8", capture_output=True)
+    if result.returncode:
+        raise AssertionError(result.stderr or result.stdout)
+    return result.stdout.strip()
 
 
 class CommandAcceptance(unittest.TestCase):

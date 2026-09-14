@@ -2,8 +2,8 @@ async page => {
     // Run only against the dedicated installation created by browser_acceptance.py.
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.locator('canvas').first().waitFor({ state: 'visible' });
-    await page.keyboard.press('Control+Alt+KeyT');
-    await page.waitForTimeout(1500);
+    // desktop_terminal.py activates the intended Konsole before browser input.
+    await page.waitForTimeout(500);
     await page.keyboard.type("printf '%s\\n' '", { delay: 30 });
     const cdp = await page.context().newCDPSession(page);
     // keyboard.type uses insertText for non-US characters. A streamed X11

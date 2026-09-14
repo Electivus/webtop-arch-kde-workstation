@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -eu
+editor="$HOME/.local/share/electivus/apps/code/current/bin/code"
+if [ ! -x "$editor" ]; then
+    printf '%s\n' 'VS Code Stable is not ready. Run workstation-apps or use Prepare applications.' >&2
+    exit 1
+fi
+exec "$editor" "$@"

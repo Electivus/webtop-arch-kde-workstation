@@ -8,3 +8,4 @@
 !distribution/
 !distribution/windows/
 !distribution/windows/**
+**/__pycache__

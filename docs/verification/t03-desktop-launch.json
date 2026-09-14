@@ -1,0 +1,47 @@
+{
+  "status": {
+    "container": "ew-sf-f3f19f669d",
+    "containerId": "38994ef68234a6817398e0a66ef2d2c705dd82c0eda2936e394082e5d8318ffc",
+    "engine": {
+      "context": "desktop-linux",
+      "os": "Docker Desktop",
+      "kernel": "7.0.12-linuxkit",
+      "cpus": 6,
+      "memoryMiB": 8000,
+      "backend": "VMM (Docker Desktop setting)"
+    },
+    "healthy": true,
+    "homeVolume": "ew-sf-f3f19f669d-home",
+    "image": "electivus/webtop-arch-kde-salesforce:t03",
+    "imageId": "sha256:30a6d43e7131ebb783594f686206489d66e4afcfdde2aa01efb46d0506b27209",
+    "limits": {
+      "cpus": 4,
+      "memoryMiB": 6144
+    },
+    "state": "running",
+    "upstreamDigest": "sha256:ed197a60c161b5d45a0d0137a5c47ecd136964c57791bf3151d01ad41ac6b988",
+    "url": "https://localhost:13410/",
+    "version": "2026.09.14-t03"
+  },
+  "launches": [
+    {
+      "command": [
+        "kioclient",
+        "exec",
+        "/config/projects/sample.code-workspace"
+      ],
+      "title": "Welcome - sample (Workspace) - Visual Studio Code - Insiders",
+      "screenshot": ".local/t03-default-project.png"
+    },
+    {
+      "command": [
+        "gtk-launch",
+        "code",
+        "/config/projects/sample"
+      ],
+      "title": "sample - Visual Studio Code",
+      "screenshot": ".local/t03-explicit-stable.png"
+    }
+  ],
+  "result": "passed"
+}

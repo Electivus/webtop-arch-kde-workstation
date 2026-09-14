@@ -1,0 +1,12 @@
+{
+  "editor": "Visual Studio Code - Insiders",
+  "version": "1.138.0-insider",
+  "result": "passed",
+  "step": "lwc-completion",
+  "apexDiagnostic": "Missing ';' at '}'",
+  "apexExtension": "67.17.2",
+  "apexRepair": "syntax error cleared after adding the missing semicolon",
+  "apexCompletion": "System.debug method",
+  "lwcCompletion": "lightning-button label attribute",
+  "lwcExtension": "67.17.2"
+}

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Visual Studio Code Insiders
+Comment=Open files and projects with the default editor
+Exec=code-insiders %F
+Icon=accessories-text-editor
+Terminal=false
+StartupWMClass=code-insiders
+Categories=Development;IDE;
+MimeType=text/plain;application/x-code-workspace;application/json;text/javascript;text/x-python;text/x-java;text/x-shellscript;

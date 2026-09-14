@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Visual Studio Code Stable
+Comment=Open a project with the stable editor
+Exec=code %F
+Icon=accessories-text-editor
+Terminal=false
+StartupWMClass=code
+Categories=Development;IDE;
+MimeType=text/plain;application/x-code-workspace;
