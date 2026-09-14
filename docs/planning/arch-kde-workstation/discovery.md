@@ -1,6 +1,6 @@
 # Descoberta e entrevista - Planning context
 
-Observações técnicas de 2026-09-13 e entrevista encerrada em 2026-09-14, horário de America/Bahia. Este documento reúne evidências e perguntas; o [Decision ledger](decision-ledger.md) é a fonte das decisões confirmadas. O usuário confirmou o entendimento consolidado na resposta Q27. A especificação final permanece como próxima etapa de planejamento.
+Observações técnicas de 2026-09-13 e entrevista encerrada em 2026-09-14, horário de America/Bahia. Este documento reúne evidências e perguntas; o [Decision ledger](decision-ledger.md) é a fonte das decisões confirmadas. O usuário confirmou o entendimento consolidado na resposta Q27. A [especificação foi publicada na issue #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1); a decomposição em tickets permanece como próxima etapa de planejamento.
 
 ## Evidência local
 
@@ -162,4 +162,10 @@ A fronteira de escolhas funcionais da entrevista está vazia. O entendimento con
 
 DEC-035 registra os nomes públicos confirmados: `electivus/webtop-arch-kde-base` e `electivus/webtop-arch-kde-salesforce`. O entendimento inclui o perfil inicial `linux/amd64` correspondente ao notebook e comandos PowerShell para instalação e manutenção. A confirmação global reafirma as demais decisões ativas, sem duplicá-las no ledger. DEC-014 permanece substituída por DEC-019.
 
-O encerramento da entrevista é um checkpoint intermediário de planejamento: a especificação e os tickets ainda precisam cobrir as decisões aplicáveis antes do checkpoint final. Não há imagens construídas, testes de execução ou publicação. A implementação deverá resolver e verificar os mecanismos de armazenamento e caminhos Docker/Compose, preparo de aplicativos, recuperação e desempenho; essas questões técnicas têm requisitos definidos e não são provas de viabilidade já obtidas. Caso uma restrição confirmada não possa ser atendida, será necessário retornar ao planejamento.
+O encerramento da entrevista foi registrado em checkpoint intermediário de planejamento. A especificação publicada cobre as decisões aplicáveis; a cobertura dos tickets ainda é necessária antes do checkpoint final. Não há imagens construídas, testes de execução ou publicação no Docker Hub. A implementação deverá resolver e verificar os mecanismos de armazenamento e caminhos Docker/Compose, preparo de aplicativos, recuperação e desempenho; essas questões técnicas têm requisitos definidos e não são provas de viabilidade já obtidas. Caso uma restrição confirmada não possa ser atendida, será necessário retornar ao planejamento.
+
+## Especificação publicada
+
+Em 2026-09-14, o usuário solicitou `to-spec`. A [issue #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1) foi publicada no tracker configurado com a etiqueta `ready-for-agent`; a cópia local é [spec.md](spec.md). O texto contém 56 histórias de usuário, consequências para as 34 decisões ativas e 16 cenários de teste, preservando os testes de uso confirmados em Q27.
+
+O corpo publicado foi comparado com a cópia local e validado pelo contrato Planning. Seu marcador referencia o checkpoint da entrevista `ae055605e0972ad07787cc55a5d35fbe6b02b191`, cuja presença na branch remota configurada foi verificada antes da publicação. Após publicar, a cobertura `specification` das 34 decisões foi concluída pelo helper Planning, usando a URL da issue como evidência. As coberturas `tickets` e `verification` permanecem pendentes.

@@ -13,11 +13,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -29,11 +29,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -45,11 +45,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -61,11 +61,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -77,11 +77,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -93,11 +93,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -109,11 +109,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -125,11 +125,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -141,11 +141,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -158,11 +158,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Constraints: Nao incluir uma imagem dev geral nem preparar uma hierarquia adicional nesta entrega.
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -174,11 +174,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -190,11 +190,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -206,11 +206,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -238,11 +238,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -254,11 +254,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -270,11 +270,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -286,11 +286,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -303,11 +303,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Obligations: specification, tickets, verification
 - Supersedes: DEC-014
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -319,11 +319,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -335,11 +335,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -351,11 +351,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -367,11 +367,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -383,11 +383,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -399,11 +399,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -415,11 +415,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -431,11 +431,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -447,11 +447,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -463,11 +463,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -479,11 +479,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -495,11 +495,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -512,11 +512,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Constraints: Aplica-se aos programas extras instalados pelo usuario; os componentes fornecidos pelas imagens continuam sujeitos aos testes de entrega.
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -528,11 +528,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -544,11 +544,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
 
@@ -560,10 +560,10 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - ADR: none
 - Obligations: specification, tickets, verification
 - Coverage:
-  - specification: pending
+  - specification: complete
   - tickets: pending
   - verification: pending
 - Evidence:
-  - specification: none
+  - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: none
   - verification: none
