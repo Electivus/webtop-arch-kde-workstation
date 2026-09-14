@@ -1,6 +1,6 @@
 # Evidências técnicas - Planning context
 
-Levantamento de 2026-09-13, horário de America/Bahia. Os artefatos Markdown retornados pelo Scrape Golden foram lidos. Este registro distingue fatos das fontes, recomendações e escolhas técnicas delegadas; decisões materiais confirmadas pertencem ao [Decision ledger](decision-ledger.md).
+Levantamento técnico de 2026-09-13, atualizado com as decisões da entrevista até 2026-09-14, horário de America/Bahia. Os artefatos Markdown retornados pelo Scrape Golden foram lidos. Este registro distingue fatos das fontes, recomendações e escolhas técnicas delegadas; decisões materiais confirmadas pertencem ao [Decision ledger](decision-ledger.md).
 
 ## Aplicativos oficiais e imagem pública
 
@@ -10,7 +10,7 @@ Os [termos adicionais do Chrome](https://www.google.com/chrome/terms/) se aplica
 
 Empacotamento escolhido em DEC-021: a imagem pública fornece a preparação e as dependências; cada instalação obtém os aplicativos oficiais diretamente dos fornecedores para seu armazenamento persistente. Isso preserva os produtos solicitados, com um primeiro preparo automático dependente de internet, progresso visível e retomada após falhas.
 
-O preparo deve ser retomável após falhas e manter versões, origem e integridade dos artefatos instalados registradas. A versão da imagem e as versões efetivas dos aplicativos são identificadores diferentes. A disponibilidade futura de um download específico e a política de atualização desses aplicativos ainda precisam ser tratadas; fixar uma tag de imagem sozinho não fixa um download feito depois.
+O preparo deve ser retomável após falhas e manter versões, origem e integridade dos artefatos instalados registradas. A versão da imagem e as versões efetivas dos aplicativos são identificadores diferentes. DEC-028 define atualização explícita dos aplicativos por comando, independente da imagem, registrando as versões efetivas; DEC-029 inclui os aplicativos persistidos no backup. A disponibilidade futura de um download específico ainda precisa ser tratada na implementação; fixar uma tag de imagem sozinho não fixa um download feito depois.
 
 Não houve instalação, construção de imagem ou validação de interface gráfica neste levantamento.
 
@@ -44,7 +44,7 @@ A [ArchWiki sobre listas de pacotes](https://wiki.archlinux.org/title/Pacman/Tip
 
 A [manutenção do Arch](https://wiki.archlinux.org/title/System_maintenance#Partial_upgrades_are_unsupported) exige atualizações completas quando as bases de pacotes são sincronizadas e alerta que pacotes locais/AUR podem precisar ser recompilados quando suas bibliotecas mudam. Assim, reaplicar um conjunto de binários antigos sobre uma base nova não é uma preservação confiável por si só.
 
-Abordagem escolhida em DEC-022: inventário persistente e comando de restauração assistida, separando pacotes oficiais de pacotes locais/AUR, com viabilidade a validar na implementação. Um nome ausente ou uma compilação que falhe deve aparecer no resultado, com possibilidade de retomada, sem declarar sucesso completo. Pacotes locais não disponíveis em repositórios podem exigir seus arquivos ou fontes; a lista de nomes sozinha não garante sua recuperação.
+Abordagem escolhida em DEC-022: inventário persistente e comando de restauração assistida, separando pacotes oficiais de pacotes locais/AUR, com viabilidade a validar na implementação. Um nome ausente ou uma compilação que falhe deve aparecer no resultado, com possibilidade de retomada, sem declarar sucesso completo. DEC-032 permite usar o desktop atualizado com os aplicativos que funcionaram, consultar as falhas, tentar novamente ou recuperar o backup. Pacotes locais não disponíveis em repositórios podem exigir seus arquivos ou fontes; a lista de nomes sozinha não garante sua recuperação.
 
 Esse caminho tem apoio documental, mas a integração com a imagem ainda precisa de um ensaio representativo de instalação, recriação e restauração antes de ser considerada validada. Não há promessa de preservar versões binárias idênticas ou qualquer modificação arbitrária do sistema.
 
@@ -59,3 +59,9 @@ A implementação precisará adotar e documentar uma estratégia de caminhos com
 ## Dimensionamento
 
 DEC-023 escolhe equilíbrio entre Windows e Linux, partindo de 8 GiB de RAM e 6 CPUs lógicas para a VM Docker. O ponto inicial precisa ser ajustado por testes que considerem os demais containers, a carga do Windows, o KDE, o Chrome e o servidor de linguagem Apex. A alocação atual observada foi de 4 GiB; nenhuma configuração do Docker foi alterada. O ajuste final depende de medições com o fluxo escolhido.
+
+## Configuração de rede e ciclo da sessão
+
+DEC-034 define suporte opcional assistido para proxy e certificados corporativos, com diagnóstico de conexão e configurações mantidas fora da imagem pública. A implementação deverá usar os certificados de confiança necessários preservando a verificação TLS e tratar as configurações dos aplicativos que não herdam automaticamente o proxy de outro processo. A conectividade real dos aplicativos nessa configuração ainda não foi testada.
+
+DEC-033 define que fechar a aba mantém a sessão até o comando de parar. A validação deve reabrir o acesso e confirmar a continuidade de uma tarefa e de um aplicativo, distinguindo desconexão do navegador de encerramento da workstation. Esse comportamento ainda não foi verificado na imagem derivada.

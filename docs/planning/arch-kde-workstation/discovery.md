@@ -1,6 +1,6 @@
 # Descoberta e entrevista - Planning context
 
-Observações de 2026-09-13, horário de America/Bahia. Este documento reúne evidências e perguntas; o [Decision ledger](decision-ledger.md) é a fonte das decisões confirmadas. A entrevista está em andamento, sem especificação final.
+Observações técnicas de 2026-09-13 e entrevista atualizada em 2026-09-14, horário de America/Bahia. Este documento reúne evidências e perguntas; o [Decision ledger](decision-ledger.md) é a fonte das decisões confirmadas. As rodadas de escolhas foram respondidas; a confirmação do entendimento consolidado está pendente, sem especificação final.
 
 ## Evidência local
 
@@ -55,26 +55,26 @@ Workstation Arch/KDE via Webtop
 |-- Uso: desenvolvimento [DEC-006]
 |   |-- Aplicativos e terminal definidos [DEC-011, DEC-012]
 |   |-- Controle do Docker Desktop [DEC-013]
-|   |-- Configuracao de proxy e certificados corporativos [Q26]
-|   `-- Carga representativa, recursos e criterios de desempenho
+|   |-- Configuracao opcional assistida de proxy e certificados [DEC-034]
+|   `-- Equilibrio Windows/Linux, com ajuste de recursos por testes [DEC-023]
 |-- Acesso individual no proprio notebook [DEC-007]
 |   |-- Entrada direta no desktop local [DEC-016]
 |   |-- Ingles, localizacao Brasil, ABNT2 e America/Bahia [DEC-017]
 |   |-- Inicio sob demanda no Windows [DEC-025]
 |   |-- Uma tela Full HD, Insiders e Chrome [DEC-031]
-|   `-- Encerramento da sessao [Q25]
+|   `-- Manter a sessao ao fechar a aba, ate o comando de parar [DEC-033]
 |-- Distribuicao publica e generica na Electivus [DEC-008]
 |   |-- Variante Salesforce [DEC-009]
 |   |-- Duas imagens: base -> Salesforce [DEC-010]
 |   |-- Dois repositorios, versoes coordenadas, tags fixas e stable [DEC-018]
 |   |-- Publicacao automatica semanal e sob demanda apos testes [DEC-026]
-|   |-- Nomes exatos e arquiteturas [a detalhar]
+|   |-- Nomes de trabalho e linux/amd64 [escolhas tecnicas para revisao final]
 |   `-- Atualizacao da imagem e dos aplicativos por comando [DEC-027, DEC-028]
 |-- Estado e dados
 |   |-- Preservar programas pacman/AUR se viavel [DEC-019]
 |   |-- Projetos no Linux e pasta de troca no Windows [DEC-015]
 |   |-- Backup no Windows antes das atualizacoes e sob demanda; reter dois [DEC-029]
-|   `-- Falhas na restauracao de pacotes pessoais [Q24]
+|   `-- Usar ambiente atualizado com relatorio, nova tentativa e recuperacao [DEC-032]
 `-- Validacao no destino [DEC-030]
     |-- Evidencias que o VMM local consegue fornecer
     `-- Verificacao especifica no notebook com Hyper-V
@@ -145,12 +145,18 @@ Decisões registradas nesta rodada: DEC-020, DEC-021, DEC-022, DEC-023, DEC-024,
 
 Decisões registradas nesta rodada: DEC-026, DEC-027, DEC-028, DEC-029, DEC-030, DEC-031. Q18-Q23 foram respondidas. A publicação e a implementação não começaram. As respostas permitem definir agora o comportamento após falhas de restauração de pacotes pessoais e o encerramento da sessão.
 
-## Quinta rodada aberta
+## Quinta rodada respondida
 
-| Pergunta | Escolha pendente | Recomendacao apresentada |
+| Pergunta | Estado | Resposta |
 | --- | --- | --- |
-| Q24 | Falha na restauracao de programas extras pacman/AUR | Disponibilizar o ambiente atualizado com os aplicativos restaurados, relatar falhas e permitir nova tentativa ou recuperacao do backup |
-| Q25 | Fechamento da aba do Webtop | Manter a sessao e seus processos ate o comando de parar |
-| Q26 | Proxy e certificados corporativos | Configuracao opcional assistida na instalacao, com diagnostico de conexao e dados mantidos somente no notebook |
+| Q24 | Respondida: DEC-032 | Disponibilizar o ambiente atualizado com os aplicativos restaurados, relatar falhas e permitir nova tentativa ou recuperacao do backup |
+| Q25 | Respondida: DEC-033 | Manter a sessao e seus processos ate o comando de parar |
+| Q26 | Respondida: DEC-034 | Configuracao opcional assistida na instalacao, com diagnostico de conexao e dados mantidos somente no notebook |
 
-Q24-Q26 foram apresentadas e aguardam resposta. Q24 trata de programas extras; falhas nos componentes fornecidos pelas imagens continuam sujeitas aos testes de entrega. As escolhas técnicas delegadas serão consolidadas com o entendimento final da entrevista, incluindo os nomes propostos no Docker Hub, a arquitetura `linux/amd64` do notebook, os comandos PowerShell e o procedimento de instalação no destino.
+Decisões registradas nesta rodada: DEC-032, DEC-033, DEC-034. Q24-Q26 foram respondidas em 2026-09-14, após serem reapresentadas a pedido do usuário. Q24 trata de programas extras; falhas nos componentes fornecidos pelas imagens continuam sujeitas aos testes de entrega.
+
+## Revisão do entendimento
+
+A fronteira de escolhas funcionais da entrevista está vazia. O entendimento consolidado está em [Família de imagens](image-family-proposal.md), com as decisões materiais no ledger. As escolhas técnicas apresentadas para a revisão incluem os nomes `electivus/webtop-arch-kde-base` e `electivus/webtop-arch-kde-salesforce`, a arquitetura `linux/amd64` correspondente ao notebook e comandos PowerShell para instalação e manutenção.
+
+A confirmação global desse entendimento ainda está pendente. Não há especificação ou tickets com cobertura concluída, imagens construídas, testes de execução ou publicação. A implementação deverá resolver e verificar os mecanismos de armazenamento e caminhos Docker/Compose, preparo de aplicativos, recuperação e desempenho; essas questões técnicas têm requisitos definidos e não são provas de viabilidade já obtidas. Caso uma restrição confirmada não possa ser atendida, será necessário retornar ao planejamento.

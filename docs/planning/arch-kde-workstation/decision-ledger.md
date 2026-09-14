@@ -502,3 +502,52 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
   - specification: none
   - tickets: none
   - verification: none
+
+## DEC-032
+- Status: active
+- Decision: Quando a restauracao de programas extras pacman/AUR falhar apos uma atualizacao, disponibilizar o ambiente atualizado com os aplicativos que funcionaram, relatar as falhas e permitir nova tentativa ou recuperacao do backup.
+- Context: Na resposta Q24, o usuario escolheu usar o ambiente atualizado com relatorio das falhas e recuperacao disponivel; DEC-019 condiciona a preservacao a viabilidade e DEC-022 define restauracao assistida.
+- Rationale: Permitir o uso do desktop quando programas pessoais especificos nao puderem ser recuperados, mantendo visibilidade das falhas e um caminho de recuperacao.
+- ADR: none
+- Constraints: Aplica-se aos programas extras instalados pelo usuario; os componentes fornecidos pelas imagens continuam sujeitos aos testes de entrega.
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: pending
+  - tickets: pending
+  - verification: pending
+- Evidence:
+  - specification: none
+  - tickets: none
+  - verification: none
+
+## DEC-033
+- Status: active
+- Decision: Manter a sessao da workstation e seus processos em execucao ao fechar a aba do Webtop, ate o usuario executar o comando de parar.
+- Context: Na resposta Q25, o usuario escolheu manter a sessao ate o comando de parar; DEC-025 define inicio sob demanda pelo Windows.
+- Rationale: Evitar que fechar uma aba interrompa terminais, aplicativos ou tarefas em andamento.
+- ADR: none
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: pending
+  - tickets: pending
+  - verification: pending
+- Evidence:
+  - specification: none
+  - tickets: none
+  - verification: none
+
+## DEC-034
+- Status: active
+- Decision: Oferecer configuracao opcional assistida de proxy e certificados corporativos na instalacao, com diagnostico de conexao e configuracoes mantidas somente no notebook, fora da imagem publica.
+- Context: Na resposta Q26, o usuario escolheu configuracao opcional assistida com diagnostico; DEC-008 exige imagens publicas e genericas, sem configuracoes ou conteudo corporativos.
+- Rationale: Permitir preparar a conectividade exigida por cada ambiente sem incorporar dados corporativos aos artefatos reutilizaveis.
+- ADR: none
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: pending
+  - tickets: pending
+  - verification: pending
+- Evidence:
+  - specification: none
+  - tickets: none
+  - verification: none

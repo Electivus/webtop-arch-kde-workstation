@@ -1,6 +1,6 @@
 # Família de imagens - Planning context
 
-Status: composição, herança, versões, publicação, atualização e backup confirmados; detalhes de recuperação e encerramento da sessão ainda em discussão. O [Decision ledger](decision-ledger.md) registra as escolhas confirmadas; este documento não as substitui. DEC-009 inclui Salesforce, DEC-010 limita a entrega atual a duas imagens e DEC-018 define dois repositórios Docker Hub com versões coordenadas, tags fixas e alias stable.
+Status em 2026-09-14: escolhas da entrevista registradas; entendimento consolidado aguardando confirmação global do usuário. O [Decision ledger](decision-ledger.md) registra as escolhas confirmadas; este documento não as substitui. DEC-009 inclui Salesforce, DEC-010 limita a entrega atual a duas imagens e DEC-018 define dois repositórios Docker Hub com versões coordenadas, tags fixas e alias stable. A implementação e os testes de execução estão pendentes.
 
 ## Variante e versão
 
@@ -43,7 +43,7 @@ O Docker compartilha camadas com conteúdo idêntico; não é necessário execut
 
 O pacote de programas fornecido por uma variante é distinto dos arquivos e das preferências do usuário. A documentação Webtop/Selkies informa que pacotes instalados manualmente no sistema são perdidos quando o container é recriado; o diretório pessoal `/config` só persiste se tiver armazenamento persistente configurado.
 
-DEC-019 substitui DEC-014 e condiciona a preservação dos programas instalados com pacman/AUR à viabilidade técnica. DEC-022 escolhe inventário persistente e restauração assistida, separando pacman e AUR, com viabilidade a validar na implementação. A conciliação com novas versões da base, falhas de restauração e o procedimento de recuperação ainda precisam ser detalhados. Voltar a uma imagem anterior não reverte automaticamente alterações no estado pessoal ou no sistema preservado.
+DEC-019 substitui DEC-014 e condiciona a preservação dos programas instalados com pacman/AUR à viabilidade técnica. DEC-022 escolhe inventário persistente e restauração assistida, separando pacman e AUR, com viabilidade a validar na implementação. DEC-032 permite usar o ambiente atualizado com os aplicativos que funcionaram quando a restauração de programas extras falhar, apresentando relatório, nova tentativa e recuperação do backup. Essa tolerância se aplica aos programas extras do usuário; os componentes fornecidos pelas imagens continuam sujeitos aos testes de entrega. A conciliação dos pacotes com novas versões da base e o mecanismo de recuperação ainda precisam ser implementados e verificados. Voltar a uma imagem anterior não reverte automaticamente alterações no estado pessoal ou no sistema preservado.
 
 DEC-028 define atualização de VS Code Stable/Insiders, Chrome, Salesforce CLI e extensões por comando explícito, independente da imagem, com registro das versões efetivas. DEC-029 exige backup local no Windows de projetos, perfil pessoal, aplicativos persistidos e inventário antes das atualizações e sob demanda, retendo os dois backups concluídos mais recentes. O procedimento deve permitir recuperar dados e versões de forma coerente.
 
@@ -60,6 +60,18 @@ DEC-015 mantém projetos no armazenamento Linux e uma pasta de troca com Windows
 - DEC-024: VS Code Insiders como editor padrão, mantendo Stable disponível separadamente.
 - DEC-025: início sob demanda por comando ou atalho no Windows.
 - DEC-031: validação visual com uma tela Full HD de 1920 x 1080, Insiders com projeto Salesforce e Chrome.
+- DEC-033: fechar a aba do Webtop mantém a sessão e seus processos até o comando de parar.
+- DEC-034: configuração opcional assistida de proxy e certificados corporativos na instalação, com diagnóstico de conexão; as configurações permanecem no notebook, fora da imagem pública.
+
+## Instalação e verificação a implementar
+
+O perfil inicial será `linux/amd64`, correspondente ao Latitude 5450 com Core Ultra 7 165U e 32 GB. A instalação parte de Docker Desktop já disponível com containers Linux; o notebook de destino utiliza Hyper-V e o notebook de teste utiliza Docker VMM. O fluxo Windows será documentado em PowerShell, com operações para instalar, iniciar, parar, atualizar a imagem, atualizar aplicativos, fazer backup, restaurar e diagnosticar. O acesso ao desktop será por um endpoint HTTPS limitado ao próprio notebook.
+
+Os comandos e as instruções necessários ao uso público deverão acompanhar a distribuição no Docker Hub. A solução de entrega desses arquivos será detalhada na implementação, preservando a visibilidade privada atual do repositório de código.
+
+A verificação deverá cobrir as duas variantes: desktop e localização ABNT2; aplicativos oficiais e extensões nos dois canais do VS Code; retomada do preparo inicial; persistência de projetos e preferências; troca de arquivos com Windows; backup e recuperação; inventário e restauração assistida, incluindo falha de pacote extra; manutenção da sessão ao fechar a aba; e configuração opcional de rede com diagnóstico.
+
+O fluxo Docker/Compose será verificado com um projeto que use arquivos do armazenamento Linux, leitura e escrita em volume montado e construção a partir de contexto local. O dimensionamento será medido em Full HD com Insiders, um projeto Salesforce e Chrome, partindo dos recursos propostos em DEC-023. A automação de entrega só promoverá `stable` após seus testes; a evidência da primeira publicação identificará os testes VMM realizados e a verificação Hyper-V ainda necessária no destino.
 
 ## Fontes primárias
 
