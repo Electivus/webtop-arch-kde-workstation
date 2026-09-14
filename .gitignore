@@ -1,0 +1,4 @@
+.local/
+.babysit-pr/
+.playwright-cli/
+__pycache__/

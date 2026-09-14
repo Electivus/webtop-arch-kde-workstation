@@ -1,0 +1,36 @@
+name: Checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  desktop-lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check Bash
+        run: shellcheck images/base/root/custom-cont-init.d/*.sh images/base/root/usr/local/bin/workstation-healthcheck
+      - name: Check PowerShell syntax
+        shell: pwsh
+        run: |
+          $failed = $false
+          Get-ChildItem scripts,tests -Recurse -Include *.ps1,*.psm1 | ForEach-Object {
+            $parseErrors = $null
+            $null = [Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$parseErrors)
+            if ($parseErrors) { $parseErrors | Write-Error -ErrorAction Continue; $failed = $true }
+          }
+          if ($failed) { exit 1 }
+      - name: Build desktop image
+        run: docker build --file images/base/Dockerfile --build-arg VERSION=ci --build-arg REVISION="$GITHUB_SHA" --tag electivus/webtop-arch-kde-base:t01 .
+      - name: Exercise public lifecycle commands
+        shell: pwsh
+        run: ./tests/Test-Lifecycle.ps1 -MemoryMiB 2560
+      - name: Preserve resources owned by another installation
+        shell: pwsh
+        run: ./tests/Test-ResourceIsolation.ps1
