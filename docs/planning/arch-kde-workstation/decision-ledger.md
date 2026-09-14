@@ -406,3 +406,99 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
   - specification: none
   - tickets: none
   - verification: none
+
+## DEC-026
+- Status: active
+- Decision: Produzir e publicar automaticamente as duas imagens pelo GitHub Actions, em rotina semanal e sob demanda, promovendo stable somente apos os testes definidos para a entrega.
+- Context: Na resposta Q18, o usuario escolheu publicacao automatica apos testes, semanal e sob demanda; DEC-018 ja define dois repositorios, versoes coordenadas e tags fixas mais stable.
+- Rationale: Manter entregas regulares e permitir atualizacoes extraordinarias com o mesmo processo de validacao.
+- ADR: none
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: pending
+  - tickets: pending
+  - verification: pending
+- Evidence:
+  - specification: none
+  - tickets: none
+  - verification: none
+
+## DEC-027
+- Status: active
+- Decision: Aplicar novas versoes da imagem no notebook por comando explicito, com backup antes da troca.
+- Context: Na resposta Q19, o usuario escolheu atualizacao por comando com backup antes da troca; a workstation inicia sob demanda conforme DEC-025.
+- Rationale: Preservar o controle do usuario sobre a interrupcao da sessao e manter um ponto de recuperacao anterior a atualizacao.
+- ADR: none
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: pending
+  - tickets: pending
+  - verification: pending
+- Evidence:
+  - specification: none
+  - tickets: none
+  - verification: none
+
+## DEC-028
+- Status: active
+- Decision: Atualizar VS Code Stable/Insiders, Google Chrome, Salesforce CLI e extensoes por comando explicito, independente da imagem, registrando as versoes efetivas.
+- Context: Na resposta Q20, o usuario escolheu atualizacao por comando com versoes registradas; DEC-021 preve aplicativos oficiais preparados para armazenamento persistente.
+- Rationale: Permitir atualizar as ferramentas separadamente da imagem e identificar o conjunto efetivamente instalado para diagnostico e reproducao do ambiente.
+- ADR: none
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: pending
+  - tickets: pending
+  - verification: pending
+- Evidence:
+  - specification: none
+  - tickets: none
+  - verification: none
+
+## DEC-029
+- Status: active
+- Decision: Fazer backup local no Windows de projetos, perfil pessoal, aplicativos persistidos e inventario antes das atualizacoes e sob demanda, mantendo os dois backups concluidos mais recentes.
+- Context: Na resposta Q21, o usuario escolheu backup antes das atualizacoes e por comando manual, com retencao das duas copias concluidas mais recentes.
+- Rationale: Manter recuperacao do estado pessoal com armazenamento limitado e excluir da retencao as tentativas incompletas.
+- ADR: none
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: pending
+  - tickets: pending
+  - verification: pending
+- Evidence:
+  - specification: none
+  - tickets: none
+  - verification: none
+
+## DEC-030
+- Status: active
+- Decision: Permitir a primeira publicacao apos os testes locais no Docker VMM, declarando a validacao real em Hyper-V como pendente e entregando um roteiro executavel de verificacao para o notebook de destino.
+- Context: Na resposta Q22, o usuario escolheu publicar apos testes locais e entregar a verificacao para o destino, que nao esta acessivel nesta sessao; DEC-002 mantem Hyper-V como requisito.
+- Rationale: Avancar com a evidencia disponivel sem apresentar testes no VMM como comprovacao de funcionamento real em Hyper-V.
+- ADR: none
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: pending
+  - tickets: pending
+  - verification: pending
+- Evidence:
+  - specification: none
+  - tickets: none
+  - verification: none
+
+## DEC-031
+- Status: active
+- Decision: Usar uma tela Full HD de 1920 x 1080, VS Code Insiders com projeto Salesforce e Google Chrome como cenario visual de validacao.
+- Context: Na resposta Q23, o usuario escolheu uma tela Full HD com Insiders e Chrome para orientar os testes de uso no notebook.
+- Rationale: Avaliar a experiencia com uma carga representativa do uso escolhido e dimensionar recursos com esse perfil.
+- ADR: none
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: pending
+  - tickets: pending
+  - verification: pending
+- Evidence:
+  - specification: none
+  - tickets: none
+  - verification: none

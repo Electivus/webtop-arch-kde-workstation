@@ -55,23 +55,27 @@ Workstation Arch/KDE via Webtop
 |-- Uso: desenvolvimento [DEC-006]
 |   |-- Aplicativos e terminal definidos [DEC-011, DEC-012]
 |   |-- Controle do Docker Desktop [DEC-013]
-|   |-- Servicos e acesso a redes corporativas [a investigar]
+|   |-- Configuracao de proxy e certificados corporativos [Q26]
 |   `-- Carga representativa, recursos e criterios de desempenho
 |-- Acesso individual no proprio notebook [DEC-007]
 |   |-- Entrada direta no desktop local [DEC-016]
 |   |-- Ingles, localizacao Brasil, ABNT2 e America/Bahia [DEC-017]
-|   `-- Ciclo da sessao, monitores e integracao com Windows [pendente]
+|   |-- Inicio sob demanda no Windows [DEC-025]
+|   |-- Uma tela Full HD, Insiders e Chrome [DEC-031]
+|   `-- Encerramento da sessao [Q25]
 |-- Distribuicao publica e generica na Electivus [DEC-008]
 |   |-- Variante Salesforce [DEC-009]
 |   |-- Duas imagens: base -> Salesforce [DEC-010]
 |   |-- Dois repositorios, versoes coordenadas, tags fixas e stable [DEC-018]
-|   |-- Nomes exatos, arquiteturas e processo de publicacao
-|   `-- Atualizacoes, validacao e retorno a uma versao anterior
+|   |-- Publicacao automatica semanal e sob demanda apos testes [DEC-026]
+|   |-- Nomes exatos e arquiteturas [a detalhar]
+|   `-- Atualizacao da imagem e dos aplicativos por comando [DEC-027, DEC-028]
 |-- Estado e dados
 |   |-- Preservar programas pacman/AUR se viavel [DEC-019]
 |   |-- Projetos no Linux e pasta de troca no Windows [DEC-015]
-|   `-- Backup, restauracao e troca de imagem
-`-- Validacao no destino [aguarda perfil e criterios]
+|   |-- Backup no Windows antes das atualizacoes e sob demanda; reter dois [DEC-029]
+|   `-- Falhas na restauracao de pacotes pessoais [Q24]
+`-- Validacao no destino [DEC-030]
     |-- Evidencias que o VMM local consegue fornecer
     `-- Verificacao especifica no notebook com Hyper-V
 ```
@@ -128,15 +132,25 @@ Decisões já registradas desde o início da segunda rodada: DEC-010, DEC-011, D
 
 Decisões registradas nesta rodada: DEC-020, DEC-021, DEC-022, DEC-023, DEC-024, DEC-025. Q12-Q17 foram respondidas. Atualizações, backup/restauração, fluxo de instalação no destino e critérios finais de validação ainda precisam ser definidos; a entrevista permanece aberta.
 
-## Quarta rodada aberta
+## Quarta rodada respondida
+
+| Pergunta | Estado | Resposta |
+| --- | --- | --- |
+| Q18 | Respondida: DEC-026 | GitHub Actions semanal e sob demanda, publicacao automatica e promocao de stable apos testes |
+| Q19 | Respondida: DEC-027 | Comando de atualizacao com backup antes da troca |
+| Q20 | Respondida: DEC-028 | Comando explicito, independente da imagem, registrando versoes efetivas |
+| Q21 | Respondida: DEC-029 | Antes das atualizacoes e sob demanda; manter os dois backups concluidos mais recentes no Windows |
+| Q22 | Respondida: DEC-030 | Publicar apos testes VMM locais, declarar Hyper-V real pendente e entregar roteiro executavel para o destino |
+| Q23 | Respondida: DEC-031 | Uma tela Full HD, Insiders com projeto Salesforce e Chrome |
+
+Decisões registradas nesta rodada: DEC-026, DEC-027, DEC-028, DEC-029, DEC-030, DEC-031. Q18-Q23 foram respondidas. A publicação e a implementação não começaram. As respostas permitem definir agora o comportamento após falhas de restauração de pacotes pessoais e o encerramento da sessão.
+
+## Quinta rodada aberta
 
 | Pergunta | Escolha pendente | Recomendacao apresentada |
 | --- | --- | --- |
-| Q18 | Producao e publicacao de novas imagens | GitHub Actions semanal e sob demanda, publicacao automatica e promocao de stable apos testes |
-| Q19 | Atualizacao da imagem no notebook | Comando de atualizacao com backup antes da troca |
-| Q20 | Atualizacao de VS Code, Chrome, Salesforce CLI e extensoes | Comando explicito, independente da imagem, registrando versoes efetivas |
-| Q21 | Backup de projetos, perfil, aplicativos persistidos e inventario | Antes das atualizacoes e sob demanda; manter os dois backups concluidos mais recentes no Windows |
-| Q22 | Limite da validacao para primeira publicacao | Publicar apos testes VMM locais, declarar Hyper-V real pendente e entregar roteiro executavel para o destino |
-| Q23 | Cenario visual de validacao | Uma tela Full HD, Insiders com projeto Salesforce e Chrome |
+| Q24 | Falha na restauracao de programas extras pacman/AUR | Disponibilizar o ambiente atualizado com os aplicativos restaurados, relatar falhas e permitir nova tentativa ou recuperacao do backup |
+| Q25 | Fechamento da aba do Webtop | Manter a sessao e seus processos ate o comando de parar |
+| Q26 | Proxy e certificados corporativos | Configuracao opcional assistida na instalacao, com diagnostico de conexao e dados mantidos somente no notebook |
 
-Q18-Q23 foram apresentadas e ainda não receberam resposta até este registro. A publicação e a implementação não começaram; a fronteira da entrevista segue aberta.
+Q24-Q26 foram apresentadas e aguardam resposta. Q24 trata de programas extras; falhas nos componentes fornecidos pelas imagens continuam sujeitas aos testes de entrega. As escolhas técnicas delegadas serão consolidadas com o entendimento final da entrevista, incluindo os nomes propostos no Docker Hub, a arquitetura `linux/amd64` do notebook, os comandos PowerShell e o procedimento de instalação no destino.
