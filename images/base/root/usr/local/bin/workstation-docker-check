@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Diagnose the engine and Linux project paths used by Docker and Compose."""
+import argparse
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+
+def docker(*args):
+    result = subprocess.run(["docker", *args], capture_output=True, text=True, timeout=20)
+    if result.returncode:
+        raise RuntimeError(result.stderr.strip() or result.stdout.strip())
+    return result.stdout.strip()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("project", nargs="?", help="existing project directory under /config/projects")
+    args = parser.parse_args()
+    project = None
+    if args.project:
+        project = Path(args.project).resolve()
+        if not project.is_dir():
+            raise RuntimeError(f"Project directory does not exist: {project}; create it under /config/projects first")
+        if not project.is_relative_to(Path("/config/projects").resolve()):
+            raise RuntimeError("Keep the Compose project under /config/projects; /exchange is for file transfer")
+    try:
+        info = json.loads(docker("info", "--format", "{{json .}}"))
+    except (RuntimeError, subprocess.TimeoutExpired) as error:
+        raise RuntimeError("Docker engine is unavailable. Check Docker Desktop and start the workstation with "
+                           f"workstation.cmd; verify DOCKER_HOST and socket access. {error}") from error
+    volume = os.environ.get("WORKSTATION_HOME_VOLUME", "")
+    if not volume:
+        raise RuntimeError("WORKSTATION_HOME_VOLUME is missing; start the workstation with workstation.cmd")
+    docker("volume", "inspect", volume)
+    result = {"engineId": info["ID"], "engineName": info["Name"], "serverVersion": info["ServerVersion"],
+              "composeVersion": docker("compose", "version", "--short"), "homeVolume": volume}
+    if project:
+        result.update(project=str(project), projectSubpath=project.relative_to(Path("/config")).as_posix())
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired) as error:
+        print(f"workstation-docker-check: {error}", file=sys.stderr)
+        sys.exit(1)

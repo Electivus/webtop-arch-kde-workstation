@@ -33,7 +33,7 @@ RUN --mount=type=secret,id=corporate_ca \
       update-ca-trust; \
     fi && \
     timeout 20m pacman -Syu --disable-download-timeout --noprogressbar --noconfirm --needed \
-      git binutils nss gtk3 alsa-lib libxss ttf-liberation zsh zsh-autosuggestions zsh-syntax-highlighting && \
+      git binutils nss gtk3 alsa-lib libxss ttf-liberation zsh zsh-autosuggestions zsh-syntax-highlighting docker-buildx && \
     curl --fail --location --show-error --output /tmp/oh-my-zsh.tar.gz \
       https://codeload.github.com/ohmyzsh/ohmyzsh/tar.gz/e995678ca8ce65e8e06f7c89d120cf2c02cb5399 && \
     printf '%s  %s\n' 67f87b9b08d718f1aead7e408c52a276c63a7f96b831b185f5a6461631acb0cc /tmp/oh-my-zsh.tar.gz | sha256sum -c - && \
