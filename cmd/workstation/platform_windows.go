@@ -39,6 +39,16 @@ type guid struct {
 }
 type comObject struct{ methods *[21]uintptr }
 
+const (
+	iUnknownQueryInterface       = 0
+	iUnknownRelease              = 2
+	shellLinkSetDescription      = 7
+	shellLinkSetWorkingDirectory = 9
+	shellLinkSetArguments        = 11
+	shellLinkSetPath             = 20
+	persistFileSave              = 6
+)
+
 func comCall(object *comObject, method int, arguments ...uintptr) error {
 	args := append([]uintptr{uintptr(unsafe.Pointer(object))}, arguments...)
 	result, _, _ := syscall.SyscallN(object.methods[method], args...)
@@ -65,7 +75,7 @@ func createShortcut(path, executable, directory string) error {
 	if int32(result) < 0 {
 		return fmt.Errorf("create Windows shortcut: 0x%08x", result)
 	}
-	defer comCall(link, 2)
+	defer comCall(link, iUnknownRelease)
 	arguments := []string{"start", "--profile", directory, "--open-browser"}
 	for i := range arguments {
 		arguments[i] = syscall.EscapeArg(arguments[i])
@@ -73,7 +83,8 @@ func createShortcut(path, executable, directory string) error {
 	values := []struct {
 		method int
 		text   string
-	}{{20, executable}, {9, directory}, {11, strings.Join(arguments, " ")}, {7, "Start the local Electivus workstation"}}
+	}{{shellLinkSetPath, executable}, {shellLinkSetWorkingDirectory, directory},
+		{shellLinkSetArguments, strings.Join(arguments, " ")}, {shellLinkSetDescription, "Start the local Electivus workstation"}}
 	for _, value := range values {
 		text, err := syscall.UTF16PtrFromString(value.text)
 		if err != nil {
@@ -85,15 +96,15 @@ func createShortcut(path, executable, directory string) error {
 		runtime.KeepAlive(text)
 	}
 	var persist *comObject
-	if err := comCall(link, 0, uintptr(unsafe.Pointer(&persistInterface)), uintptr(unsafe.Pointer(&persist))); err != nil {
+	if err := comCall(link, iUnknownQueryInterface, uintptr(unsafe.Pointer(&persistInterface)), uintptr(unsafe.Pointer(&persist))); err != nil {
 		return err
 	}
-	defer comCall(persist, 2)
+	defer comCall(persist, iUnknownRelease)
 	output, err := syscall.UTF16PtrFromString(path)
 	if err != nil {
 		return err
 	}
-	err = comCall(persist, 6, uintptr(unsafe.Pointer(output)), 1)
+	err = comCall(persist, persistFileSave, uintptr(unsafe.Pointer(output)), 1)
 	runtime.KeepAlive(output)
 	return err
 }
