@@ -28,3 +28,9 @@ O revisor pediu um único follow-up limitado a essa correção e suas regressõe
 - Os testes Salesforce agora limitam CPUs ao menor valor entre quatro e a capacidade do engine. O repositório é privado, e o [runner Linux padrão do GitHub](https://docs.github.com/en/actions/reference/runners/github-hosted-runners) oferece duas CPUs; a reserva de memória do teste permanece em 6 GiB. Isso adapta o ensaio à máquina que o executa sem alterar os padrões do notebook.
 
 T01 e T04–T13 não foram reabertos nesta revisão. Publicação, atualização explícita, configuração corporativa e aceitação Hyper-V continuam nos respectivos tickets.
+
+## Acompanhamento do PR
+
+O [comentário automático 4010337396](https://github.com/manoelcalixto/webtop-arch-kde-workstation/pull/16#discussion_r4010337396) afirmou que o contexto de build excluiria Salesforce. O [CI 34906271384](https://github.com/manoelcalixto/webtop-arch-kde-workstation/actions/runs/34906271384) construiu com sucesso as duas imagens do mesmo head, inclusive todos os `COPY` citados. O apontamento foi rejeitado e a thread encerrada sem alteração de código.
+
+Esse CI passou também os testes de ciclo de vida e da base, mas falhou nos dois preparos Salesforce por `ENOSPC` ao instalar a CLI. O runner registrou somente 69 MB livres. O workflow passou a remover apenas seu SDK Android pré-instalado, que não participa deste projeto, antes dos builds; registra o espaço antes/depois e exige um runner hospedado pelo GitHub. A validação do ajuste ocorre na próxima execução do mesmo conjunto de testes.
