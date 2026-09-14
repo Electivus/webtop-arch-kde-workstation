@@ -1,5 +1,5 @@
 async page => {
-    // Run only against a dedicated Test-Lifecycle.ps1 installation.
+    // Run only against the dedicated installation created by browser_acceptance.py.
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.locator('canvas').first().waitFor({ state: 'visible' });
     await page.keyboard.press('Control+Alt+KeyT');

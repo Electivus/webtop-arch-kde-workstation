@@ -2,3 +2,9 @@
 !images/
 !images/base/
 !images/base/**
+!go.mod
+!cmd/
+!cmd/**
+!distribution/
+!distribution/windows/
+!distribution/windows/**

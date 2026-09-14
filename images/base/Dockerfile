@@ -1,3 +1,16 @@
+FROM golang:1.27.1-bookworm@sha256:648f440f42a0958804efb24df176f806f9d353b41f1c0627f666428e40310f6b AS commands
+WORKDIR /src
+COPY go.mod ./
+COPY cmd/ ./cmd/
+RUN test -z "$(gofmt -l cmd)" && go vet ./... && GOOS=windows GOARCH=amd64 go vet ./... && \
+    CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -o /out/workstation.exe ./cmd/workstation && \
+    CGO_ENABLED=0 go build -trimpath -o /out/workstation ./cmd/workstation
+COPY distribution/windows/workstation.cmd /out/workstation.cmd
+COPY distribution/windows/setup.cmd /out/setup.cmd
+
+FROM scratch AS commands-export
+COPY --from=commands /out/ /
+
 FROM lscr.io/linuxserver/webtop:arch-kde@sha256:ed197a60c161b5d45a0d0137a5c47ecd136964c57791bf3151d01ad41ac6b988
 
 ARG VERSION=development
@@ -32,6 +45,7 @@ ENV TITLE="Electivus Workstation" \
 
 COPY --chmod=755 images/base/root/custom-cont-init.d/ /custom-cont-init.d/
 COPY --chmod=755 images/base/root/usr/local/bin/ /usr/local/bin/
+COPY --from=commands /out/workstation.exe /out/workstation.cmd /out/setup.cmd /opt/electivus/windows/
 
 HEALTHCHECK --interval=10s --timeout=8s --start-period=90s --retries=6 \
     CMD ["workstation-healthcheck"]
