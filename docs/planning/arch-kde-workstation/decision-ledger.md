@@ -91,12 +91,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/3; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4
-  - verification: none
-
+  - verification: ["ticket commits d3fc05b/ea1927c; docs/verification/t02-t03-apps.md: Eight acceptance tests passed; browser, terminal, project creation and both editor language services verified."]
 ## DEC-007
 - Status: active
 - Decision: Oferecer uma workstation individual acessada somente pelo navegador do proprio notebook.
@@ -138,12 +137,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4
-  - verification: none
-
+  - verification: ["ticket commits d3fc05b/ea1927c; docs/verification/t02-t03-apps.md: Salesforce variant built and tested with official CLI, Java, Node and both editor channels."]
 ## DEC-010
 - Status: active
 - Decision: Limitar a entrega atual a duas imagens: base e desenvolvimento Salesforce, com Salesforce derivando diretamente da base.
@@ -155,12 +153,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12
-  - verification: none
-
+  - verification: ["ticket commit d3fc05b; images/salesforce/Dockerfile; docs/verification/t02-t03-apps.md: Only base and Salesforce images exist; inspected Salesforce layers include the matching base layers."]
 ## DEC-011
 - Status: active
 - Decision: Disponibilizar VS Code Stable e VS Code Insiders, Google Chrome oficial, Git, Salesforce CLI e extensoes Salesforce na workstation de desenvolvimento Salesforce.
@@ -171,12 +168,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/3; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/11
-  - verification: none
-
+  - verification: ["ticket commits d3fc05b/ea1927c; docs/verification/t02-t03-apps.md; docs/verification/t02-t03-review.md: Chrome, Git, both official editors, Salesforce CLI and full Extension Pack verified; removed Visualforce restored in both channels."]
 ## DEC-012
 - Status: active
 - Decision: Usar Zsh como shell padrao, com Oh My Zsh e plugins recomendados.
@@ -187,12 +183,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/3
-  - verification: none
-
+  - verification: ["ticket commit d3fc05b; docs/verification/t02-t03-apps.md: Interactive Zsh default, Oh My Zsh, Git aliases, accepted autosuggestion and syntax highlighting passed; user rc persisted."]
 ## DEC-013
 - Status: active
 - Decision: Permitir executar Docker e Compose na workstation para controlar o Docker Desktop existente no notebook.
@@ -314,12 +309,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/3; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4
-  - verification: none
-
+  - verification: ["ticket commit d3fc05b; docs/verification/t02-t03-apps.md: Base desktop applications and Salesforce-only additions verified in respective built images."]
 ## DEC-021
 - Status: active
 - Decision: Preparar automaticamente os aplicativos oficiais no primeiro inicio, com progresso e retomada apos falhas, baixando dos fornecedores para armazenamento persistente.
@@ -330,12 +324,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/3; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/7
-  - verification: none
-
+  - verification: ["ticket commits d3fc05b/ea1927c; docs/verification/t02-t03-apps.md: Signed repository downloads, persistent installation, progress state, permission retry, interrupted download recovery and automatic manifest validation passed."]
 ## DEC-022
 - Status: active
 - Decision: Incluir inventario persistente de pacotes e restauracao assistida para programas extras, tratando pacman e AUR separadamente e validando a viabilidade na implementacao.
@@ -378,12 +371,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4
-  - verification: none
-
+  - verification: ["ticket commit d3fc05b; docs/verification/t03-desktop-launch.json; docs/verification/t02-t03-apps.md: KDE default workspace opening launched Insiders; explicit Stable launcher remained separate."]
 ## DEC-025
 - Status: active
 - Decision: Iniciar a workstation sob demanda por comando ou atalho no Windows.
