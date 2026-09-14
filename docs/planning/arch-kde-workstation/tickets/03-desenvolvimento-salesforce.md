@@ -25,7 +25,7 @@ A variante Salesforce abre projetos nos dois VS Codes oficiais, com CLI, extens√
 - Repository: manoelcalixto/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: e3577ac0ff5e1cdb4719f65bbe821e729a597e2c
+- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
 - Decisions: DEC-006, DEC-009, DEC-010, DEC-011, DEC-020, DEC-021, DEC-024
 
 ### Decision consequences

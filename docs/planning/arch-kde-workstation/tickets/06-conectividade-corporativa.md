@@ -24,7 +24,7 @@ A instalação recebe configuração corporativa opcional e valida a conexão do
 - Repository: manoelcalixto/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: e3577ac0ff5e1cdb4719f65bbe821e729a597e2c
+- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
 - Decisions: DEC-008, DEC-021, DEC-034
 
 ### Decision consequences
