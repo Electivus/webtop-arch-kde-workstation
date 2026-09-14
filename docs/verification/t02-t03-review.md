@@ -17,7 +17,7 @@ Resultado: um achado P2 e nenhum desvio de escopo. O critério T03 exige instala
 
 Tratamento: a condição agora percorre `extensionPack` e `extensionDependencies` dos [manifestos do fornecedor](https://code.visualstudio.com/api/references/extension-manifest), incluindo dependências transitivas. O CLI de cada editor localiza o Pack; somente os manifestos correspondentes às versões efetivamente instaladas participam da conferência. O preparo instala os membros ausentes e verifica novamente o conjunto completo antes de concluir. A preparação automática usa essa mesma condição.
 
-O revisor pediu um único follow-up limitado a essa correção e suas regressões. Esse follow-up está pendente neste registro.
+O revisor pediu um único follow-up limitado a essa correção e suas regressões. Ele revisou `ea1927c5034c6e9bd7a261ec2c1f8f6dd56d2ab6` e concluiu: **P2 resolvido, nenhuma regressão concreta identificada no escopo do follow-up**. Conferiu fonte, teste e recibos direcionados sem repetir a execução. A bateria completa das imagens reconstruídas ainda estava rodando naquele momento; seu resultado é registrado separadamente em [T02/T03 - aplicativos](t02-t03-apps.md). Esse follow-up encerrou o eixo Spec.
 
 ## Verificação das correções
 

@@ -25,7 +25,7 @@ Notebook Windows Dell Latitude 5450, Core Ultra 7 165U e 32 GB. Docker Desktop 4
 
 Os primeiros ensaios usaram a VM anterior de 4 GiB e limites de 2,5 e 3,25 GiB para Salesforce. O renderizador foi encerrado; o primeiro ensaio registrou `OOMKilled=true`. Isso motivou aplicar o ponto inicial já definido em DEC-023: VM com 8 GiB e 6 CPUs. Após reiniciar, o engine reportou 8.000 MiB e 6 CPUs. Os containers SearxNG e Valkey foram restabelecidos com os mesmos IDs e ficaram saudáveis. A configuração anterior foi copiada para `%LOCALAPPDATA%\Electivus\workstation\docker-resources-20260914T212036Z` antes da mudança.
 
-Os testes funcionais Salesforce usam 6.144 MiB e 4 CPUs; os testes menores da base usam 2.560 MiB e 2 CPUs. A medição completa de carga, os artefatos de CI instalados localmente e o roteiro Hyper-V continuam em T12. Esta etapa não comprova execução no notebook Hyper-V.
+Os testes funcionais Salesforce usam 6.144 MiB e até 4 CPUs, limitadas à capacidade do engine; os testes menores da base usam 2.560 MiB e 2 CPUs. A execução final local usou 4 CPUs para Salesforce. A medição completa de carga, os artefatos de CI instalados localmente e o roteiro Hyper-V continuam em T12. Esta etapa não comprova execução no notebook Hyper-V.
 
 ## Resultados registrados
 
@@ -67,3 +67,20 @@ Os builds da árvore de trabalho usaram o rótulo de revisão `1896d8cb2eeea9fd6
 A inspeção de camadas confirmou que Salesforce contém as 25 camadas da base correspondente, seguidas por cinco camadas próprias. Os avisos de licença Moby e Go acompanham os comandos exportados e o bundle Windows dentro da imagem.
 
 O ensaio completo de serviços usou `sha256:2564364fef912a4d3b85455a6337bab8fae57e99f0feb936025974c4242abb64`. A imagem final altera somente as classes dos lançadores para os valores efetivamente observados em X11 (`code` e `code-insiders`); os arquivos passaram em `desktop-file-validate`. A interrupção e as capturas adicionais dos editores usaram `sha256:30a6d43e7131ebb783594f686206489d66e4afcfdde2aa01efb46d0506b27209`, anterior também à inclusão dos avisos de licença. O código de preparo e os aplicativos preparados são os mesmos nesses ensaios.
+
+## Validação final após a revisão
+
+A [revisão independente](t02-t03-review.md) foi encerrada sobre `ea1927c5034c6e9bd7a261ec2c1f8f6dd56d2ab6`, após a implementação `d3fc05b4b2d6030ea693d8ac5866409fcacb785f`. As imagens foram reconstruídas com essas correções e a bateria completa terminou com oito testes aprovados:
+
+| Suíte | Resultado | Tempo |
+| --- | --- | --- |
+| `tests/test_commands.py` | 3 testes; CMD, atalho, confiança HTTPS e ciclo de vida | 108,982 s |
+| `tests/test_preparation.py` | 3 testes; Chrome, retomada, Zsh e detecção automática de manifesto incompatível | 145,439 s |
+| `tests/test_salesforce.py` | 2 testes; persistência, serviços Apex/LWC em ambos os canais, restauração de Visualforce e retomada após interrupção | 585,775 s |
+
+| Imagem reconstruída | Identificação |
+| --- | --- |
+| Base `2026.09.14-t02` | `sha256:624ad9f4fd4365026c4aa21ee78a7f94ded66f23c3745cfd74c6a40f635afd94` |
+| Salesforce `2026.09.14-t03` | `sha256:6e255e46f320867a0ed57b93b2c413b1229fd163892d92cfe72c65151cb0e048` |
+
+Esses builds locais conservaram o rótulo de revisão `1896d8cb2eeea9fd6d7ff96ed0b3cdc1e0952ccb`; os digests identificam o conteúdo efetivamente testado. As capturas e os recibos anteriores mantêm a proveniência descrita acima. A validação final não representa publicação no Docker Hub nem aceitação Hyper-V.

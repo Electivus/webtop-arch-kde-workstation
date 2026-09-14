@@ -82,7 +82,7 @@ workstation.cmd start --profile "%LOCALAPPDATA%\Electivus\Workstation\salesforce
 workstation.cmd prepare --profile "%LOCALAPPDATA%\Electivus\Workstation\salesforce"
 ```
 
-A variante oferece Node 24 LTS e Java 21, instala a CLI Salesforce selecionada com integridade SHA-512 e o Salesforce Extension Pack do Marketplace nos dois editores. O resultado do preparo registra as versões efetivas, fontes, hashes e extensões instaladas. A CLI e os aplicativos persistem no volume; Java e Node acompanham a imagem.
+A variante oferece Node 24 LTS e Java 21, instala a CLI Salesforce selecionada com integridade SHA-512 e o Salesforce Extension Pack do Marketplace nos dois editores. O preparo confere todos os membros e dependências declarados pelo Pack e recupera componentes ausentes. O resultado registra as versões efetivas, fontes, hashes e extensões instaladas. A CLI e os aplicativos persistem no volume; Java e Node acompanham a imagem.
 
 No terminal Linux, `code-insiders` abre o editor padrão, `code` abre Stable e `workstation-project` abre o diretório atual no Insiders. Arquivos de texto e projetos `.code-workspace` usam Insiders por padrão. `sf project generate --name exemplo --output-dir ~/projects` cria um projeto sem credenciais de organização.
 
