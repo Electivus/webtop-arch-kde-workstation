@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+pgrep -u abc -x plasmashell >/dev/null
+s6-setuidgid abc xset q >/dev/null
+curl --fail --silent --max-time 5 \
+    --cacert /config/ssl/cert.pem https://localhost:3001/ >/dev/null

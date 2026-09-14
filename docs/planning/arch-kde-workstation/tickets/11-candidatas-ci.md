@@ -25,7 +25,7 @@ Acionamentos semanal e manual produzem as duas imagens candidatas com versões, 
 - Repository: manoelcalixto/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: e3577ac0ff5e1cdb4719f65bbe821e729a597e2c
+- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
 - Decisions: DEC-008, DEC-010, DEC-018, DEC-026, DEC-035
 
 ### Decision consequences

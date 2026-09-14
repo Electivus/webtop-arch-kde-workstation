@@ -177,3 +177,7 @@ Em 2026-09-14, o usuário aprovou os 13 tickets do [plano de decomposição](tic
 Os corpos publicados preservam os 97 critérios de aceitação aprovados e as consequências das decisões. Após cada publicação, o helper Planning acrescentou sua URL à cobertura tickets das decisões aplicáveis. As 34 decisões ativas têm specification e tickets completos; verification permanece pendente até a implementação e seus testes. O checkpoint final consolida essa cobertura, e os marcadores da especificação e de todos os tickets são atualizados para ele após confirmar sua presença na branch remota configurada.
 
 A fronteira inicial de implementação contém somente [T01 / #2](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2), que entrega a abertura e o controle do desktop Arch/KDE pelo Windows. A autorização desta etapa encerra a publicação do planejamento.
+
+## Correção durante a implementação: CMD no destino
+
+Em 2026-09-14, o usuário informou que o notebook de destino bloqueia PowerShell e somente permite comandos CMD. DEC-036 substitui a premissa de PowerShell presente no entendimento da entrevista, sem alterar o requisito de Docker Linux via Hyper-V nem autorizar WSL2. A especificação e T01/T12/T13 passam a exigir instalação, atalho, operação e instruções públicas sem chamadas diretas ou indiretas ao PowerShell. A evidência anterior PowerShell descreve somente o ensaio histórico; a aceitação do fluxo de comandos será refeita pelo CMD.

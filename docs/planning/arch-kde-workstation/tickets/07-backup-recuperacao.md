@@ -25,7 +25,7 @@ Um comando salva e recupera projetos, perfil e aplicativos no Windows, mantém d
 - Repository: manoelcalixto/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: e3577ac0ff5e1cdb4719f65bbe821e729a597e2c
+- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
 - Decisions: DEC-015, DEC-029
 
 ### Decision consequences

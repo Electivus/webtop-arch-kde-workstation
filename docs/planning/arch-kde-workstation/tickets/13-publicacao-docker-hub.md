@@ -14,7 +14,7 @@ As duas imagens aprovadas chegam ao Docker Hub com instruções públicas, tags 
 - [ ] Publicar os mesmos artefatos aprovados, preservando os digests testados, com versões coordenadas, tags fixas e stable apontando para a entrega aprovada.
 - [ ] Ativar a publicação semanal e sob demanda após os testes definidos; falha de teste impede a promoção de stable.
 - [ ] Tratar falha parcial de publicação com resultado visível e recuperação ou retomada da promoção, sem anunciar uma entrega coordenada incompleta como concluída.
-- [ ] Disponibilizar instruções e comandos suficientes para um consumidor instalar e operar a workstation partindo de Docker Desktop, sem precisar acessar o repositório GitHub privado.
+- [ ] Disponibilizar instruções, comandos CMD e componentes suficientes para um consumidor instalar e operar a workstation partindo de Docker Desktop, sem executar PowerShell e sem precisar acessar o repositório GitHub privado.
 - [ ] Verificar o consumo de uma imagem publicada por versão/digest e o fluxo documentado de início, identificando os artefatos efetivamente utilizados.
 - [ ] Acompanhar a primeira publicação com a evidência VMM e o roteiro Hyper-V, deixando o estado da verificação real no destino explícito.
 - [ ] Inspecionar o conteúdo distribuído para manter os aplicativos oficiais obtidos na instalação e a ausência de configurações, conteúdo ou credenciais corporativas.
@@ -26,8 +26,8 @@ As duas imagens aprovadas chegam ao Docker Hub com instruções públicas, tags 
 - Repository: manoelcalixto/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: e3577ac0ff5e1cdb4719f65bbe821e729a597e2c
-- Decisions: DEC-003, DEC-008, DEC-018, DEC-026, DEC-030, DEC-035
+- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
+- Decisions: DEC-003, DEC-008, DEC-018, DEC-026, DEC-030, DEC-035, DEC-036
 
 ### Decision consequences
 
@@ -37,6 +37,7 @@ As duas imagens aprovadas chegam ao Docker Hub com instruções públicas, tags 
 - `DEC-026`: Ativar a publicação automática semanal e sob demanda condicionada aos testes.
 - `DEC-030`: Publicar com a evidência local permitida e o roteiro Hyper-V, preservando o estado real da validação de destino.
 - `DEC-035`: Disponibilizar os repositórios electivus/webtop-arch-kde-base e electivus/webtop-arch-kde-salesforce.
+- `DEC-036`: Publicar instruções e componentes que permitam o fluxo completo pelo CMD com PowerShell bloqueado.
 
 ## Blocked by
 

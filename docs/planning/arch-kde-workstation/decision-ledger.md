@@ -15,12 +15,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2
-  - verification: none
-
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: docs/verification/t01-desktop.md records the pinned amd64 build and rendered KDE at 1920x1080 on VMM."]
 ## DEC-002
 - Status: active
 - Decision: Suportar o notebook de destino com containers Linux no Docker via Hyper-V, sem depender de WSL2.
@@ -31,12 +30,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/13
-  - verification: none
-
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: tests/test_commands.py exercised install/start/stop and the native Windows shortcut through CMD without WSL or PowerShell; Hyper-V destination execution remains in T12."]
 ## DEC-003
 - Status: active
 - Decision: Publicar a imagem no Docker Hub da organizacao Electivus.
@@ -63,12 +61,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/13
-  - verification: none
-
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: CMD status reports actual Docker VM allocation and adjustable limits; lifecycle and browser checks passed at 2560 MiB and 2 CPUs."]
 ## DEC-005
 - Status: active
 - Decision: Usar o Docker VMM deste notebook como ambiente local de teste, preservando Hyper-V como requisito de destino.
@@ -79,12 +76,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/13
-  - verification: none
-
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: docs/verification/t01-desktop.md records Docker Desktop UseLibkrun and live sailorforward evidence for VMM separately from pending Hyper-V execution."]
 ## DEC-006
 - Status: active
 - Decision: Priorizar desenvolvimento com editor, navegador, terminal e ferramentas de projeto.
@@ -111,12 +107,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2
-  - verification: none
-
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: tests/test_commands.py confirmed the only published address is 127.0.0.1 and preserved foreign Docker containers and volumes."]
 ## DEC-008
 - Status: active
 - Decision: Distribuir uma imagem publica e generica, reutilizavel por outras pessoas, sem configuracoes ou conteudo corporativos embutidos.
@@ -256,12 +251,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2
-  - verification: none
-
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: HTTPS localhost returned 200 with certificate validation enabled and no additional authentication; a fresh browser opened the desktop.","ticket commit 646085e; docs/verification/t01-desktop.md: CMD regression passed: restart renews a near-expiry localhost leaf and preserves old public certificates."]
 ## DEC-017
 - Status: active
 - Decision: Usar interface em ingles com localizacao brasileira, teclado ABNT2 e fuso America/Bahia.
@@ -272,12 +266,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2
-  - verification: none
-
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: tests/test_commands.py checked Brazilian locale and Bahia timezone; keyboard-abnt2.py verified actual dead-key and modifier sequences; browser transport accepted accents and symbols."]
 ## DEC-018
 - Status: active
 - Decision: Publicar base e Salesforce em dois repositorios Docker Hub, com versoes coordenadas, tags fixas e alias stable.
@@ -401,12 +394,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2
-  - verification: none
-
+  - verification: ["commit a728ff61fe909401a4a30eafd9bfc10a12b0390d: Native shortcut indices retain their verified values under named constants; the final Windows and Linux builds pass, with review evidence in docs/verification/t01-review.md.","commit bb082747b1a8c38132c07768f097795fe3a94872: Native Start Workstation.lnk executed copied tools extracted by setup.cmd; explicit stop/start reused its container ID and healthy state matched execution.","ticket commit 646085e; docs/verification/t01-desktop.md: Native shortcut and TLS passed; CMD untrust works after container removal with Docker absent from PATH and an expired cached leaf."]
 ## DEC-026
 - Status: active
 - Decision: Produzir e publicar automaticamente as duas imagens pelo GitHub Actions, em rotina semanal e sob demanda, promovendo stable somente apos os testes definidos para a entrega.
@@ -530,12 +522,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2
-  - verification: none
-
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: tests/browser_acceptance.py closed and reopened the browser tab, retained PID/start time and observed the original task counter advance."]
 ## DEC-034
 - Status: active
 - Decision: Oferecer configuracao opcional assistida de proxy e certificados corporativos na instalacao, com diagnostico de conexao e configuracoes mantidas somente no notebook, fora da imagem publica.
@@ -567,3 +558,20 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/14
   - verification: none
+
+## DEC-036
+- Status: active
+- Decision: Instalar, iniciar, parar, diagnosticar, atualizar e recuperar a workstation por comandos CMD no Windows, sem executar PowerShell no notebook de destino.
+- Context: Em 2026-09-14, durante a implementacao de T01, o usuario corrigiu a especificacao: PowerShell e bloqueado no notebook de destino e somente comandos CMD podem ser executados.
+- Rationale: O fluxo entregue precisa funcionar com as restricoes reais do notebook, incluindo atalho e todas as operacoes dos tickets seguintes.
+- ADR: none
+- Constraints: Os comandos e o atalho nao podem chamar powershell.exe ou pwsh.exe, direta ou indiretamente.
+- Obligations: specification, tickets, verification
+- Coverage:
+  - specification: complete
+  - tickets: complete
+  - verification: complete
+- Evidence:
+  - specification: docs/planning/arch-kde-workstation/spec.md
+  - tickets: docs/planning/arch-kde-workstation/tickets/01-desktop-local.md; docs/planning/arch-kde-workstation/tickets/12-validacao-latitude-hyperv.md; docs/planning/arch-kde-workstation/tickets/13-publicacao-docker-hub.md
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: Shipped setup.cmd and workstation.cmd, native Windows shortcut and CryptoAPI passed public-command tests; all PowerShell operation scripts were removed.","ticket commit 646085e; docs/verification/t01-desktop.md: Evidence covers shipped T01 CMD operations only; full diagnostics, backup, recovery and updates remain pending in their tickets and T12/T13."]

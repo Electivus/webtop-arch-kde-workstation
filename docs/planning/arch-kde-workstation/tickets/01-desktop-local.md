@@ -11,7 +11,7 @@ Comando e atalho abrem um desktop local utilizável, com idioma e teclado acorda
 ## Acceptance criteria
 
 - [ ] Construir e iniciar uma imagem Arch/KDE a partir do upstream correspondente, registrando o digest da base e a arquitetura linux/amd64.
-- [ ] Instalar o perfil local e iniciar o desktop por comando PowerShell e atalho Windows, partindo de Docker Desktop com containers Linux disponível.
+- [ ] Instalar o perfil local e iniciar o desktop por comando CMD e atalho Windows, partindo de Docker Desktop com containers Linux disponível, sem chamar PowerShell direta ou indiretamente.
 - [ ] Abrir o desktop por HTTPS apenas no próprio notebook, com entrada direta e procedimento de conexão local documentado.
 - [ ] Configurar interface em inglês, formatos brasileiros, America/Bahia e ABNT2; verificar acentos, cedilha e símbolos na sessão.
 - [ ] Fechar e reabrir a aba preserva uma tarefa observável e a sessão; o comando de parar encerra a execução e o comando de iniciar permite novo uso.
@@ -24,8 +24,8 @@ Comando e atalho abrem um desktop local utilizável, com idioma e teclado acorda
 - Repository: manoelcalixto/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: e3577ac0ff5e1cdb4719f65bbe821e729a597e2c
-- Decisions: DEC-001, DEC-002, DEC-004, DEC-005, DEC-007, DEC-016, DEC-017, DEC-025, DEC-033
+- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
+- Decisions: DEC-001, DEC-002, DEC-004, DEC-005, DEC-007, DEC-016, DEC-017, DEC-025, DEC-033, DEC-036
 
 ### Decision consequences
 
@@ -38,6 +38,7 @@ Comando e atalho abrem um desktop local utilizável, com idioma e teclado acorda
 - `DEC-017`: Aplicar e testar idioma, formatos brasileiros, ABNT2 e America/Bahia.
 - `DEC-025`: Fornecer comandos de início e parada e um atalho Windows que inicie sob demanda.
 - `DEC-033`: Manter a sessão ao desconectar o navegador e encerrá-la pelo comando de parar.
+- `DEC-036`: Entregar o ponto de entrada CMD, os componentes de operação necessários e o atalho sem dependência de PowerShell; esse contrato deve ser reutilizado nos comandos posteriores.
 
 ## Blocked by
 
