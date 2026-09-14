@@ -255,7 +255,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2
-  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: HTTPS localhost returned 200 with certificate validation enabled and no additional authentication; a fresh browser opened the desktop."]
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: HTTPS localhost returned 200 with certificate validation enabled and no additional authentication; a fresh browser opened the desktop.","ticket commit 646085e; docs/verification/t01-desktop.md: CMD regression passed: restart renews a near-expiry localhost leaf and preserves old public certificates."]
 ## DEC-017
 - Status: active
 - Decision: Usar interface em ingles com localizacao brasileira, teclado ABNT2 e fuso America/Bahia.
@@ -398,7 +398,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2
-  - verification: ["commit a728ff61fe909401a4a30eafd9bfc10a12b0390d: Native shortcut indices retain their verified values under named constants; the final Windows and Linux builds pass, with review evidence in docs/verification/t01-review.md.","commit bb082747b1a8c38132c07768f097795fe3a94872: Native Start Workstation.lnk executed copied tools extracted by setup.cmd; explicit stop/start reused its container ID and healthy state matched execution."]
+  - verification: ["commit a728ff61fe909401a4a30eafd9bfc10a12b0390d: Native shortcut indices retain their verified values under named constants; the final Windows and Linux builds pass, with review evidence in docs/verification/t01-review.md.","commit bb082747b1a8c38132c07768f097795fe3a94872: Native Start Workstation.lnk executed copied tools extracted by setup.cmd; explicit stop/start reused its container ID and healthy state matched execution.","ticket commit 646085e; docs/verification/t01-desktop.md: Native shortcut and TLS passed; CMD untrust works after container removal with Docker absent from PATH and an expired cached leaf."]
 ## DEC-026
 - Status: active
 - Decision: Produzir e publicar automaticamente as duas imagens pelo GitHub Actions, em rotina semanal e sob demanda, promovendo stable somente apos os testes definidos para a entrega.
@@ -574,4 +574,4 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: docs/planning/arch-kde-workstation/spec.md
   - tickets: docs/planning/arch-kde-workstation/tickets/01-desktop-local.md; docs/planning/arch-kde-workstation/tickets/12-validacao-latitude-hyperv.md; docs/planning/arch-kde-workstation/tickets/13-publicacao-docker-hub.md
-  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: Shipped setup.cmd and workstation.cmd, native Windows shortcut and CryptoAPI passed public-command tests; all PowerShell operation scripts were removed."]
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: Shipped setup.cmd and workstation.cmd, native Windows shortcut and CryptoAPI passed public-command tests; all PowerShell operation scripts were removed.","ticket commit 646085e; docs/verification/t01-desktop.md: Evidence covers shipped T01 CMD operations only; full diagnostics, backup, recovery and updates remain pending in their tickets and T12/T13."]
