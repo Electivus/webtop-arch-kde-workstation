@@ -13,6 +13,28 @@ IMAGE = os.environ.get("WORKSTATION_TEST_IMAGE", "electivus/webtop-arch-kde-base
 
 
 class PreparationAcceptance(unittest.TestCase):
+    def assert_automatic_preparation_checks_manifest(self, name, profile):
+        manifest = "/config/.local/share/electivus/apps/chrome/current/manifest.json"
+        original = docker("exec", "--user", "abc", name, "cat", manifest)
+        changed = json.loads(original)
+        changed["actualVersion"] += " incompatible"
+        write = "from pathlib import Path; import sys; Path(sys.argv[1]).write_text(sys.argv[2])"
+        try:
+            docker("exec", "--user", "abc", name, "python3", "-c", write, manifest, json.dumps(changed))
+            command("stop", "--profile", profile)
+            command("start", "--profile", profile)
+            deadline = time.monotonic() + 25
+            while time.monotonic() < deadline:
+                state = command("prepare", "--profile", profile, "--status")
+                if state["state"] == "failed":
+                    break
+                time.sleep(0.5)
+            self.assertEqual(state["state"], "failed", "automatic preparation must check persisted version receipts")
+            self.assertIn("Persisted chrome", state["error"])
+            (profile / "incompatible-manifest-result.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
+        finally:
+            docker("exec", "--user", "abc", name, "python3", "-c", write, manifest, original)
+
     def test_failed_install_resumes_from_verified_download(self):
         name = "ew-retry-" + uuid.uuid4().hex[:10]
         profile = ROOT / ".local" / name
@@ -97,6 +119,7 @@ class PreparationAcceptance(unittest.TestCase):
             reused = command("prepare", "--profile", profile)
             self.assertEqual(reused["apps"]["chrome"], chrome)
             (profile / "preparation-result.json").write_text(json.dumps(reused, indent=2), encoding="utf-8")
+            self.assert_automatic_preparation_checks_manifest(name, profile)
         finally:
             subprocess.run(["docker", "container", "rm", "--force", name], capture_output=True)
             subprocess.run(["docker", "volume", "rm", name + "-home"], capture_output=True)

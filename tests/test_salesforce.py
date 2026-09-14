@@ -10,15 +10,34 @@ import uuid
 from test_commands import ROOT, command, docker
 
 IMAGE = os.environ.get("WORKSTATION_SALESFORCE_TEST_IMAGE", "electivus/webtop-arch-kde-salesforce:t03")
+CPUS = str(min(4, int(docker("info", "--format", "{{.NCPU}}"))))
 
 
 class SalesforceAcceptance(unittest.TestCase):
+    def assert_extension_pack_repair(self, name, profile):
+        member = "salesforce.salesforcedx-vscode-visualforce"
+        before = command("prepare", "--profile", profile)
+        for editor in ("code", "code-insiders"):
+            docker("exec", "--user", "abc", name, editor, "--uninstall-extension", member, "--force")
+            installed = docker("exec", "--user", "abc", name, editor, "--list-extensions")
+            self.assertNotIn(member, installed.splitlines())
+        repaired = command("prepare", "--profile", profile)
+        self.assertEqual(repaired["state"], "completed")
+        for editor in ("code", "code-insiders"):
+            installed = docker("exec", "--user", "abc", name, editor, "--list-extensions")
+            self.assertIn(member, installed.splitlines(), "prepare must restore missing Extension Pack members")
+            self.assertTrue(any(row.startswith(member + "@") for row in repaired["apps"]["extensions"][editor]["versions"]))
+        for app in ("chrome", "code", "code-insiders", "salesforce-cli"):
+            self.assertEqual(repaired["apps"][app], before["apps"][app])
+        (profile / "extension-repair-result.json").write_text(
+            json.dumps({"removedAndRestored": member, "preparation": repaired}, indent=2), encoding="utf-8")
+
     def test_editor_download_resumes_after_container_interruption(self):
         name = "ew-sf-retry-" + uuid.uuid4().hex[:10]
         profile = ROOT / ".local" / name
         try:
             command("install", "--profile", profile, "--name", name, "--image", IMAGE,
-                    "--port", "13412", "--memory", "6144", "--cpus", "4", "--no-shortcut")
+                    "--port", "13412", "--memory", "6144", "--cpus", CPUS, "--no-shortcut")
             command("start", "--profile", profile)
             deadline = time.monotonic() + 600
             while time.monotonic() < deadline:
@@ -64,7 +83,7 @@ print(json.dumps({'bytes': artifact.stat().st_size, 'size': manifest['size'], 'a
         profile = ROOT / ".local" / name
         try:
             command("install", "--profile", profile, "--name", name, "--image", IMAGE,
-                    "--port", "13410", "--memory", "6144", "--cpus", "4", "--no-shortcut")
+                    "--port", "13410", "--memory", "6144", "--cpus", CPUS, "--no-shortcut")
             command("start", "--profile", profile)
             prepared = command("prepare", "--profile", profile)
             self.assertEqual(prepared["state"], "completed")
@@ -116,6 +135,7 @@ print(json.dumps({'bytes': artifact.stat().st_size, 'size': manifest['size'], 'a
                 self.assertEqual(exercised.returncode, 0, exercised.stdout + exercised.stderr)
                 self.assertEqual(services["result"], "passed")
             (profile / "salesforce-result.json").write_text(json.dumps(reused, indent=2), encoding="utf-8")
+            self.assert_extension_pack_repair(name, profile)
         finally:
             if os.environ.get("WORKSTATION_KEEP_FAILED") and sys.exc_info()[0]:
                 print("Retained failed fixture for diagnosis:", profile, file=sys.stderr)

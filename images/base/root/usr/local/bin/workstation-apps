@@ -219,14 +219,19 @@ def install_deb(app, artifact, manifest):
         return promote(staging, root, installed, manifest["sha256"])
 
 
-def prepare_deb(app, repository, state):
+def installed_deb(app):
     current = APPS / app["id"] / "current"
     installed = read_json(current / "manifest.json")
     if installed:
         actual = run(str(current / app["executable"]), "--version").decode().strip()
         if actual != installed["actualVersion"]:
             raise RuntimeError("Persisted " + app["id"] + " is not compatible with this image")
-    else:
+    return installed
+
+
+def prepare_deb(app, repository, state):
+    installed = installed_deb(app)
+    if not installed:
         source = CACHE / (app["id"] + "-source.json")
         manifest = read_json(source)
         if manifest is None:
@@ -257,15 +262,21 @@ def stream(*args):
             raise RuntimeError("Application installer failed: " + args[0])
 
 
-def prepare_cli(config, state):
-    root = APPS / "salesforce-cli"
-    current = root / "current"
+def installed_cli():
+    current = APPS / "salesforce-cli/current"
     installed = read_json(current / "manifest.json")
     if installed:
         actual = run(str(current / "node_modules/.bin/sf"), "--version").decode().strip()
         if "@salesforce/cli/" + installed["version"] + " " not in actual:
             raise RuntimeError("Persisted Salesforce CLI is not compatible with this image")
+    return installed
+
+
+def prepare_cli(config, state):
+    installed = installed_cli()
+    if installed:
         return installed
+    root = APPS / "salesforce-cli"
     versions = root / "versions"
     versions.mkdir(parents=True, exist_ok=True)
     source = "https://registry.npmjs.org/@salesforce/cli/-/cli-" + config["cliVersion"] + ".tgz"
@@ -306,6 +317,47 @@ def extension_versions(editor):
                   if "@" in line)
 
 
+def extension_requirements(editor, config, versions):
+    """Follow the installed vendor manifests, including nested packs/dependencies."""
+    existing = {entry.lower() for entry in versions}
+    identifiers = {entry.split("@", 1)[0] for entry in existing}
+    required = {entry.lower() for entry in config["requiredExtensions"] + config["extensions"]}
+    directories = set()
+    for identifier in config["extensions"]:
+        if identifier.lower() in identifiers:
+            location = run(editor, "--locate-extension", identifier).decode().strip()
+            if not location or not (Path(location) / "package.json").is_file():
+                raise RuntimeError(editor + ": cannot locate the installed Extension Pack manifest")
+            directories.add(Path(location).parent)
+    manifests = {}
+    for directory in directories:
+        for path in directory.glob("*/package.json"):
+            try:
+                manifest = read_json(path)
+            except json.JSONDecodeError:
+                continue
+            identifier = (manifest.get("publisher", "") + "." + manifest.get("name", "")).lower()
+            if identifier + "@" + manifest.get("version", "").lower() in existing:
+                manifests[identifier] = manifest
+    pending = list(required)
+    visited = set()
+    while pending:
+        identifier = pending.pop()
+        if identifier in visited or identifier not in identifiers:
+            continue
+        visited.add(identifier)
+        manifest = manifests.get(identifier)
+        if manifest is None:
+            # If the root Pack is absent, install it before inspecting its members.
+            if not directories:
+                continue
+            raise RuntimeError(editor + ": cannot verify extension manifest: " + identifier)
+        dependencies = {entry.lower() for entry in manifest.get("extensionPack", []) + manifest.get("extensionDependencies", [])}
+        required.update(dependencies)
+        pending.extend(dependencies - visited)
+    return required
+
+
 def prepare_extensions(config, state):
     previous = state["apps"].get("extensions", {})
     installed = dict(previous)
@@ -318,15 +370,20 @@ def prepare_extensions(config, state):
                                  "salesforcedx-vscode-apex.java.home": "/usr/lib/jvm/java-21-openjdk",
                                  "terminal.integrated.defaultProfile.linux": "zsh"})
         versions = extension_versions(editor)
-        required = set(config["requiredExtensions"])
-        existing = {entry.split("@", 1)[0] for entry in versions}
-        if not required.issubset(existing):
+        attempted = set()
+        while True:
+            required = extension_requirements(editor, config, versions)
+            existing = {entry.split("@", 1)[0].lower() for entry in versions}
+            missing = required - existing
+            if not missing:
+                break
+            if missing & attempted:
+                raise RuntimeError(editor + ": Salesforce extension installation is incomplete: " + ", ".join(sorted(missing)))
             save(state, "install")
-            for extension in config["extensions"]:
+            for extension in sorted(missing):
                 stream(editor, "--install-extension", extension)
+            attempted.update(missing)
             versions = extension_versions(editor)
-            if not required.issubset({entry.split("@", 1)[0] for entry in versions}):
-                raise RuntimeError(editor + ": Salesforce extension installation is incomplete")
         if editor not in installed or installed[editor]["versions"] != versions:
             installed[editor] = {"source": "https://marketplace.visualstudio.com/",
                                  "versions": versions, "installedAt": now()}
@@ -341,12 +398,15 @@ def ready(config, state):
         return False
     try:
         for app in config["apps"]:
-            run(str(APPS / app["id"] / "current" / app["executable"]), "--version")
+            if not installed_deb(app):
+                return False
         if "salesforce" in config:
-            run("sf", "--version")
+            if not installed_cli():
+                return False
             for editor in ("code", "code-insiders"):
-                if not set(config["salesforce"]["requiredExtensions"]).issubset(
-                        {entry.split("@", 1)[0] for entry in extension_versions(editor)}):
+                versions = extension_versions(editor)
+                if not extension_requirements(editor, config["salesforce"], versions).issubset(
+                        {entry.split("@", 1)[0].lower() for entry in versions}):
                     return False
     except (OSError, RuntimeError):
         return False
