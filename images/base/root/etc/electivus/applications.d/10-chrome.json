@@ -1,0 +1,18 @@
+{
+  "repositories": {
+    "google": {
+      "url": "https://dl.google.com/linux/chrome/deb/",
+      "keyUrl": "https://dl.google.com/linux/linux_signing_key.pub",
+      "fingerprint": "EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796"
+    }
+  },
+  "apps": [
+    {
+      "id": "chrome",
+      "repository": "google",
+      "package": "google-chrome-stable",
+      "extract": "./opt/google/chrome",
+      "executable": "chrome"
+    }
+  ]
+}

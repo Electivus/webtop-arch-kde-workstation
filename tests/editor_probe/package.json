@@ -1,0 +1,7 @@
+{
+  "name": "workstation-acceptance",
+  "publisher": "electivus-tests",
+  "version": "0.0.0",
+  "engines": { "vscode": "^1.90.0" },
+  "main": "./extension.js"
+}

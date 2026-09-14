@@ -1,0 +1,8 @@
+[Default Applications]
+text/plain=code-insiders.desktop;
+application/x-code-workspace=code-insiders.desktop;
+application/json=code-insiders.desktop;
+text/javascript=code-insiders.desktop;
+text/x-python=code-insiders.desktop;
+text/x-java=code-insiders.desktop;
+text/x-shellscript=code-insiders.desktop;

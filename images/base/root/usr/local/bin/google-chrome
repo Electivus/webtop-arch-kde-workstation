@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -eu
+chrome="$HOME/.local/share/electivus/apps/chrome/current/chrome"
+if [ ! -x "$chrome" ]; then
+    printf '%s\n' 'Chrome is not ready. Run workstation-apps or use Prepare applications.' >&2
+    exit 1
+fi
+exec "$chrome" --ozone-platform=x11 --no-first-run "$@"

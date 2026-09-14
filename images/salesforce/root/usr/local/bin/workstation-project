@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+set -eu
+if [ "$#" -eq 0 ]; then
+    exec code-insiders .
+fi
+exec code-insiders "$@"

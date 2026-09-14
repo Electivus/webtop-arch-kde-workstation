@@ -7,6 +7,8 @@ RUN test -z "$(gofmt -l cmd)" && go vet ./... && GOOS=windows GOARCH=amd64 go ve
     CGO_ENABLED=0 go build -trimpath -o /out/workstation ./cmd/workstation
 COPY distribution/windows/workstation.cmd /out/workstation.cmd
 COPY distribution/windows/setup.cmd /out/setup.cmd
+COPY cmd/workstation/MOBY-LICENSE cmd/workstation/THIRD-PARTY.md /out/licenses/
+RUN cp /usr/local/go/LICENSE /out/licenses/GO-LICENSE
 
 FROM scratch AS commands-export
 COPY --from=commands /out/ /
@@ -23,6 +25,26 @@ LABEL org.opencontainers.image.title="Electivus Arch KDE Base" \
       org.opencontainers.image.base.digest="sha256:ed197a60c161b5d45a0d0137a5c47ecd136964c57791bf3151d01ad41ac6b988" \
       io.electivus.workstation.variant="base"
 
+# A build-only CA secret supports intercepted corporate networks. It is
+# removed in the same layer; public images retain only the normal trust roots.
+RUN --mount=type=secret,id=corporate_ca \
+    if [ -s /run/secrets/corporate_ca ]; then \
+      cp /run/secrets/corporate_ca /etc/ca-certificates/trust-source/anchors/electivus-build.crt; \
+      update-ca-trust; \
+    fi && \
+    timeout 20m pacman -Syu --disable-download-timeout --noprogressbar --noconfirm --needed \
+      git binutils nss gtk3 alsa-lib libxss ttf-liberation zsh zsh-autosuggestions zsh-syntax-highlighting && \
+    curl --fail --location --show-error --output /tmp/oh-my-zsh.tar.gz \
+      https://codeload.github.com/ohmyzsh/ohmyzsh/tar.gz/e995678ca8ce65e8e06f7c89d120cf2c02cb5399 && \
+    printf '%s  %s\n' 67f87b9b08d718f1aead7e408c52a276c63a7f96b831b185f5a6461631acb0cc /tmp/oh-my-zsh.tar.gz | sha256sum -c - && \
+    mkdir -p /usr/share/oh-my-zsh && \
+    tar -xzf /tmp/oh-my-zsh.tar.gz -C /usr/share/oh-my-zsh --strip-components=1 && \
+    printf '%s\n' e995678ca8ce65e8e06f7c89d120cf2c02cb5399 >/usr/share/oh-my-zsh/COMMIT && \
+    ln -s /usr/share/zsh/plugins/zsh-autosuggestions /usr/share/oh-my-zsh/plugins/zsh-autosuggestions && \
+    ln -s /usr/share/zsh/plugins/zsh-syntax-highlighting /usr/share/oh-my-zsh/plugins/zsh-syntax-highlighting && \
+    rm -f /etc/ca-certificates/trust-source/anchors/electivus-build.crt && update-ca-trust && \
+    rm -f /tmp/oh-my-zsh.tar.gz /var/cache/pacman/pkg/*.pkg.tar.*
+
 ENV TITLE="Electivus Workstation" \
     START_DOCKER=false \
     PIXELFLUX_WAYLAND=false \
@@ -33,7 +55,7 @@ ENV TITLE="Electivus Workstation" \
     SELKIES_FRAMERATE=30 \
     SELKIES_SECOND_SCREEN=false \
     TZ=America/Bahia \
-    SHELL=/bin/bash \
+    SHELL=/bin/zsh \
     LC_ALL="" \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
@@ -45,7 +67,11 @@ ENV TITLE="Electivus Workstation" \
 
 COPY --chmod=755 images/base/root/custom-cont-init.d/ /custom-cont-init.d/
 COPY --chmod=755 images/base/root/usr/local/bin/ /usr/local/bin/
+COPY images/base/root/usr/share/applications/ /usr/share/applications/
+COPY images/base/root/etc/xdg/autostart/ /etc/xdg/autostart/
+COPY images/base/root/etc/electivus/ /etc/electivus/
 COPY --from=commands /out/workstation.exe /out/workstation.cmd /out/setup.cmd /opt/electivus/windows/
+COPY --from=commands /out/licenses/ /opt/electivus/windows/licenses/
 
 HEALTHCHECK --interval=10s --timeout=8s --start-period=90s --retries=6 \
     CMD ["workstation-healthcheck"]

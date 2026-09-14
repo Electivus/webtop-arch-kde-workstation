@@ -60,14 +60,15 @@ type engineInfo struct {
 }
 
 type options struct {
-	directory   string
-	name        string
-	image       string
-	port        int
-	memory      int
-	cpus        int
-	noShortcut  bool
-	openBrowser bool
+	directory     string
+	name          string
+	image         string
+	port          int
+	memory        int
+	cpus          int
+	noShortcut    bool
+	openBrowser   bool
+	prepareStatus bool
 }
 
 func main() {
@@ -89,7 +90,7 @@ func main() {
 
 func run(args []string) (any, error) {
 	if len(args) == 0 {
-		return nil, errors.New("usage: workstation.cmd install|start|stop|status|certificate|trust|untrust [options]")
+		return nil, errors.New("usage: workstation.cmd install|start|stop|status|prepare|certificate|trust|untrust [options]")
 	}
 	cache, _ := os.UserCacheDir()
 	opts := options{}
@@ -102,6 +103,7 @@ func run(args []string) (any, error) {
 	flags.IntVar(&opts.cpus, "cpus", 4, "container CPU limit")
 	flags.BoolVar(&opts.noShortcut, "no-shortcut", false, "omit the Windows shortcut")
 	flags.BoolVar(&opts.openBrowser, "open-browser", false, "open the local desktop after startup")
+	flags.BoolVar(&opts.prepareStatus, "status", false, "report application preparation without starting it")
 	if err := flags.Parse(args[1:]); err != nil {
 		return nil, err
 	}
@@ -125,6 +127,8 @@ func run(args []string) (any, error) {
 		return start(p, directory, opts.openBrowser)
 	case "status":
 		return status(p)
+	case "prepare":
+		return prepare(p, opts.prepareStatus)
 	case "stop":
 		c, err := ownedContainer(p)
 		if err != nil {
@@ -436,7 +440,13 @@ func start(p profile, directory string, open bool) (any, error) {
 				return nil, err
 			}
 		}
+		policy, err := sandboxProfile(directory)
+		if err != nil {
+			return nil, err
+		}
+		defer os.Remove(policy)
 		_, err = docker(p.DockerContext, "run", "--detach", "--name", p.Name, "--platform", "linux/amd64", "--restart", "no",
+			"--security-opt", "seccomp="+policy,
 			"--label", ownerLabel+"="+p.InstallationID, "--publish", fmt.Sprintf("127.0.0.1:%d:3001/tcp", p.Port),
 			"--mount", "type=volume,src="+p.HomeVolume+",dst=/config", "--memory", fmt.Sprintf("%dm", p.MemoryMiB),
 			"--cpus", fmt.Sprint(p.CPUs), "--shm-size", "1g", "--env", "PUID=1000", "--env", "PGID=1000", p.Image)
