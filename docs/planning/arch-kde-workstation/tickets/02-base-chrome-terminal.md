@@ -37,4 +37,4 @@ A base oferece Chrome, Git e Zsh/Oh My Zsh; a preparação inicial mostra progre
 
 ## Blocked by
 
-- T01: Abrir e controlar o desktop Arch/KDE pelo Windows.
+- [T01 / #2](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2): Abrir e controlar o desktop Arch/KDE pelo Windows.

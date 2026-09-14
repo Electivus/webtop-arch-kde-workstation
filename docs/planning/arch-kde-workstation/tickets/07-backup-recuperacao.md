@@ -35,5 +35,5 @@ Um comando salva e recupera projetos, perfil e aplicativos no Windows, mantém d
 
 ## Blocked by
 
-- T03: Desenvolver Salesforce com Stable e Insiders.
-- T04: Preservar projetos Linux e trocar arquivos com Windows.
+- [T03 / #4](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4): Desenvolver Salesforce com Stable e Insiders.
+- [T04 / #5](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/5): Preservar projetos Linux e trocar arquivos com Windows.

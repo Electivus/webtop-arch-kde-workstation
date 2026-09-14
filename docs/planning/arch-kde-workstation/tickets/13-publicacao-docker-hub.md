@@ -40,4 +40,4 @@ As duas imagens aprovadas chegam ao Docker Hub com instruções públicas, tags 
 
 ## Blocked by
 
-- T12: Validar a entrega no Latitude e preparar o roteiro Hyper-V.
+- [T12 / #13](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/13): Validar a entrega no Latitude e preparar o roteiro Hyper-V.

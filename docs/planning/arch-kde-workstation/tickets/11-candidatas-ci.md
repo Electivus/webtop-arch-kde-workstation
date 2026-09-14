@@ -38,4 +38,4 @@ Acionamentos semanal e manual produzem as duas imagens candidatas com versões, 
 
 ## Blocked by
 
-- T03: Desenvolver Salesforce com Stable e Insiders.
+- [T03 / #4](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4): Desenvolver Salesforce com Stable e Insiders.

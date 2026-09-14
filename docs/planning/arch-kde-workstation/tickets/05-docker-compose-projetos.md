@@ -33,4 +33,4 @@ O terminal controla o Docker Desktop existente; um projeto Compose monta seus ar
 
 ## Blocked by
 
-- T04: Preservar projetos Linux e trocar arquivos com Windows.
+- [T04 / #5](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/5): Preservar projetos Linux e trocar arquivos com Windows.

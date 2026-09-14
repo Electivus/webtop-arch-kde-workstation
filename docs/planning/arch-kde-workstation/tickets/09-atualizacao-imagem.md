@@ -38,4 +38,4 @@ O usuário escolhe quando trocar de imagem; o fluxo faz backup, verifica o novo 
 
 ## Blocked by
 
-- T08: Inventariar e restaurar programas extras.
+- [T08 / #9](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/9): Inventariar e restaurar programas extras.

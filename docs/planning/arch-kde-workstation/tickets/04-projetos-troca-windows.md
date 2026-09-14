@@ -31,4 +31,4 @@ Projetos sobrevivem à recriação da workstation e uma pasta de troca permite t
 
 ## Blocked by
 
-- T01: Abrir e controlar o desktop Arch/KDE pelo Windows.
+- [T01 / #2](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2): Abrir e controlar o desktop Arch/KDE pelo Windows.

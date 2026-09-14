@@ -1,6 +1,6 @@
 # Família de imagens - Planning context
 
-Status em 2026-09-14: entendimento consolidado confirmado pelo usuário em Q27; entrevista encerrada e [especificação publicada na issue #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1), com cópia local em [spec.md](spec.md). O [Decision ledger](decision-ledger.md) registra as escolhas confirmadas; este documento não as substitui. DEC-009 inclui Salesforce, DEC-010 limita a entrega atual a duas imagens, DEC-018 define dois repositórios Docker Hub com versões coordenadas, tags fixas e alias stable, e DEC-035 fixa os nomes públicos. A especificação cobre as 34 decisões ativas; os tickets, a implementação e os testes de execução permanecem como próximas etapas.
+Status em 2026-09-14: entendimento consolidado confirmado pelo usuário em Q27; entrevista encerrada e [especificação publicada na issue #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1), com cópia local em [spec.md](spec.md). Os [13 tickets aprovados foram publicados](ticket-plan.md). O [Decision ledger](decision-ledger.md) registra as escolhas confirmadas; este documento não as substitui. DEC-009 inclui Salesforce, DEC-010 limita a entrega atual a duas imagens, DEC-018 define dois repositórios Docker Hub com versões coordenadas, tags fixas e alias stable, e DEC-035 fixa os nomes públicos. A especificação e os tickets cobrem as 34 decisões ativas; a implementação e os testes de execução permanecem como próximas etapas.
 
 ## Variante e versão
 

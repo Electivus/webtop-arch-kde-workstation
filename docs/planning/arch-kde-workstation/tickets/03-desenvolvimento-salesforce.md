@@ -40,4 +40,4 @@ A variante Salesforce abre projetos nos dois VS Codes oficiais, com CLI, extens√
 
 ## Blocked by
 
-- T02: Usar Chrome oficial e terminal preparado na base.
+- [T02 / #3](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/3): Usar Chrome oficial e terminal preparado na base.

@@ -35,4 +35,4 @@ A instalação recebe configuração corporativa opcional e valida a conexão do
 
 ## Blocked by
 
-- T03: Desenvolver Salesforce com Stable e Insiders.
+- [T03 / #4](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4): Desenvolver Salesforce com Stable e Insiders.

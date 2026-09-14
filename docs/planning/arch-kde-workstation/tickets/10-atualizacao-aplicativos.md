@@ -35,4 +35,4 @@ Um comando atualiza editores, Chrome, CLI e extensões, registra versões e perm
 
 ## Blocked by
 
-- T07: Fazer backup e recuperar o estado pessoal.
+- [T07 / #8](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/8): Fazer backup e recuperar o estado pessoal.

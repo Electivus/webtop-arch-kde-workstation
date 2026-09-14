@@ -40,8 +40,8 @@ O candidato é instalado e medido no VMM em Full HD, o perfil de recursos é aju
 
 ## Blocked by
 
-- T05: Executar Docker e Compose a partir dos projetos Linux.
-- T06: Preparar proxy e certificados com diagnóstico.
-- T09: Atualizar a imagem com backup e recuperação.
-- T10: Atualizar aplicativos independentemente da imagem.
-- T11: Produzir e testar candidatas no GitHub Actions.
+- [T05 / #6](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/6): Executar Docker e Compose a partir dos projetos Linux.
+- [T06 / #7](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/7): Preparar proxy e certificados com diagnóstico.
+- [T09 / #10](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/10): Atualizar a imagem com backup e recuperação.
+- [T10 / #11](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/11): Atualizar aplicativos independentemente da imagem.
+- [T11 / #12](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12): Produzir e testar candidatas no GitHub Actions.
