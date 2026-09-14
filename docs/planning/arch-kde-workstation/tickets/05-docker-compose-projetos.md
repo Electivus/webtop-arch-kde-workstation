@@ -23,7 +23,7 @@ O terminal controla o Docker Desktop existente; um projeto Compose monta seus ar
 - Repository: manoelcalixto/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: c1f33c4e8e46de56cf622937e8e55f5adea5ffe7
+- Planning checkpoint: e3577ac0ff5e1cdb4719f65bbe821e729a597e2c
 - Decisions: DEC-013, DEC-015
 
 ### Decision consequences

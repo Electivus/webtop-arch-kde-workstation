@@ -26,7 +26,7 @@ O candidato é instalado e medido no VMM em Full HD, o perfil de recursos é aju
 - Repository: manoelcalixto/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: c1f33c4e8e46de56cf622937e8e55f5adea5ffe7
+- Planning checkpoint: e3577ac0ff5e1cdb4719f65bbe821e729a597e2c
 - Decisions: DEC-002, DEC-004, DEC-005, DEC-023, DEC-030, DEC-031
 
 ### Decision consequences

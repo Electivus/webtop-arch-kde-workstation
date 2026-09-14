@@ -25,7 +25,7 @@ Pacman e AUR têm inventário persistente e restauração assistida; falhas parc
 - Repository: manoelcalixto/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: c1f33c4e8e46de56cf622937e8e55f5adea5ffe7
+- Planning checkpoint: e3577ac0ff5e1cdb4719f65bbe821e729a597e2c
 - Decisions: DEC-019, DEC-022, DEC-029, DEC-032
 
 ### Decision consequences
