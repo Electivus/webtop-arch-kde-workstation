@@ -44,6 +44,8 @@ class ProjectsAcceptance(unittest.TestCase):
         if os.name != "nt":
             exchange.chmod(0o777)
         (exchange / "from-windows.txt").write_text("Windows: ação\n", encoding="utf-8")
+        if os.name != "nt":
+            (exchange / "from-windows.txt").chmod(0o666)
         try:
             command("install", "--profile", profile, "--name", name, "--image", IMAGE,
                     "--port", "13411", "--memory", "2560", "--cpus", "2", "--no-shortcut",
@@ -64,6 +66,7 @@ project.mkdir()
 assert Path('/exchange/from-windows.txt').read_text() == 'Windows: ação\n'
 Path('/exchange/from-windows.txt').write_text('Linux editou\n')
 Path('/exchange/from-linux.txt').write_text('Linux: coração\n')
+Path('/exchange/from-linux.txt').chmod(0o666)
 """)
             self.assertEqual((exchange / "from-windows.txt").read_text(encoding="utf-8"), "Linux editou\n")
             self.assertEqual((exchange / "from-linux.txt").read_text(encoding="utf-8"), "Linux: coração\n")

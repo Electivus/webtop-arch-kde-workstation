@@ -21,3 +21,7 @@ O revisor confirmou refs, HEAD e árvore limpa, inspecionou o diff e executou `g
 ## Encerramento
 
 Nenhuma correção de código necessária e nenhum novo ciclo de revisão. Standards: zero violações e uma sugestão opcional de duplicação; Spec: zero achados. A validação local comprova VMM e não representa execução Hyper-V nem publicação de imagens.
+
+## CI do PR
+
+O [CI 34911976877](https://github.com/manoelcalixto/webtop-arch-kde-workstation/actions/runs/34911976877) aprovou builds, ciclo de vida e preparação da base, mas encontrou `PermissionError` ao alterar `from-windows.txt` na troca Linux. O diretório descartável já permitia escrita pelos dois usuários; os arquivos ainda tinham modo `0644`, e o UID do runner difere do UID 1000 da workstation. Um ensaio Linux com UIDs 1001/1000 reproduziu a recusa nos dois sentidos e confirmou a escrita com modo `0666` somente nesses arquivos de teste. A fixture passou a aplicar esse modo aos dois arquivos de troca; os projetos continuam sujeitos às mesmas verificações de propriedades Linux. A suíte de projetos Windows passou novamente: dois testes, 44,466 s. Trata-se de correção da fixture de CI, sem mudança no produto ou reabertura dos eixos de revisão.
