@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Workstation Projects
+Name[pt_BR]=Projetos da Workstation
+Comment=Open persistent Linux projects
+Exec=dolphin /config/projects
+Icon=folder-development
+Terminal=false
+Categories=Development;

@@ -1,0 +1,18 @@
+services:
+  writer:
+    build: .
+    image: "${COMPOSE_PROJECT_NAME}-writer:local"
+    user: "1000:1000"
+    network_mode: none
+    volumes:
+      - type: volume
+        source: workstation_home
+        target: /workspace
+        volume:
+          nocopy: true
+          subpath: "projects/${WORKSTATION_PROJECT_SUBPATH:-compose-demo}"
+
+volumes:
+  workstation_home:
+    external: true
+    name: "${WORKSTATION_HOME_VOLUME:?Run Compose from the workstation terminal}"

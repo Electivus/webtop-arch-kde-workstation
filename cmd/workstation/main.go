@@ -36,6 +36,7 @@ type profile struct {
 	CPUs           int    `json:"cpus"`
 	HomeVolume     string `json:"homeVolume"`
 	DockerContext  string `json:"dockerContext"`
+	Exchange       string `json:"exchange,omitempty"`
 }
 
 type containerInfo struct {
@@ -69,6 +70,7 @@ type options struct {
 	noShortcut    bool
 	openBrowser   bool
 	prepareStatus bool
+	exchange      string
 }
 
 func main() {
@@ -104,6 +106,7 @@ func run(args []string) (any, error) {
 	flags.BoolVar(&opts.noShortcut, "no-shortcut", false, "omit the Windows shortcut")
 	flags.BoolVar(&opts.openBrowser, "open-browser", false, "open the local desktop after startup")
 	flags.BoolVar(&opts.prepareStatus, "status", false, "report application preparation without starting it")
+	flags.StringVar(&opts.exchange, "exchange", "", "existing host directory for bidirectional file exchange")
 	if err := flags.Parse(args[1:]); err != nil {
 		return nil, err
 	}
@@ -290,7 +293,11 @@ func install(opts options) (any, error) {
 	if _, err := rand.Read(random[:]); err != nil {
 		return nil, err
 	}
-	p := profile{1, hex.EncodeToString(random[:]), opts.name, opts.image, opts.port, opts.memory, opts.cpus, opts.name + "-home", string(selectedContext)}
+	exchange, err := exchangeDirectory(opts.exchange)
+	if err != nil {
+		return nil, err
+	}
+	p := profile{1, hex.EncodeToString(random[:]), opts.name, opts.image, opts.port, opts.memory, opts.cpus, opts.name + "-home", string(selectedContext), exchange}
 	info, err := engine(p)
 	if err != nil {
 		return nil, err
@@ -388,7 +395,8 @@ func status(p profile) (any, error) {
 	}
 	return map[string]any{"state": state, "healthy": healthy, "container": p.Name, "containerId": id,
 		"homeVolume": p.HomeVolume, "image": p.Image, "imageId": imageID, "version": version, "upstreamDigest": upstream,
-		"url": url(p), "engine": info, "limits": map[string]int{"memoryMiB": p.MemoryMiB, "cpus": p.CPUs}}, nil
+		"url": url(p), "engine": info, "storage": map[string]string{"projects": "/config/projects", "exchange": p.Exchange},
+		"limits": map[string]int{"memoryMiB": p.MemoryMiB, "cpus": p.CPUs}}, nil
 }
 
 func start(p profile, directory string, open bool) (any, error) {
@@ -398,6 +406,9 @@ func start(p profile, directory string, open bool) (any, error) {
 	}
 	if int64(p.MemoryMiB) > info.MemoryMiB || p.CPUs > info.CPUs {
 		return nil, errors.New("profile limits exceed the current Docker VM allocation")
+	}
+	if _, err := exchangeDirectory(p.Exchange); err != nil {
+		return nil, err
 	}
 	c, err := ownedContainer(p)
 	if err != nil {
@@ -423,6 +434,9 @@ func start(p profile, directory string, open bool) (any, error) {
 		if images[0].OS != "linux" || images[0].Architecture != "amd64" || (variant != "base" && variant != "salesforce") {
 			return nil, errors.New("selected image is not an Electivus Linux amd64 workstation")
 		}
+		if err := verifyExchange(p); err != nil {
+			return nil, err
+		}
 		volume, err := docker(p.DockerContext, "volume", "ls", "--quiet", "--filter", "name=^"+p.HomeVolume+"$")
 		if err != nil {
 			return nil, err
@@ -445,15 +459,25 @@ func start(p profile, directory string, open bool) (any, error) {
 			return nil, err
 		}
 		defer os.Remove(policy)
-		_, err = docker(p.DockerContext, "run", "--detach", "--name", p.Name, "--platform", "linux/amd64", "--restart", "no",
-			"--security-opt", "seccomp="+policy,
-			"--label", ownerLabel+"="+p.InstallationID, "--publish", fmt.Sprintf("127.0.0.1:%d:3001/tcp", p.Port),
-			"--mount", "type=volume,src="+p.HomeVolume+",dst=/config", "--memory", fmt.Sprintf("%dm", p.MemoryMiB),
-			"--cpus", fmt.Sprint(p.CPUs), "--shm-size", "1g", "--env", "PUID=1000", "--env", "PGID=1000", p.Image)
+		args := []string{"run", "--detach", "--name", p.Name, "--platform", "linux/amd64", "--restart", "no",
+			"--security-opt", "seccomp=" + policy,
+			"--label", ownerLabel + "=" + p.InstallationID, "--publish", fmt.Sprintf("127.0.0.1:%d:3001/tcp", p.Port),
+			"--mount", "type=volume,src=" + p.HomeVolume + ",dst=/config", "--memory", fmt.Sprintf("%dm", p.MemoryMiB),
+			"--mount", "type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock",
+			"--env", "WORKSTATION_HOME_VOLUME=" + p.HomeVolume, "--env", "DOCKER_HOST=unix:///var/run/docker.sock",
+			"--cpus", fmt.Sprint(p.CPUs), "--shm-size", "1g", "--env", "PUID=1000", "--env", "PGID=1000"}
+		if p.Exchange != "" {
+			args = append(args, "--mount", exchangeMount(p.Exchange))
+		}
+		args = append(args, p.Image)
+		_, err = docker(p.DockerContext, args...)
 		if err != nil {
 			return nil, err
 		}
 	} else if !c.State.Running {
+		if err := verifyExchange(p); err != nil {
+			return nil, err
+		}
 		if _, err := docker(p.DockerContext, "container", "start", p.Name); err != nil {
 			return nil, err
 		}

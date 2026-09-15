@@ -52,6 +52,14 @@ O limite menor serve para ensaios locais em uma VM com 4 GiB; não representa o 
 
 O desktop usa interface em inglês, formatos brasileiros, fuso `America/Bahia` e teclado ABNT2. Preferências existentes de idioma e teclado no perfil são preservadas.
 
+## Projetos e Docker
+
+Salve os projetos em `~/projects` (`/config/projects`); o menu **Workstation Projects** abre essa pasta no Dolphin. O volume Linux preserva conteúdo, nomes sensíveis a maiúsculas, permissões e links simbólicos após recriar o container.
+
+Para habilitar a troca de arquivos, crie uma pasta Windows, adicione-a em **Docker Desktop > Settings > Resources > File sharing** e passe `--exchange "C:\caminho\da\pasta"` ao comando `install`. Ela aparece em `~/WindowsExchange` e `/exchange`. O controlador verifica o acesso nos dois sentidos e informa caminhos indisponíveis ou compartilhamento ausente.
+
+Docker e Compose no terminal controlam o mesmo engine do notebook. `workstation-docker-check` verifica a conexão e informa o volume pessoal. O [guia de projetos e Compose](docs/projects.md) contém a configuração CMD, a estratégia de caminhos e um exemplo que constrói uma imagem, monta o projeto Linux e grava resultados persistentes.
+
 ## Aplicativos e terminal
 
 No primeiro desktop, uma janela de terminal mostra o preparo automático. Chrome e os VS Codes são obtidos dos repositórios oficiais dos fornecedores: o preparo verifica a assinatura do índice, o hash e a versão de cada pacote. A imagem contém as fontes, as chaves esperadas e as dependências; os binários proprietários ficam no volume pessoal. Como Arch usa pacman, o preparo extrai os aplicativos dos pacotes oficiais sem executar um gerenciador APT dentro do Arch.
@@ -106,6 +114,8 @@ set WORKSTATION_TEST_IMAGE=electivus/webtop-arch-kde-base:local
 set WORKSTATION_SALESFORCE_TEST_IMAGE=electivus/webtop-arch-kde-salesforce:local
 python tests\test_commands.py
 python tests\test_preparation.py
+python tests\test_projects.py
+python tests\test_docker_projects.py
 python tests\test_salesforce.py
 python tests\browser_acceptance.py
 python tests\browser_apps.py

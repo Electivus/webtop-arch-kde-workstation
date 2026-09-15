@@ -1,0 +1,23 @@
+{
+  "engine": {
+    "engineId": "415af08d-7380-406d-a170-e065f212104f",
+    "engineName": "docker-desktop",
+    "serverVersion": "29.7.2",
+    "composeVersion": "5.5.1",
+    "homeVolume": "ew-compose-f8fa5e6cb7-home"
+  },
+  "project": {
+    "engineId": "415af08d-7380-406d-a170-e065f212104f",
+    "engineName": "docker-desktop",
+    "serverVersion": "29.7.2",
+    "composeVersion": "5.5.1",
+    "homeVolume": "ew-compose-f8fa5e6cb7-home",
+    "project": "/config/projects/compose example",
+    "projectSubpath": "projects/compose example"
+  },
+  "builtFromLocalContext": true,
+  "serviceWroteProject": true,
+  "survivedRecreation": true,
+  "missingPathDiagnosed": true,
+  "unavailableEngineDiagnosed": true
+}
