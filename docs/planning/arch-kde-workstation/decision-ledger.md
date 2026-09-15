@@ -290,12 +290,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/9
-  - verification: none
-
+  - verification: ["ticket ticket #9; commit a6669d01bd3d57c654c1ea77def1da9ed7a12a2c; docs/verification/t08-packages.md: Ten real pacman/makepkg scenarios passed in 557.390 seconds. Official and compiled local/debug recovery, rebuild with changed sources, bounded diagnostics and documented AUR dependency limits demonstrate viability."]
 ## DEC-020
 - Status: active
 - Decision: Oferecer KDE, Chrome oficial, Git, Zsh e Oh My Zsh na base; a variante Salesforce acrescenta VS Code Stable e Insiders, Salesforce CLI, extensoes Salesforce, Java e Node necessarios.
@@ -336,12 +335,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/9; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/10
-  - verification: none
-
+  - verification: ["ticket ticket #9; commit a6669d01bd3d57c654c1ea77def1da9ed7a12a2c; docs/verification/t08-review.md: Persistent inventory distinguishes extras and image components, including the Salesforce baseline. Actual concurrent registrations, sudo proxy use and installation reasons pass. A blocked metadata transaction followed by recreation reproduced lost explicit intent; durable intent correction and all ten package tests pass. Bounded independent review is closed after the final validated batch."]
 ## DEC-023
 - Status: active
 - Decision: Priorizar equilibrio entre Windows e Linux e dimensionar os recursos por testes, usando 8 GiB de RAM e 6 CPUs logicas para a VM Docker como ponto inicial proposto.
@@ -450,7 +448,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/8; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/9; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/10; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/11
-  - verification: ["ticket ticket #8; final reviewed commit 25eff8f08f2c55f654e69c1306b0f6761e871fb5; docs/verification/t07-review.md: Base and Salesforce restore persisted apps, extensions, preferences, projects and network settings. Two valid backups are retained per installation; corruption and 12 invalid profile shapes cannot displace copies or change current data. Low space, extraction failure, missing volume and concurrency cases passed. Standards: zero violations, two deferred heuristics. Spec: two P2 findings corrected and validated.","ticket PR #19 feedback; commit 459a78260059e332ce5642d23c3e8bf905e4a41d; docs/verification/t07-review.md: Manifest payload and archive stream checksums protect recovery and retention. Valid-looking metadata corruption and missing manifest checksum are rejected before interruption; a lost container, volume and old image tag recover through the available recorded image. Twelve backup cases including Salesforce restore passed. All three published bot findings were reproduced and corrected.","ticket PR 19 CI corrections; commit d8c44437d18714ab7f1023c3874d912cf4fea74d; docs/verification/t07-backups.md: Retention, low space and repeated extraction failures passed. The new bounded-diagnostic regression failed with 249203 bytes and passed with 16681 bytes. Hosted-runner disk preparation and current writer inspection address the two first-CI failures; new CI confirmation is pending."]
+  - verification: ["ticket ticket #8; final reviewed commit 25eff8f08f2c55f654e69c1306b0f6761e871fb5; docs/verification/t07-review.md: Base and Salesforce restore persisted apps, extensions, preferences, projects and network settings. Two valid backups are retained per installation; corruption and 12 invalid profile shapes cannot displace copies or change current data. Low space, extraction failure, missing volume and concurrency cases passed. Standards: zero violations, two deferred heuristics. Spec: two P2 findings corrected and validated.","ticket PR #19 feedback; commit 459a78260059e332ce5642d23c3e8bf905e4a41d; docs/verification/t07-review.md: Manifest payload and archive stream checksums protect recovery and retention. Valid-looking metadata corruption and missing manifest checksum are rejected before interruption; a lost container, volume and old image tag recover through the available recorded image. Twelve backup cases including Salesforce restore passed. All three published bot findings were reproduced and corrected.","ticket PR 19 CI corrections; commit d8c44437d18714ab7f1023c3874d912cf4fea74d; docs/verification/t07-backups.md: Retention, low space and repeated extraction failures passed. The new bounded-diagnostic regression failed with 249203 bytes and passed with 16681 bytes. Hosted-runner disk preparation and current writer inspection address the two first-CI failures; new CI confirmation is pending.","ticket ticket #9; commit a6669d01bd3d57c654c1ea77def1da9ed7a12a2c; docs/verification/t08-packages.md: The final package suite restores exact inventory and original build sources from a real backup, then rebuilds and executes the recovered programs. The full thirteen-case backup regression passed before the final localized intent correction."]
 ## DEC-030
 - Status: active
 - Decision: Permitir a primeira publicacao apos os testes locais no Docker VMM, declarando a validacao real em Hyper-V como pendente e entregando um roteiro executavel de verificacao para o notebook de destino.
@@ -494,12 +492,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/9; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/10
-  - verification: none
-
+  - verification: ["ticket ticket #9; commit a6669d01bd3d57c654c1ea77def1da9ed7a12a2c; docs/verification/t08-review.md: Final-image tests preserve a healthy desktop and rendered Chrome page after intentional compilation failure, report partial results and complete retry. Missing supplied Git remains a hard failure. Interrupted metadata reconciliation preserves intent for recreation and retry. Standards has zero violations and two deferred optional heuristics; original and residual Spec P2 paths are corrected and validated."]
 ## DEC-033
 - Status: active
 - Decision: Manter a sessao da workstation e seus processos em execucao ao fechar a aba do Webtop, ate o usuario executar o comando de parar.
