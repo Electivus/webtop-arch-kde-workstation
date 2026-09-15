@@ -106,6 +106,8 @@ workstation.cmd untrust
 
 `untrust` usa os certificados públicos salvos no perfil, incluindo os anteriores e vencidos. Funciona com o container removido, com Docker Desktop parado ou sem o comando Docker disponível. Mantenha o perfil até concluir essa limpeza.
 
+O fluxo de [backup e recuperação](docs/backups.md) cria cópias locais pelo CMD, mantém as duas mais recentes de cada instalação e recupera o volume pessoal, aplicativos preparados e preferências. Ele informa a interrupção necessária e deixa a workstation parada ao concluir.
+
 ## Verificar
 
 Para desenvolvimento, o próprio Docker compila os comandos Windows e Linux com o compilador fixado no Dockerfile. Os testes externos usam Python 3 apenas na máquina de desenvolvimento ou no CI; Python não integra a instalação do notebook.
@@ -121,6 +123,7 @@ python tests\test_docker_projects.py
 python tests\test_salesforce.py
 python tests\test_network.py
 python tests\test_network_apps.py
+python tests\test_backups.py
 python tests\browser_acceptance.py
 python tests\browser_apps.py
 ```

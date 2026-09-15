@@ -30,3 +30,9 @@ Contagens iniciais: Standards 2 violações P2 e 2 heurísticas; Spec 0. As duas
 ## Feedback publicado no PR
 
 O bot `chatgpt-codex-connector` apontou no [PR #18](https://github.com/manoelcalixto/webtop-arch-kde-workstation/pull/18#discussion_r4011274199) que o decoder Go aceitava um primeiro objeto JSON válido seguido de outro objeto ou de texto inválido. O coordenador confirmou o caso pelo CMD: a regressão falhou em 1,307 s porque a configuração foi aceita. A importação passou a exigir EOF depois do primeiro objeto. A mesma prova passou em 3,388 s, cobrindo os dois sufixos inválidos, preservação da configuração anterior, espaços finais válidos e remoção. O export dos comandos passou novamente em gofmt, go vet e build Windows/Linux. Não houve outra alteração no código de rede Linux ou reinício das revisões independentes.
+
+## Integração
+
+O watcher do PR #18 terminou em `ready_to_merge` no head `3565b421215b7a7c43d000ddf3f515e076d46cec`. O [CI 34920509833](https://github.com/manoelcalixto/webtop-arch-kde-workstation/actions/runs/34920509833), job `104227429578`, passou em 22 min 38 s, incluindo os 16 testes da bateria atual. A leitura imediatamente anterior ao merge confirmou `CLEAN`, `MERGEABLE` e ausência de feedback ou threads pendentes. O thread do bot foi resolvido após publicar a correção.
+
+Merge realizado em 2026-09-15 às 02:40:15 UTC: `3de7c81451b9d953a56f5f79710fbce9ad4f9690`. A árvore do merge é idêntica à do head aprovado (`99ec79b2fe9c387ac8187507c8659e2c19b6a116`), e a issue #7 está fechada. O [CI de main 34922068250](https://github.com/manoelcalixto/webtop-arch-kde-workstation/actions/runs/34922068250), job `104232196391`, passou em 28 min 8 s; o acompanhamento terminou com código zero.
