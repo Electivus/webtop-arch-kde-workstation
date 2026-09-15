@@ -28,6 +28,61 @@ def query(*args):
     return subprocess.run(['pacman', *args], check=True, text=True, capture_output=True).stdout
 
 
+def installed_replacements(installed):
+    database = Path(subprocess.run(['pacman-conf', 'DBPath'], check=True,
+                                   text=True, capture_output=True).stdout.strip()) / 'local'
+    replacements = {}
+    for description in database.glob('*/desc'):
+        fields = {}
+        for section in description.read_text().split('\n\n'):
+            lines = section.splitlines()
+            if lines:
+                fields[lines[0]] = lines[1:]
+        names = fields.get('%NAME%', [])
+        if len(names) == 1 and names[0] in installed:
+            replacements[names[0]] = fields.get('%REPLACES%', [])
+    return replacements
+
+
+def replaces_package(declaration, name, version):
+    match = re.fullmatch(r'([a-z0-9@._+][a-z0-9@._+-]*)(?:(<=|>=|=|<|>)(.+))?', declaration)
+    if not match or match[1] != name:
+        return False
+    if not match[2]:
+        return True
+    comparison = int(subprocess.run(['vercmp', version, match[3]], check=True,
+                                    text=True, capture_output=True).stdout.strip())
+    return {'<': comparison < 0, '<=': comparison <= 0, '=': comparison == 0,
+            '>=': comparison >= 0, '>': comparison > 0}[match[2]]
+
+
+def image_components(saved, installed):
+    baseline = package_versions(BASELINE.read_text())
+    fingerprint = hashlib.sha256(BASELINE.read_bytes()).hexdigest()
+    previous = saved.get('imageReplacements', {}) if saved.get('imageFingerprint') == fingerprint else {}
+    declarations = installed_replacements(installed) if baseline.keys() - installed.keys() else {}
+    components, replacements = [], {}
+    for name, version in sorted(baseline.items()):
+        component = {'name': name, 'imageVersion': version, 'installedVersion': installed.get(name),
+                     'state': 'installed' if name in installed else 'missing'}
+        if name not in installed:
+            predecessor = previous.get(name, {'package': name, 'version': version})
+            target = predecessor['package']
+            if target not in installed:
+                candidates = [package for package, values in declarations.items()
+                              if any(replaces_package(value, target, predecessor['version']) for value in values)]
+                target = candidates[0] if len(candidates) == 1 else None
+            if target is not None:
+                component.update(state='replaced', replacement=target, installedVersion=installed[target])
+                replacements[name] = {'package': target, 'version': installed[target]}
+            elif name in previous:
+                # Keep the last accepted identity for a future retry, but an
+                # absent successor still leaves this component missing.
+                replacements[name] = predecessor
+        components.append(component)
+    return components, replacements, fingerprint
+
+
 def inventory():
     try:
         value = json.loads(STATE.read_text())
@@ -70,11 +125,12 @@ def capture(transaction=()):
 
 
 def capture_locked(transaction, completed_restore=None):
-    baseline = package_versions(BASELINE.read_text())
     installed = package_versions(query('-Q'))
     native = set(query('-Qnq').splitlines())
     explicit = set(query('-Qeq').splitlines())
     saved = inventory()
+    components, replacements, fingerprint = image_components(saved, installed)
+    supplied = {entry['name'] for entry in components} | {entry['package'] for entry in replacements.values()}
     if completed_restore is not None:
         saved.pop('restoringReasons', None)
         saved['lastRestore'] = completed_restore
@@ -83,15 +139,15 @@ def capture_locked(transaction, completed_restore=None):
     # so a fresh inventory does not erase the target of assisted recovery.
     removed = set(transaction) - installed.keys()
     extras = {entry['name']: entry for entry in saved['extras']
-              if entry['name'] not in baseline and entry['name'] not in removed}
+              if entry['name'] not in supplied and entry['name'] not in removed}
     for name, version in installed.items():
-        if name not in baseline:
+        if name not in supplied:
             extras[name] = {**extras.get(name, {}), 'name': name, 'version': version,
                             'origin': 'official' if name in native else 'foreign',
                             'reason': reasons.get(name, 'explicit' if name in explicit else 'dependency')}
     saved.update(schema=1, extras=[extras[name] for name in sorted(extras)],
                  capturedAt=datetime.now(timezone.utc).isoformat(),
-                 imageFingerprint=hashlib.sha256(BASELINE.read_bytes()).hexdigest())
+                 imageFingerprint=fingerprint, imageReplacements=replacements)
     save(saved)
     return status()
 
@@ -99,11 +155,7 @@ def capture_locked(transaction, completed_restore=None):
 def status():
     result = inventory()
     installed = package_versions(query('-Q'))
-    baseline = package_versions(BASELINE.read_text())
-    result['imageComponents'] = [{'name': name, 'imageVersion': version,
-                                  'installedVersion': installed.get(name),
-                                  'state': 'installed' if name in installed else 'missing'}
-                                 for name, version in sorted(baseline.items())]
+    result['imageComponents'], _, _ = image_components(result, installed)
     result['extras'] = [{**entry, 'installedVersion': installed.get(entry['name']),
                          'state': 'installed' if entry['name'] in installed else 'missing'}
                         for entry in result['extras']]
@@ -190,7 +242,7 @@ def register_source(name, directory):
     return status()
 
 
-def rebuild(entry, builds):
+def rebuild(entry, builds, desired):
     result = {'name': entry['name'], 'origin': entry['origin'], 'method': 'rebuilt'}
     try:
         source = source_directory(entry['source']['directory'])
@@ -211,8 +263,23 @@ def rebuild(entry, builds):
     matching = build['archives'].get(entry['name'], [])
     if len(matching) != 1:
         return {**result, 'state': 'build-failed', 'diagnostic': 'Build did not produce exactly one archive for the recorded package.'}
-    reason = ['--asdeps'] if entry.get('reason') == 'dependency' else []
-    code, diagnostic = run_package_command('pacman', '-U', '--noconfirm', *reason, '--', matching[0])
+    if 'installation' not in build:
+        related = {entry['name']}
+        for candidate in desired:
+            if candidate['origin'] == 'official' or not candidate.get('source'):
+                continue
+            try:
+                if source_directory(candidate['source']['directory']) == source:
+                    related.add(candidate['name'])
+            except (KeyError, OSError, ValueError):
+                continue
+        archives = [build['archives'][name][0] for name in sorted(related)
+                    if len(build['archives'].get(name, [])) == 1]
+        # Split packages can depend on each other, including in cycles. Pacman
+        # must resolve their recorded outputs in one transaction. Saved reasons
+        # are reconciled for all extras after installation, as for official ones.
+        build['installation'] = run_package_command('pacman', '-U', '--noconfirm', '--', *archives)
+    code, diagnostic = build['installation']
     installed = package_versions(query('-Q'))
     if code or entry['name'] not in installed:
         return {**result, 'state': 'missing', 'diagnostic': diagnostic}
@@ -256,7 +323,7 @@ def restore():
         before = package_versions(query('-Q'))
         if entry['origin'] != 'official':
             if entry.get('source'):
-                result = rebuild(entry, builds)
+                result = rebuild(entry, builds, desired)
             else:
                 result.update(state='manual-required', diagnostic='Register the persistent build source before restoring this package.')
         elif name in before:

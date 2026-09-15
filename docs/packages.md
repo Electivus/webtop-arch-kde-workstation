@@ -13,6 +13,8 @@ Acrescente `--profile "C:\caminho\do\perfil"` para outra instalação. No termin
 
 O diagnóstico informa os componentes da imagem, os extras desejados, as versões efetivamente instaladas e o resultado da última restauração. `origin: official` identifica pacotes presentes nos repositórios pacman configurados; na imagem distribuída, são os repositórios oficiais Arch. `origin: foreign` identifica pacotes AUR/locais que não estão nesses repositórios. Essa classificação não autentica um repositório adicional que o usuário tenha configurado.
 
+Se a atualização Arch substituir um componente por um pacote com outro nome, o inventário reconhece a declaração `replaces` do pacote instalado, incluindo sua condição de versão. O componente aparece como `replaced`, com o nome do sucessor em `replacement`, e continua pertencendo à imagem. A associação persiste para acompanhar novas substituições; remover o último sucessor volta a indicar componente ausente.
+
 ## Registrar uma receita AUR ou local
 
 Mantenha a receita e seus arquivos em uma pasta dentro de `~/projects`, construa e instale o pacote como usuário do desktop e registre a origem persistente:
@@ -32,7 +34,7 @@ O registro não busca uma receita desconhecida na internet. Mantenha os arquivos
 
 ## Restaurar e interpretar o resultado
 
-A restauração verifica os componentes fornecidos pela imagem, executa uma atualização completa `pacman -Syu`, instala os extras oficiais ausentes e recompila as receitas registradas contra o Arch atual. Ela conserva a classificação de instalação explícita ou dependência. Não copia bibliotecas nem binários arbitrários do sistema antigo. Uma receita compartilhada por vários pacotes é compilada uma vez por tentativa.
+A restauração verifica os componentes fornecidos pela imagem, executa uma atualização completa `pacman -Syu`, instala os extras oficiais ausentes e recompila as receitas registradas contra o Arch atual. Ela conserva a classificação de instalação explícita ou dependência. Não copia bibliotecas nem binários arbitrários do sistema antigo. Uma receita compartilhada por vários pacotes é compilada uma vez por tentativa; seus resultados registrados são instalados juntos, permitindo dependências entre esses pacotes.
 
 Se houver interrupção ou falha ao gravar a classificação, as escolhas originais continuam no volume pessoal. Depois de resolver a causa indicada, repita `packages --restore`; essa proteção também vale quando o container precisou ser recriado antes da nova tentativa.
 

@@ -56,6 +56,8 @@ Artefatos locais do lote final: base `sha256:9472b7644b4c4de11d2fdd3669edcb5b5a5
 
 ## Limites
 
+O [feedback publicado da PR #20](t08-review.md) acrescentou dois casos reais: instalação conjunta de pacotes divididos com dependências circulares e substituição assinada de um componente Arch por dois sucessores consecutivos. As duas falhas foram reproduzidas antes da correção. Nas imagens corrigidas, o caso assinado passou em 125,873 s e os outros onze passaram em 918,278 s; o inventário Salesforce passou em 30,018 s incluindo o runner. A remoção do último sucessor e a remoção deliberada do Git continuam sendo falhas obrigatórias. Os artefatos e a separação entre o CI do primeiro SHA e a próxima revisão estão no mesmo registro.
+
 A viabilidade demonstrada abrange pacotes oficiais disponíveis e receitas AUR/locais conhecidas, com recompilação contra a base atual. Não há promessa de preservar binários arbitrários nem de resolver automaticamente dependências AUR. O guia [Programas extras](../packages.md) documenta registro, resultados parciais, nova tentativa e recuperação do backup. A presença dos pacotes fornecidos pela imagem é verificada separadamente do funcionamento dos aplicativos, coberto pela bateria de entrega.
 
 Os testes locais usam Docker VMM. A validação real no Hyper-V de destino continua pertencendo à entrega T12 e não é inferida desses resultados.

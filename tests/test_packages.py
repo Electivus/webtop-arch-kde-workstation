@@ -2,6 +2,7 @@
 import json
 import os
 import re
+import shutil
 import subprocess
 import time
 import unittest
@@ -44,6 +45,88 @@ def install_local_fixture(name, source, package='workstation-local-example', dep
 
 
 class PackageAcceptance(unittest.TestCase):
+    def test_signed_arch_replacements_remain_image_components(self):
+        name = 'ew-packages-replace-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        fixture_image = name + ':fixture'
+        original = 'workstation-image-original'
+        try:
+            context = profile / 'replacement-image'
+            context.mkdir(parents=True)
+            for filename in ['Dockerfile', 'PKGBUILD', 'repository.sh']:
+                shutil.copyfile(ROOT / 'tests/fixtures/replacement-package' / filename, context / filename)
+            shutil.copyfile(ROOT / 'tests/fixtures/extra-package/example.c', context / 'example.c')
+            built = subprocess.run(['docker', 'build', '--build-arg', 'BASE_IMAGE=' + IMAGE,
+                '--tag', fixture_image, str(context)], capture_output=True, text=True, encoding='utf-8', timeout=180)
+            (profile / 'replacement-build.log').write_text(built.stdout + built.stderr, encoding='utf-8')
+            self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+            command('install', '--profile', profile, '--name', name, '--image', fixture_image,
+                    '--port', '13453', '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            configure_test_network(profile)
+            command('start', '--profile', profile)
+            stages = []
+            for stage in ['renamed', 'successor']:
+                docker('exec', name, 'bash', '/tmp/replacement-repository.sh', stage)
+                attempted = invoke(CLI, 'packages', '--profile', profile, '--restore')
+                (profile / (stage + '-restoration.log')).write_text(attempted.stdout + attempted.stderr, encoding='utf-8')
+                self.assertEqual(attempted.returncode, 0, attempted.stderr or attempted.stdout)
+                self.assertEqual(json.loads(attempted.stdout)['state'], 'completed')
+                inventory = command('packages', '--profile', profile)
+                component = next(entry for entry in inventory['imageComponents'] if entry['name'] == original)
+                replacement = 'workstation-image-' + stage
+                self.assertEqual(component['state'], 'replaced', component)
+                self.assertEqual(component['replacement'], replacement)
+                self.assertNotIn(replacement, {entry['name'] for entry in inventory['extras']})
+                self.assertEqual(docker('exec', '--user', 'abc', name, 'workstation-component-probe'),
+                                 'workstation local example')
+                stages.append(component)
+                command('stop', '--profile', profile)
+                command('start', '--profile', profile)
+                self.assertEqual(command('packages', '--profile', profile)['state'], 'ready')
+            docker('exec', name, 'pacman', '-R', '--noconfirm', 'workstation-image-successor')
+            self.assertEqual(command('packages', '--profile', profile)['state'], 'image-component-failure')
+            failed = invoke(CLI, 'packages', '--profile', profile, '--restore')
+            self.assertNotEqual(failed.returncode, 0)
+            self.assertIn(original, failed.stderr)
+            (profile / 'replacement-result.json').write_text(json.dumps({'result': 'passed', 'stages': stages,
+                'removingFinalReplacement': 'image-component-failure'}, indent=2), encoding='utf-8')
+        finally:
+            subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
+            subprocess.run(['docker', 'volume', 'rm', name + '-home'], capture_output=True)
+            subprocess.run(['docker', 'image', 'rm', fixture_image], capture_output=True)
+
+    def test_interdependent_split_packages_restore_together(self):
+        name = 'ew-packages-split-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        source = '/config/projects/paired-packages'
+        first, second = 'workstation-pair-first', 'workstation-pair-second'
+        try:
+            command('install', '--profile', profile, '--name', name, '--image', IMAGE,
+                    '--port', '13452', '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            configure_test_network(profile)
+            command('start', '--profile', profile)
+            docker('exec', '--user', 'abc', name, 'mkdir', '-p', source)
+            docker('cp', str(ROOT / 'tests/fixtures/split-package/PKGBUILD'), name + ':' + source + '/PKGBUILD')
+            docker('cp', str(ROOT / 'tests/fixtures/extra-package/example.c'), name + ':' + source + '/example.c')
+            docker('exec', name, 'chown', '-R', 'abc:abc', source)
+            docker('exec', '--user', 'abc', name, 'workstation-network', 'exec', '--',
+                   'makepkg', '--dir', source, '--force', '--noconfirm', '--install')
+            docker('exec', name, 'pacman', '-D', '--asdeps', second)
+            command('packages', '--profile', profile, '--register', first, '--source', source)
+            command('stop', '--profile', profile)
+            docker('container', 'rm', name)
+            command('start', '--profile', profile)
+            restored = command('packages', '--profile', profile, '--restore')
+            (profile / 'split-result.json').write_text(json.dumps(restored, indent=2), encoding='utf-8')
+            self.assertEqual(restored['state'], 'completed', restored)
+            extras = {entry['name']: entry for entry in command('packages', '--profile', profile)['extras']}
+            for package, reason in [(first, 'explicit'), (second, 'dependency')]:
+                self.assertEqual(extras[package]['reason'], reason)
+                self.assertEqual(docker('exec', '--user', 'abc', name, package), 'workstation local example')
+        finally:
+            subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
+            subprocess.run(['docker', 'volume', 'rm', name + '-home'], capture_output=True)
+
     def test_explicit_dependency_survives_recursive_removal_after_recovery(self):
         self.assert_explicit_dependency_recovery()
 
