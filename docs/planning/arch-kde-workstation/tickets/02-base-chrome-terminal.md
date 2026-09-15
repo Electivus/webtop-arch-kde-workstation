@@ -2,7 +2,7 @@
 
 ## Parent
 
-[Especificacao #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1).
+[Especificacao #1](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1).
 
 ## What to build
 
@@ -21,7 +21,7 @@ A base oferece Chrome, Git e Zsh/Oh My Zsh; a preparação inicial mostra progre
 ## Planning context
 
 - Format: v1
-- Repository: manoelcalixto/webtop-arch-kde-workstation
+- Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
 - Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
@@ -37,4 +37,4 @@ A base oferece Chrome, Git e Zsh/Oh My Zsh; a preparação inicial mostra progre
 
 ## Blocked by
 
-- [T01 / #2](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2): Abrir e controlar o desktop Arch/KDE pelo Windows.
+- [T01 / #2](https://github.com/Electivus/webtop-arch-kde-workstation/issues/2): Abrir e controlar o desktop Arch/KDE pelo Windows.
