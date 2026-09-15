@@ -10,6 +10,7 @@ import shlex
 import ssl
 import subprocess
 import sys
+import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -46,6 +47,21 @@ def user_directory(path, account):
         os.chown(directory, account.pw_uid, account.pw_gid)
 
 
+def write_receipt(path, certificates, variables, account):
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, delete=False) as output:
+            temporary = Path(output.name)
+            os.fchown(output.fileno(), account.pw_uid, account.pw_gid)
+            json.dump({'certificates': certificates, 'environment': variables}, output)
+            output.flush()
+            os.fsync(output.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def apply(config):
     account = pwd.getpwnam('abc')
     if CONFIG.exists():
@@ -57,6 +73,11 @@ def apply(config):
     receipt = STATE / 'managed.json'
     old = json.loads(receipt.read_text()) if receipt.exists() else {'certificates': [], 'environment': []}
     certificates = config.get('certificates', [])
+    fingerprints = [hashlib.sha256(ssl.PEM_cert_to_DER_cert(certificate)).hexdigest() for certificate in certificates]
+    values = environment(config)
+    for fingerprint in old['certificates']:
+        if len(fingerprint) != 64 or any(char not in '0123456789abcdef' for char in fingerprint):
+            raise ValueError('invalid managed certificate receipt')
     legacy_nss = Path('/config/.pki/nssdb')
     nss = legacy_nss if legacy_nss.exists() else Path('/config/.local/share/pki/nssdb')
     if certificates or old['certificates']:
@@ -64,24 +85,29 @@ def apply(config):
         if not (nss / 'cert9.db').exists():
             subprocess.run(['s6-setuidgid', 'abc', 'certutil', '-N', '-d', 'sql:' + str(nss), '--empty-password'],
                            check=True, capture_output=True)
+    # Keep both previous and intended changes recoverable until every trust store
+    # and environment write succeeds. A failed apply can then be retried or cleared.
+    write_receipt(receipt, sorted(set(old['certificates'] + fingerprints)),
+                  sorted(set(old['environment']) | values.keys()), account)
+    known_nicknames = set()
+    if old['certificates']:
+        listed = subprocess.run(['s6-setuidgid', 'abc', 'certutil', '-L', '-d', 'sql:' + str(nss)],
+                                check=True, capture_output=True, text=True)
+        known_nicknames = {parts[0] for line in listed.stdout.splitlines() if len(parts := line.split()) == 2}
     for fingerprint in old['certificates']:
-        if len(fingerprint) != 64 or any(char not in '0123456789abcdef' for char in fingerprint):
-            raise ValueError('invalid managed certificate receipt')
         (ANCHORS / ('electivus-network-' + fingerprint + '.crt')).unlink(missing_ok=True)
-        subprocess.run(['s6-setuidgid', 'abc', 'certutil', '-D', '-d', 'sql:' + str(nss),
-                        '-n', 'electivus-network-' + fingerprint], capture_output=True)
-    fingerprints = []
-    for certificate in certificates:
-        fingerprint = hashlib.sha256(ssl.PEM_cert_to_DER_cert(certificate)).hexdigest()
+        nickname = 'electivus-network-' + fingerprint
+        if nickname in known_nicknames:
+            subprocess.run(['s6-setuidgid', 'abc', 'certutil', '-D', '-d', 'sql:' + str(nss), '-n', nickname],
+                           check=True, capture_output=True)
+    for certificate, fingerprint in zip(certificates, fingerprints):
         filename = ANCHORS / ('electivus-network-' + fingerprint + '.crt')
         filename.write_text(certificate)
         subprocess.run(['s6-setuidgid', 'abc', 'certutil', '-A', '-d', 'sql:' + str(nss),
                         '-n', 'electivus-network-' + fingerprint, '-t', 'C,,', '-i', str(filename)],
                        check=True, capture_output=True)
-        fingerprints.append(fingerprint)
     if certificates or old['certificates']:
         subprocess.run(['update-ca-trust'], check=True, capture_output=True)
-    values = environment(config)
     envdir = Path('/run/s6/container_environment')
     allowed = {'http_proxy', 'https_proxy', 'HTTP_PROXY', 'HTTPS_PROXY', 'no_proxy', 'NO_PROXY',
                'NODE_USE_ENV_PROXY', 'NODE_EXTRA_CA_CERTS'}
@@ -91,9 +117,7 @@ def apply(config):
     for key, value in values.items():
         (envdir / key).write_text(value)
         (envdir / key).chmod(0o600)
-    receipt.write_text(json.dumps({'certificates': fingerprints, 'environment': list(values)}))
-    os.chown(receipt, account.pw_uid, account.pw_gid)
-    receipt.chmod(0o600)
+    write_receipt(receipt, fingerprints, list(values), account)
 
 
 def check(target, config):

@@ -29,9 +29,9 @@ A prova da base foi ampliada para importar a mesma CA que já existia no NSS sob
 
 A inspeção de processos novos das duas imagens, sem executar seus inicializadores, encontrou 121 raízes públicas em cada uma, nenhum proxy por ambiente, nenhuma configuração da instalação, nenhum segredo/anchor de build e nenhum anchor corporativo de runtime. Os digests e resultados estão em [t06-image-privacy.json](t06-image-privacy.json). A leitura dos Dockerfiles confirmou que a CA temporária do BuildKit é removida e o trust é regenerado no mesmo `RUN`; os `COPY` selecionam apenas fontes genéricas do repositório. `.dockerignore` exclui `.local`, que contém os perfis e insumos dos ensaios. Não houve publicação dessas imagens.
 
-## Bateria das imagens reconstruídas
+## Bateria das imagens reconstruídas antes da revisão
 
-As imagens locais finais são base `sha256:bf3720bfc27cdc42a9af6798137571e2d1c53e76678953f5a9619bb8e3d676c3` e Salesforce `sha256:34c0198a3b4164bd6bd844f2137da067c88240055b55d6ddbdcd5b2af5d7c512`. Os argumentos de versão/revisão dos builds locais foram reaproveitados de T02/T03 para preservar o cache; esses labels não representam uma release de T06. Os IDs acima identificam os artefatos efetivamente exercitados a partir da árvore de trabalho.
+As imagens locais dessa bateria são base `sha256:bf3720bfc27cdc42a9af6798137571e2d1c53e76678953f5a9619bb8e3d676c3` e Salesforce `sha256:34c0198a3b4164bd6bd844f2137da067c88240055b55d6ddbdcd5b2af5d7c512`. Os argumentos de versão/revisão dos builds locais foram reaproveitados de T02/T03 para preservar o cache; esses labels não representam uma release de T06. Os IDs acima identificam os artefatos efetivamente exercitados a partir da árvore de trabalho.
 
 | Arquivo | Resultado | Tempo |
 | --- | --- | --- |
@@ -48,3 +48,11 @@ O primeiro segmento parou no preflight do teste de projetos: a pasta do checkout
 A primeira execução final de `test_network_apps.py` falhou em 228,749 s durante o download do Extension Pack do Insiders: o cliente informou desconexão antes de estabelecer TLS com o Marketplace. Chrome, Stable, Insiders, Salesforce CLI e as extensões de Stable já haviam sido preparados pelo proxy. A causa da desconexão não foi estabelecida. O cenário foi repetido isoladamente, sem alteração no código ou nas imagens, e passou em 261,144 s. O [recibo da imagem reconstruída](t06-apps-final.json) confirma a preparação pelos repositórios, o TLS positivo/negativo no extension host dos dois editores e o transporte da CLI Salesforce pelo proxy. Os recursos descartáveis foram removidos pelo teste.
 
 Ao final, os 14 testes passaram, com as duas retomadas descritas acima. Os ensaios locais não representam execução no notebook corporativo Hyper-V nem autenticação em uma organização Salesforce.
+
+## Regressão após a revisão
+
+A [revisão independente](t06-review.md) identificou dois casos de aplicação parcial de certificados. O teste novo reproduziu exclusão NSS sem permissão e falha de `update-ca-trust` após importar uma CA. Depois das correções, os três testes de `test_network.py` passaram em 128,072 s, incluindo os casos anteriores de proxy, TLS, preservação da CA já confiada e retomada. O [recibo da recuperação](t06-network-repair.json) registra os novos casos.
+
+O cenário completo `test_network_apps.py` também passou, em 286,914 s, sem outra repetição; o [recibo após a revisão](t06-apps-after-review.json) registra os dois editores e a CLI. A bateria agora contém 15 testes: os 11 cenários que não foram afetados têm a prova da bateria anterior, e os quatro de rede foram executados nas imagens corrigidas. Sintaxe Python e `git diff --check` passaram após a alteração; os builds conservaram as verificações Go já aprovadas.
+
+As imagens corrigidas são base `sha256:7d936464320a9d1b4970616f58717a4e3e18075f4f4406076029aeaf3981a8f3` e Salesforce `sha256:ece5c66df3c3eac585d20ada634b0f9d2f3b9b36584c168065aeb701441dfeb9`. A [inspeção repetida](t06-image-privacy-after-review.json) confirmou 121 raízes públicas e a ausência dos insumos corporativos em cada imagem. Esses artefatos continuam locais e não publicados.

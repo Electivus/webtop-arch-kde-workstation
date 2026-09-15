@@ -14,6 +14,58 @@ IMAGE = os.environ.get('WORKSTATION_TEST_IMAGE', 'electivus/webtop-arch-kde-base
 
 
 class NetworkAcceptance(unittest.TestCase):
+    def test_failed_certificate_changes_remain_recoverable(self):
+        name = 'ew-network-repair-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        profile.mkdir(parents=True)
+        nss_directory = '/config/.local/share/pki/nssdb'
+        nss = 'sql:' + nss_directory
+        config = profile / 'corporate-input.json'
+        ca = profile / 'corporate-ca.crt'
+
+        def apply_configuration(clear=False):
+            command('network', '--profile', profile, *(['--clear'] if clear else ['--network-config', config]))
+            docker('cp', str(profile / 'network.json'), name + ':/config/.electivus-network.json')
+            return subprocess.run(['docker', 'exec', name, 'workstation-network', 'apply'],
+                                  capture_output=True, text=True, timeout=30)
+
+        try:
+            command('install', '--profile', profile, '--name', name, '--image', IMAGE, '--port', '13423',
+                    '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            command('start', '--profile', profile)
+            docker('exec', name, 'openssl', 'req', '-new', '-x509', '-newkey', 'rsa:2048', '-noenc',
+                   '-days', '2', '-subj', '/CN=Workstation recovery fixture',
+                   '-addext', 'basicConstraints=critical,CA:TRUE', '-addext', 'keyUsage=critical,keyCertSign,cRLSign',
+                   '-keyout', '/tmp/recovery-ca.key', '-out', '/tmp/recovery-ca.crt')
+            docker('cp', name + ':/tmp/recovery-ca.crt', str(ca))
+            config.write_text(json.dumps({'caFiles': [str(ca)]}), encoding='utf-8')
+            self.assertEqual(apply_configuration().returncode, 0)
+            self.assertIn('electivus-network-', docker('exec', '--user', 'abc', name, 'certutil', '-L', '-d', nss))
+
+            # A readable but unwritable NSS database must report failure and remain retryable.
+            docker('exec', name, 'chmod', '500', nss_directory)
+            docker('exec', name, 'chmod', '400', nss_directory + '/cert9.db', nss_directory + '/key4.db')
+            failed_removal = apply_configuration(clear=True)
+            self.assertNotEqual(failed_removal.returncode, 0, 'failed NSS deletion must not report success')
+            docker('exec', name, 'chmod', '700', nss_directory)
+            docker('exec', name, 'chmod', '600', nss_directory + '/cert9.db', nss_directory + '/key4.db')
+            self.assertEqual(apply_configuration(clear=True).returncode, 0)
+            self.assertNotIn('electivus-network-', docker('exec', '--user', 'abc', name, 'certutil', '-L', '-d', nss))
+
+            # Failure after NSS import must still allow a later clear to remove that CA.
+            docker('exec', name, 'chmod', '644', '/usr/bin/update-ca-trust')
+            failed_import = apply_configuration()
+            self.assertNotEqual(failed_import.returncode, 0)
+            self.assertIn('electivus-network-', docker('exec', '--user', 'abc', name, 'certutil', '-L', '-d', nss))
+            docker('exec', name, 'chmod', '755', '/usr/bin/update-ca-trust')
+            self.assertEqual(apply_configuration(clear=True).returncode, 0)
+            self.assertNotIn('electivus-network-', docker('exec', '--user', 'abc', name, 'certutil', '-L', '-d', nss))
+            (profile / 'network-repair-result.json').write_text(json.dumps({'result': 'passed',
+                'failedNSSRemoval': 'reported and recovered', 'failedTrustUpdate': 'import removed on retry'}, indent=2), encoding='utf-8')
+        finally:
+            subprocess.run(['docker', 'container', 'rm', '--force', name], capture_output=True)
+            subprocess.run(['docker', 'volume', 'rm', name + '-home'], capture_output=True)
+
     def test_preparation_retries_after_proxy_repair(self):
         name = 'ew-network-retry-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name
