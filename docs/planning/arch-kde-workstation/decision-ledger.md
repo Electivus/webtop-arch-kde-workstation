@@ -121,12 +121,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/7; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/14
-  - verification: none
-
+  - verification: ["ticket commits abccdd6/24fa1ad; docs/verification/t06-image-privacy-after-review.json: Both rebuilt images retain 121 public roots, no private configuration, proxy environment, corporate runtime anchors or build CA secret."]
 ## DEC-009
 - Status: active
 - Decision: Incluir uma variante da workstation especializada em desenvolvimento Salesforce.
@@ -326,7 +325,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/3; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/7
-  - verification: ["ticket commits d3fc05b/ea1927c; docs/verification/t02-t03-apps.md: Signed repository downloads, persistent installation, progress state, permission retry, interrupted download recovery and automatic manifest validation passed."]
+  - verification: ["ticket commits d3fc05b/ea1927c; docs/verification/t02-t03-apps.md: Signed repository downloads, persistent installation, progress state, permission retry, interrupted download recovery and automatic manifest validation passed.","ticket commits abccdd6/24fa1ad; docs/verification/t06-connectivity.md: Vendor preparation through proxy, sanitized failure, and retry after configuration repair passed; both editors and Salesforce CLI prepared from official sources."]
 ## DEC-022
 - Status: active
 - Decision: Incluir inventario persistente de pacotes e restauracao assistida para programas extras, tratando pacman e AUR separadamente e validando a viabilidade na implementacao.
@@ -527,12 +526,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/7
-  - verification: none
-
+  - verification: ["ticket commits abccdd6/24fa1ad; docs/verification/t06-review.md; docs/verification/t06-connectivity.md: CMD optional configuration, real proxy and TLS in all supplied clients, invalid CA rejection, preexisting trust preservation, removal, failure journaling and recovery passed; two-axis review completed with one fix batch."]
 ## DEC-035
 - Status: active
 - Decision: Usar electivus/webtop-arch-kde-base e electivus/webtop-arch-kde-salesforce como nomes dos dois repositorios publicos no Docker Hub.
