@@ -14,6 +14,22 @@ IMAGE = os.environ.get('WORKSTATION_TEST_IMAGE', 'electivus/webtop-arch-kde-base
 
 
 class NetworkAcceptance(unittest.TestCase):
+    def test_invalid_trailing_json_preserves_network_configuration(self):
+        name = 'ew-network-json-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        config = profile / 'network-input.json'
+        command('install', '--profile', profile, '--name', name, '--image', IMAGE,
+                '--memory', '2560', '--cpus', '2', '--no-shortcut')
+        for suffix in [' trailing garbage', ' {"caFiles": []}']:
+            config.write_text('{"proxy":"http://proxy.example:8080"}' + suffix, encoding='utf-8')
+            rejected = invoke(CLI, 'network', '--profile', profile, '--network-config', config)
+            self.assertNotEqual(rejected.returncode, 0, 'the whole input must be a single valid JSON object')
+            self.assertIn('invalid network JSON', rejected.stderr)
+            self.assertFalse(command('network', '--profile', profile)['proxyConfigured'])
+        config.write_text('{"proxy":"http://proxy.example:8080"}\n\t ', encoding='utf-8')
+        self.assertTrue(command('network', '--profile', profile, '--network-config', config)['proxyConfigured'])
+        self.assertFalse(command('network', '--profile', profile, '--clear')['proxyConfigured'])
+
     def test_failed_certificate_changes_remain_recoverable(self):
         name = 'ew-network-repair-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name

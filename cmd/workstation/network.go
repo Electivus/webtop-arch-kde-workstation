@@ -8,6 +8,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	neturl "net/url"
 	"os"
 	"os/exec"
@@ -38,7 +39,7 @@ func importNetwork(source string) (networkConfiguration, error) {
 	}
 	decoder := json.NewDecoder(bytes.NewReader(bytes.TrimPrefix(data, []byte{0xef, 0xbb, 0xbf})))
 	decoder.DisallowUnknownFields()
-	if len(data) > 1024*1024 || decoder.Decode(&input) != nil {
+	if len(data) > 1024*1024 || decoder.Decode(&input) != nil || decoder.Decode(new(any)) != io.EOF {
 		return config, errors.New("invalid network JSON; use proxy, noProxy and caFiles only")
 	}
 	if input.Proxy != "" {

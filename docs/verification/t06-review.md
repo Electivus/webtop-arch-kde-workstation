@@ -26,3 +26,7 @@ Uma única rodada de correções trata os dois achados de Standards. A aplicaç�
 As correções ficaram restritas às causas citadas e sua regressão. Não houve pedido explícito dos revisores por outra passagem, nem mudança de interface pública, requisito ou arquitetura fora desses achados; aplica-se a regra terminal da skill, sem reiniciar os dois eixos. A verificação final dos cenários afetados nas imagens reconstruídas está registrada no relatório de conectividade.
 
 Contagens iniciais: Standards 2 violações P2 e 2 heurísticas; Spec 0. As duas violações foram corrigidas e verificadas pelo coordenador; as duas heurísticas permanecem adiadas. Nenhum outro achado residual foi identificado nesta rodada.
+
+## Feedback publicado no PR
+
+O bot `chatgpt-codex-connector` apontou no [PR #18](https://github.com/manoelcalixto/webtop-arch-kde-workstation/pull/18#discussion_r4011274199) que o decoder Go aceitava um primeiro objeto JSON válido seguido de outro objeto ou de texto inválido. O coordenador confirmou o caso pelo CMD: a regressão falhou em 1,307 s porque a configuração foi aceita. A importação passou a exigir EOF depois do primeiro objeto. A mesma prova passou em 3,388 s, cobrindo os dois sufixos inválidos, preservação da configuração anterior, espaços finais válidos e remoção. O export dos comandos passou novamente em gofmt, go vet e build Windows/Linux. Não houve outra alteração no código de rede Linux ou reinício das revisões independentes.
