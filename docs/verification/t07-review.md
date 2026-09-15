@@ -43,3 +43,9 @@ O bot `chatgpt-codex-connector` publicou três achados adicionais na [PR #19](ht
 Essas correções respondem ao feedback publicado do watcher, sem reiniciar os dois eixos independentes. As fixtures de perfil inválido e tar malformado passaram a fornecer um checksum de manifesto coerente para continuar exercitando as falhas estruturais e de extração, além da verificação de integridade.
 
 A bateria completa de backup passou nos artefatos reconstruídos: 12 testes em 1.030,865 s, incluindo recuperação Salesforce e os três casos do review. Gofmt, go vet e builds Windows/Linux também passaram. A aceitação Linux/CI deste novo commit e o fechamento dos três threads serão registrados na integração.
+
+## Correções orientadas pelo CI
+
+O primeiro CI da PR aprovou os 16 cenários anteriores e oito dos dez cenários de backup publicados, mas falhou por falta de disco na recuperação Salesforce e por classificar a workstation como escritora depois da parada. A preparação do runner libera ferramentas não utilizadas e exige 32 GiB antes do build; o bloqueio consulta o estado atual da inspeção. A hipótese de listagem desatualizada não foi reproduzida na sonda local de 150 ciclos e será confrontada com o novo CI.
+
+A amplificação do diagnóstico foi reproduzida com extração real e corrigida com um limite de 16 KiB mais aviso, sem deixar de drenar a saída. Os quatro cenários afetados passaram em 279,397 s, com os dados originais preservados. O [relatório de validação](t07-backups.md#falhas-do-primeiro-ci-da-pr) registra os logs, o contraste entre evidência e hipótese, os checks de build/workflow e os limites desta repetição. Não houve nova rodada dos eixos independentes.

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -199,6 +198,7 @@ func otherVolumeWriters(p profile, allowed string) error {
 	}
 	var containers []struct {
 		Name   string
+		State  struct{ Running bool }
 		Mounts []struct {
 			Name string
 			RW   bool
@@ -208,7 +208,7 @@ func otherVolumeWriters(p profile, allowed string) error {
 		return err
 	}
 	for _, container := range containers {
-		if strings.TrimPrefix(container.Name, "/") == allowed {
+		if !container.State.Running || strings.TrimPrefix(container.Name, "/") == allowed {
 			continue
 		}
 		for _, mount := range container.Mounts {
@@ -263,11 +263,36 @@ func volumeCommand(p profile, image, volume string, readOnly bool, program strin
 	return append(invocation, args...)
 }
 
+type transferDiagnostic struct {
+	data    []byte
+	omitted bool
+}
+
+func (d *transferDiagnostic) Write(data []byte) (int, error) {
+	count := len(data)
+	remaining := 16*1024 - len(d.data)
+	if len(data) > remaining {
+		data = data[:remaining]
+		d.omitted = true
+	}
+	d.data = append(d.data, data...)
+	// Always drain stderr so a long sequence of tar failures cannot stall Docker.
+	return count, nil
+}
+
+func (d *transferDiagnostic) String() string {
+	message := string(d.data)
+	if d.omitted {
+		message += "\n[additional diagnostic output omitted]"
+	}
+	return message
+}
+
 func streamVolume(p profile, input io.Reader, output io.Writer, args []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
 	defer cancel()
 	command := exec.CommandContext(ctx, "docker", append([]string{"--context", p.DockerContext}, args...)...)
-	var diagnostic bytes.Buffer
+	var diagnostic transferDiagnostic
 	command.Stdin, command.Stdout, command.Stderr = input, output, &diagnostic
 	if err := command.Run(); err != nil {
 		return fmt.Errorf("backup transfer failed (check disk space and archive integrity): %w: %s", err, strings.TrimSpace(diagnostic.String()))

@@ -34,6 +34,49 @@ def write_manifest(directory, manifest):
 
 
 class BackupAcceptance(unittest.TestCase):
+    def test_repeated_extraction_errors_have_bounded_diagnostics(self):
+        name = 'ew-backup-errors-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        try:
+            command('install', '--profile', profile, '--name', name, '--image', IMAGE,
+                    '--port', '13442', '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            command('start', '--profile', profile)
+            docker('exec', '--user', 'abc', name, 'python3', '-c',
+                   'from pathlib import Path; Path("/config/projects/live.txt").write_text("preserved data")')
+            saved = command('backup', '--profile', profile)
+            command('start', '--profile', profile)
+            original_profile = (profile / 'profile.json').read_bytes()
+            broken = profile / 'broken' / saved['id']
+            broken.mkdir(parents=True)
+            conflicting = io.BytesIO()
+            with tarfile.open(fileobj=conflicting, mode='w') as archive:
+                archive.addfile(tarfile.TarInfo('collision'))
+                for number in range(5000):
+                    archive.addfile(tarfile.TarInfo('collision/' + str(number)))
+            payload = conflicting.getvalue()
+            manifest = json.loads((Path(saved['directory']) / 'manifest.json').read_text())
+            manifest.update(bytes=len(payload), sha256=hashlib.sha256(payload).hexdigest())
+            (broken / 'home.tar').write_bytes(payload)
+            write_manifest(broken, manifest)
+            rejected = invoke(CLI, 'restore', '--profile', profile, '--backup', broken)
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn('restore failed', rejected.stderr.lower())
+            self.assertIn('Not a directory', rejected.stderr)
+            self.assertLess(len(rejected.stderr.encode('utf-8')), 20 * 1024)
+            self.assertIn('additional diagnostic output omitted', rejected.stderr)
+            self.assertEqual((profile / 'profile.json').read_bytes(), original_profile)
+            command('start', '--profile', profile)
+            self.assertEqual(docker('exec', '--user', 'abc', name, 'cat', '/config/projects/live.txt'), 'preserved data')
+            (profile / 'diagnostic-result.json').write_text(json.dumps({'result': 'passed',
+                'conflictingEntries': 5000, 'stderrBytes': len(rejected.stderr.encode('utf-8')),
+                'profileAndOriginalVolume': 'preserved'}, indent=2), encoding='utf-8')
+        finally:
+            subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
+            for volume in docker('volume', 'ls', '--filter', 'name=' + name + '-home', '--format', '{{.Name}}').splitlines():
+                subprocess.run(['docker', 'volume', 'rm', volume], capture_output=True)
+            discard_backup_archives(profile / 'backups')
+            discard_backup_archives(profile / 'broken')
+
     def test_archive_replaced_after_validation_cannot_be_committed(self):
         name = 'ew-backup-race-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name
