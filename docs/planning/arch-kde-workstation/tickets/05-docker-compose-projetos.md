@@ -2,7 +2,7 @@
 
 ## Parent
 
-[Especificacao #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1).
+[Especificacao #1](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1).
 
 ## What to build
 
@@ -20,7 +20,7 @@ O terminal controla o Docker Desktop existente; um projeto Compose monta seus ar
 ## Planning context
 
 - Format: v1
-- Repository: manoelcalixto/webtop-arch-kde-workstation
+- Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
 - Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
@@ -33,4 +33,4 @@ O terminal controla o Docker Desktop existente; um projeto Compose monta seus ar
 
 ## Blocked by
 
-- [T04 / #5](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/5): Preservar projetos Linux e trocar arquivos com Windows.
+- [T04 / #5](https://github.com/Electivus/webtop-arch-kde-workstation/issues/5): Preservar projetos Linux e trocar arquivos com Windows.

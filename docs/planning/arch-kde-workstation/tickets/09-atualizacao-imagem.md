@@ -2,7 +2,7 @@
 
 ## Parent
 
-[Especificacao #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1).
+[Especificacao #1](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1).
 
 ## What to build
 
@@ -22,7 +22,7 @@ O usuário escolhe quando trocar de imagem; o fluxo faz backup, verifica o novo 
 ## Planning context
 
 - Format: v1
-- Repository: manoelcalixto/webtop-arch-kde-workstation
+- Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
 - Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
@@ -38,4 +38,4 @@ O usuário escolhe quando trocar de imagem; o fluxo faz backup, verifica o novo 
 
 ## Blocked by
 
-- [T08 / #9](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/9): Inventariar e restaurar programas extras.
+- [T08 / #9](https://github.com/Electivus/webtop-arch-kde-workstation/issues/9): Inventariar e restaurar programas extras.

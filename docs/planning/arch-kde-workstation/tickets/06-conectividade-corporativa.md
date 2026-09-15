@@ -2,7 +2,7 @@
 
 ## Parent
 
-[Especificacao #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1).
+[Especificacao #1](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1).
 
 ## What to build
 
@@ -21,7 +21,7 @@ A instalação recebe configuração corporativa opcional e valida a conexão do
 ## Planning context
 
 - Format: v1
-- Repository: manoelcalixto/webtop-arch-kde-workstation
+- Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
 - Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
@@ -35,4 +35,4 @@ A instalação recebe configuração corporativa opcional e valida a conexão do
 
 ## Blocked by
 
-- [T03 / #4](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4): Desenvolver Salesforce com Stable e Insiders.
+- [T03 / #4](https://github.com/Electivus/webtop-arch-kde-workstation/issues/4): Desenvolver Salesforce com Stable e Insiders.
