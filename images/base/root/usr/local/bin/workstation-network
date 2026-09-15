@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+"""Apply local network trust and run connectivity checks without disclosing private inputs."""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import pwd
+import shlex
+import ssl
+import subprocess
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+CONFIG = Path('/config/.electivus-network.json')
+STATE = Path('/config/.local/state/electivus/network')
+ANCHORS = Path('/etc/ca-certificates/trust-source/anchors')
+
+
+def configuration():
+    return json.loads(CONFIG.read_text()) if CONFIG.exists() else {}
+
+
+def environment(config):
+    result = {}
+    if config.get('proxy'):
+        for key in ['http_proxy', 'https_proxy', 'HTTP_PROXY', 'HTTPS_PROXY']:
+            result[key] = config['proxy']
+        bypass = ','.join(['localhost', '127.0.0.1', '::1', *config.get('noProxy', [])])
+        result.update(no_proxy=bypass, NO_PROXY=bypass, NODE_USE_ENV_PROXY='1')
+    if config.get('certificates'):
+        result['NODE_EXTRA_CA_CERTS'] = '/etc/ssl/certs/ca-certificates.crt'
+    return result
+
+
+def user_directory(path, account):
+    missing = []
+    cursor = path
+    while not cursor.exists():
+        missing.append(cursor)
+        cursor = cursor.parent
+    for directory in reversed(missing):
+        directory.mkdir()
+        os.chown(directory, account.pw_uid, account.pw_gid)
+
+
+def apply(config):
+    account = pwd.getpwnam('abc')
+    if CONFIG.exists():
+        os.chown(CONFIG, account.pw_uid, account.pw_gid)
+        CONFIG.chmod(0o600)
+    user_directory(STATE, account)
+    os.chown(STATE, account.pw_uid, account.pw_gid)
+    STATE.chmod(0o700)
+    receipt = STATE / 'managed.json'
+    old = json.loads(receipt.read_text()) if receipt.exists() else {'certificates': [], 'environment': []}
+    certificates = config.get('certificates', [])
+    legacy_nss = Path('/config/.pki/nssdb')
+    nss = legacy_nss if legacy_nss.exists() else Path('/config/.local/share/pki/nssdb')
+    if certificates or old['certificates']:
+        user_directory(nss, account)
+        if not (nss / 'cert9.db').exists():
+            subprocess.run(['s6-setuidgid', 'abc', 'certutil', '-N', '-d', 'sql:' + str(nss), '--empty-password'],
+                           check=True, capture_output=True)
+    for fingerprint in old['certificates']:
+        if len(fingerprint) != 64 or any(char not in '0123456789abcdef' for char in fingerprint):
+            raise ValueError('invalid managed certificate receipt')
+        (ANCHORS / ('electivus-network-' + fingerprint + '.crt')).unlink(missing_ok=True)
+        subprocess.run(['s6-setuidgid', 'abc', 'certutil', '-D', '-d', 'sql:' + str(nss),
+                        '-n', 'electivus-network-' + fingerprint], capture_output=True)
+    fingerprints = []
+    for certificate in certificates:
+        fingerprint = hashlib.sha256(ssl.PEM_cert_to_DER_cert(certificate)).hexdigest()
+        filename = ANCHORS / ('electivus-network-' + fingerprint + '.crt')
+        filename.write_text(certificate)
+        subprocess.run(['s6-setuidgid', 'abc', 'certutil', '-A', '-d', 'sql:' + str(nss),
+                        '-n', 'electivus-network-' + fingerprint, '-t', 'C,,', '-i', str(filename)],
+                       check=True, capture_output=True)
+        fingerprints.append(fingerprint)
+    if certificates or old['certificates']:
+        subprocess.run(['update-ca-trust'], check=True, capture_output=True)
+    values = environment(config)
+    envdir = Path('/run/s6/container_environment')
+    allowed = {'http_proxy', 'https_proxy', 'HTTP_PROXY', 'HTTPS_PROXY', 'no_proxy', 'NO_PROXY',
+               'NODE_USE_ENV_PROXY', 'NODE_EXTRA_CA_CERTS'}
+    for key in old['environment']:
+        if key in allowed:
+            (envdir / key).unlink(missing_ok=True)
+    for key, value in values.items():
+        (envdir / key).write_text(value)
+        (envdir / key).chmod(0o600)
+    receipt.write_text(json.dumps({'certificates': fingerprints, 'environment': list(values)}))
+    os.chown(receipt, account.pw_uid, account.pw_gid)
+    receipt.chmod(0o600)
+
+
+def check(target, config):
+    parsed = urllib.parse.urlsplit(target)
+    if parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password:
+        raise ValueError('check requires an HTTPS URL without credentials')
+    os.environ.update(environment(config))
+    results = []
+    try:
+        with urllib.request.urlopen(target, timeout=20) as response:
+            response.read(1)
+        results.append({'application': 'preparation', 'state': 'connected'})
+    except Exception as error:
+        category = 'tls' if 'CERTIFICATE_VERIFY_FAILED' in str(error) else 'proxy-or-network'
+        results.append({'application': 'preparation', 'state': 'failed', 'category': category})
+    try:
+        git = subprocess.run(['git', '-c', 'http.sslVerify=true', 'ls-remote', target],
+                             capture_output=True, timeout=25)
+        if git.returncode:
+            diagnostic = git.stderr.decode(errors='replace').lower()
+            category = 'tls' if 'certificate' in diagnostic else 'proxy-network-or-git-endpoint'
+            results.append({'application': 'git', 'state': 'failed', 'category': category})
+        else:
+            results.append({'application': 'git', 'state': 'connected'})
+    except subprocess.TimeoutExpired:
+        results.append({'application': 'git', 'state': 'failed', 'category': 'timeout'})
+    successful = all(result['state'] == 'connected' for result in results)
+    print(json.dumps({'state': 'connected' if successful else 'failed', 'checks': results,
+                      'proxyConfigured': bool(config.get('proxy')), 'certificateCount': len(config.get('certificates', []))}))
+    return 0 if successful else 1
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    actions = parser.add_subparsers(dest='action', required=True)
+    actions.add_parser('apply')
+    actions.add_parser('shell')
+    for action in ['exec', 'exec-chromium']:
+        actions.add_parser(action).add_argument('command', nargs=argparse.REMAINDER)
+    actions.add_parser('check').add_argument('--url', default='https://github.com/git/git.git')
+    args = parser.parse_args()
+    config = configuration()
+    if args.action == 'apply':
+        apply(config)
+    elif args.action == 'shell':
+        for key, value in environment(config).items():
+            print('export ' + key + '=' + shlex.quote(value))
+    elif args.action in ['exec', 'exec-chromium']:
+        rest = args.command
+        if rest and rest[0] == '--':
+            rest.pop(0)
+        if not rest:
+            raise ValueError('exec requires a command')
+        os.environ.update(environment(config))
+        if args.action == 'exec-chromium' and config.get('proxy'):
+            proxy = urllib.parse.urlsplit(config['proxy'])
+            # Chromium handles proxy authentication in its own credential UI.
+            address = proxy.scheme + '://' + proxy.netloc.rsplit('@', 1)[-1]
+            bypass = ';'.join(['localhost', '127.0.0.1', '[::1]', *config.get('noProxy', [])])
+            rest = [rest[0], '--proxy-server=' + address, '--proxy-bypass-list=' + bypass, *rest[1:]]
+        os.execvp(rest[0], rest)
+    else:
+        return check(args.url, config)
+    return 0
+
+
+if __name__ == '__main__':
+    try:
+        sys.exit(main())
+    except Exception:
+        print('Network configuration failed. Check local JSON, CA files and permissions; private details were omitted.', file=sys.stderr)
+        sys.exit(1)

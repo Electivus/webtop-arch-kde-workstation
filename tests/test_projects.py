@@ -9,6 +9,7 @@ import uuid
 from test_commands import ROOT, CLI, command, docker, invoke
 
 IMAGE = os.environ.get("WORKSTATION_TEST_IMAGE", "electivus/webtop-arch-kde-base:t04")
+EXCHANGE_DIRECTORY = Path(os.environ.get("WORKSTATION_TEST_EXCHANGE_DIRECTORY", str(ROOT / ".local" / "exchange")))
 
 
 class ProjectsAcceptance(unittest.TestCase):
@@ -37,7 +38,7 @@ class ProjectsAcceptance(unittest.TestCase):
     def test_linux_project_and_bidirectional_exchange_survive_recreation(self):
         name = "ew-project-" + uuid.uuid4().hex[:10]
         profile = ROOT / ".local" / name
-        exchange = ROOT / ".local" / "exchange" / name / "troca com Windows, ação"
+        exchange = EXCHANGE_DIRECTORY / name / "troca com Windows, ação"
         exchange.mkdir(parents=True)
         # The CI runner UID differs from the desktop UID. Only this disposable
         # exchange directory is made writable to both users.

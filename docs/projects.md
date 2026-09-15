@@ -55,4 +55,11 @@ Se o diagnóstico informar um caminho inexistente, crie ou corrija a pasta e con
 
 `tests/test_projects.py` exercita conteúdo, nomes, modo executável, links, troca nos dois sentidos e recriação pelos comandos entregues. No Windows, o teste também verifica a mensagem para uma pasta não compartilhada. Para o ensaio local, compartilhe somente `<checkout>\.local\exchange` no Docker Desktop; as pastas de dados descartáveis são criadas abaixo desse caminho.
 
+Em outro checkout ou worktree, é possível reutilizar uma pasta de testes já compartilhada, definindo `WORKSTATION_TEST_EXCHANGE_DIRECTORY` antes de executar a suíte. Cada execução cria seu próprio subdiretório; o teste continua verificando o caminho realmente montado e as alterações nos dois sentidos.
+
+```bat
+set "WORKSTATION_TEST_EXCHANGE_DIRECTORY=C:\pasta-de-testes-ja-compartilhada"
+python tests\test_projects.py
+```
+
 `tests/test_docker_projects.py` compara a identidade do engine com o host, modifica um script do contexto antes do build, sobe o serviço, verifica sua escrita no projeto e repete após recriar a workstation. Também verifica diagnósticos para caminho inexistente e engine inacessível. Os testes limpam somente seus containers, imagens de exemplo e volumes; recibos ficam em `.local/`.

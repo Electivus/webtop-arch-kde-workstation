@@ -70,6 +70,7 @@ COPY --chmod=755 images/base/root/usr/local/bin/ /usr/local/bin/
 COPY images/base/root/usr/share/applications/ /usr/share/applications/
 COPY images/base/root/etc/xdg/autostart/ /etc/xdg/autostart/
 COPY images/base/root/etc/electivus/ /etc/electivus/
+RUN printf '\n%s\n' 'eval "$(workstation-network shell)"' >>/etc/zsh/zshenv
 COPY --from=commands /out/workstation.exe /out/workstation.cmd /out/setup.cmd /opt/electivus/windows/
 COPY --from=commands /out/licenses/ /opt/electivus/windows/licenses/
 

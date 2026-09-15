@@ -18,7 +18,7 @@ func prepare(p profile, statusOnly bool) (any, error) {
 	if c == nil || !c.State.Running {
 		return nil, errors.New("start the workstation before preparing applications")
 	}
-	args := []string{"--context", p.DockerContext, "exec", "--user", "abc", p.Name, "workstation-apps"}
+	args := []string{"--context", p.DockerContext, "exec", "--user", "abc", p.Name, "workstation-network", "exec", "workstation-apps"}
 	if statusOnly {
 		args = append(args, "--status")
 	}

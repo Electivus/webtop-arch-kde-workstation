@@ -43,3 +43,7 @@ jobs:
         run: python3 tests/test_docker_projects.py
       - name: Exercise both editors, Salesforce services and interrupted preparation
         run: python3 tests/test_salesforce.py
+      - name: Exercise optional proxy, CA trust, removal and preparation recovery
+        run: python3 tests/test_network.py
+      - name: Exercise editor and Salesforce connections through the configured proxy
+        run: python3 tests/test_network_apps.py
