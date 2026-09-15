@@ -44,6 +44,43 @@ def install_local_fixture(name, source, package='workstation-local-example', dep
 
 
 class PackageAcceptance(unittest.TestCase):
+    def test_explicit_dependency_survives_recursive_removal_after_recovery(self):
+        name = 'ew-packages-explicit-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        selected = ['httpie', 'python-requests-toolbelt']
+        try:
+            command('install', '--profile', profile, '--name', name, '--image', IMAGE,
+                    '--port', '13450', '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            configure_test_network(profile)
+            command('start', '--profile', profile)
+            docker('exec', name, 'workstation-network', 'exec', '--', 'pacman', '-Syu', '--needed',
+                   '--disable-download-timeout', '--noprogressbar', '--noconfirm', *selected)
+            original = {entry['name']: entry for entry in command('packages', '--profile', profile)['extras']}
+            for package in selected:
+                self.assertEqual(original[package]['reason'], 'explicit')
+            command('stop', '--profile', profile)
+            docker('container', 'rm', name)
+            command('start', '--profile', profile)
+            result = command('packages', '--profile', profile, '--restore')
+            self.assertEqual(result['state'], 'completed', result)
+            restored = {entry['name']: entry for entry in command('packages', '--profile', profile)['extras']}
+            # httpie sorts first and installs toolbelt as a dependency. The
+            # user's separately selected toolbelt must survive removing httpie.
+            docker('exec', name, 'pacman', '-Rs', '--noconfirm', 'httpie')
+            remaining = subprocess.run(['docker', 'exec', '--user', 'abc', name, 'python3', '-c',
+                'import requests_toolbelt; print(requests_toolbelt.__version__)'], capture_output=True, text=True)
+            (profile / 'explicit-dependency-result.json').write_text(json.dumps({'restoration': result,
+                'selectedReasons': {package: restored[package]['reason'] for package in selected},
+                'toolbeltAfterRecursiveRemovalExit': remaining.returncode,
+                'toolbeltAfterRecursiveRemoval': remaining.stdout.strip()}, indent=2), encoding='utf-8')
+            for package in selected:
+                self.assertEqual(restored[package]['reason'], 'explicit', restored[package])
+            self.assertEqual(remaining.returncode, 0, remaining.stderr)
+            self.assertTrue(remaining.stdout.strip())
+        finally:
+            subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
+            subprocess.run(['docker', 'volume', 'rm', name + '-home'], capture_output=True)
+
     def test_makepkg_dependency_installation_uses_the_profile_proxy_after_sudo(self):
         name = 'ew-packages-proxy-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name

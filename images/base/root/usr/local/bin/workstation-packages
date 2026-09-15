@@ -215,6 +215,20 @@ def rebuild(entry, builds):
     return {**result, 'state': 'restored', 'installedVersion': installed[entry['name']]}
 
 
+def restore_reasons(desired):
+    # Installing one extra may pull another desired extra in as a dependency.
+    # Reconcile intent after all installations, including packages skipped as
+    # already present, before capture records the final package database.
+    installed = package_versions(query('-Q'))
+    for reason, option in [('explicit', '--asexplicit'), ('dependency', '--asdeps')]:
+        names = sorted({entry['name'] for entry in desired
+                        if entry['name'] in installed and entry.get('reason') == reason})
+        if names:
+            code, diagnostic = run_package_command('pacman', '-D', option, '--', *names)
+            if code:
+                raise RuntimeError('Could not restore saved package installation reasons: ' + diagnostic)
+
+
 def restore():
     require_image_components()
     desired = inventory()['extras']
@@ -245,6 +259,7 @@ def restore():
             else:
                 result.update(state='restored', installedVersion=installed[name])
         results.append(result)
+    restore_reasons(desired)
     capture()
     require_image_components()
     report = {'state': 'completed' if all(entry['state'] in {'restored', 'installed'} for entry in results) else 'partial',
