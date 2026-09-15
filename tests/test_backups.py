@@ -25,6 +25,89 @@ def discard_backup_archives(directory):
 
 
 class BackupAcceptance(unittest.TestCase):
+    def test_incomplete_backup_profile_is_rejected_before_changing_live_data(self):
+        name = 'ew-backup-profile-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        try:
+            command('install', '--profile', profile, '--name', name, '--image', IMAGE,
+                    '--port', '13438', '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            command('start', '--profile', profile)
+            docker('exec', '--user', 'abc', name, 'python3', '-c',
+                   'from pathlib import Path; Path("/config/projects/current.txt").write_text("keep live data")')
+            saved = command('backup', '--profile', profile)
+            command('start', '--profile', profile)
+            profile_before = (profile / 'profile.json').read_bytes()
+            manifest_file = Path(saved['directory']) / 'manifest.json'
+            manifest_before = manifest_file.read_bytes()
+            manifest = json.loads(manifest_before)
+            cases = [('missing', None), ('null', None), ('empty', {})]
+            for field, value in {'schema': 2, 'installationId': '', 'name': 'invalid/name', 'image': '',
+                                 'port': 0, 'memoryMiB': 0, 'cpus': 0, 'homeVolume': 'unrelated',
+                                 'dockerContext': ''}.items():
+                cases.append((field, {**manifest['profile'], field: value}))
+            for label, damaged_profile in cases:
+                damaged = {**manifest, 'profile': damaged_profile}
+                if label == 'missing':
+                    del damaged['profile']
+                manifest_file.write_text(json.dumps(damaged), encoding='utf-8')
+                try:
+                    rejected = invoke(CLI, 'restore', '--profile', profile, '--backup', saved['directory'])
+                    self.assertNotEqual(rejected.returncode, 0, label)
+                    self.assertIn('backup profile', rejected.stderr.lower(), label)
+                    self.assertEqual((profile / 'profile.json').read_bytes(), profile_before, label)
+                    self.assertEqual(command('status', '--profile', profile)['state'], 'running', label)
+                    self.assertEqual(docker('exec', '--user', 'abc', name, 'cat', '/config/projects/current.txt'),
+                                     'keep live data', label)
+                finally:
+                    manifest_file.write_bytes(manifest_before)
+            self.assertEqual([entry['id'] for entry in command('backup', '--profile', profile, '--list')['backups']],
+                             [saved['id']])
+            (profile / 'invalid-profile-result.json').write_text(json.dumps({'result': 'passed',
+                'rejectedProfiles': [label for label, _ in cases], 'liveState': 'preserved without interruption'},
+                indent=2), encoding='utf-8')
+        finally:
+            subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
+            for volume in docker('volume', 'ls', '--filter', 'name=' + name + '-home', '--format', '{{.Name}}').splitlines():
+                subprocess.run(['docker', 'volume', 'rm', volume], capture_output=True)
+            discard_backup_archives(profile / 'backups')
+
+    def test_corrupted_copy_cannot_displace_a_valid_backup(self):
+        name = 'ew-backup-corrupt-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        try:
+            command('install', '--profile', profile, '--name', name, '--image', IMAGE,
+                    '--port', '13437', '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            command('start', '--profile', profile)
+            docker('exec', '--user', 'abc', name, 'python3', '-c',
+                   'from pathlib import Path; Path("/config/projects/retained.txt").write_text("first valid copy")')
+            first = command('backup', '--profile', profile)
+            corrupted = command('backup', '--profile', profile)
+            archive = Path(corrupted['directory']) / 'home.tar'
+            with archive.open('r+b') as stream:
+                original = stream.read(1)
+                stream.seek(0)
+                stream.write(bytes([original[0] ^ 1]))
+            rejected = invoke(CLI, 'restore', '--profile', profile, '--backup', corrupted['directory'])
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn('checksum', rejected.stderr.lower())
+            newest = command('backup', '--profile', profile)
+            self.assertTrue((Path(first['directory']) / 'home.tar').is_file(),
+                            'same-size corruption must not cause a valid older copy to be deleted')
+            listed = command('backup', '--profile', profile, '--list')
+            self.assertEqual([entry['id'] for entry in listed['backups']], [newest['id'], first['id']])
+            self.assertIn(corrupted['id'], listed['incomplete'])
+            restored = command('restore', '--profile', profile, '--backup', first['directory'])
+            command('start', '--profile', profile)
+            self.assertEqual(docker('exec', '--user', 'abc', name, 'cat', '/config/projects/retained.txt'),
+                             'first valid copy')
+            (profile / 'corruption-result.json').write_text(json.dumps({'result': 'passed',
+                'corruptedCopy': corrupted['id'], 'retained': listed, 'restore': restored}, indent=2), encoding='utf-8')
+        finally:
+            subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
+            for volume in docker('volume', 'ls', '--filter', 'name=' + name + '-home', '--format', '{{.Name}}').splitlines():
+                subprocess.run(['docker', 'volume', 'rm', volume], capture_output=True)
+            discard_backup_archives(profile / 'backups')
+
     def test_project_volume_writers_must_stop_before_backup_or_restore(self):
         name = 'ew-backup-writers-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name

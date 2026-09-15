@@ -91,7 +91,7 @@ func removeWithin(parent, directory string) error {
 	return os.RemoveAll(directory)
 }
 
-func readBackup(directory string, verify bool) (backupManifest, error) {
+func readBackup(directory string) (backupManifest, error) {
 	var manifest backupManifest
 	file, err := os.Open(filepath.Join(directory, "manifest.json"))
 	if err != nil {
@@ -105,6 +105,12 @@ func readBackup(directory string, verify bool) (backupManifest, error) {
 		!regexp.MustCompile(`^[0-9a-f]{64}$`).MatchString(manifest.SHA256) {
 		return manifest, errors.New("invalid or incomplete backup manifest")
 	}
+	p := manifest.Profile
+	if p.Schema != 1 || !regexp.MustCompile(`^[0-9a-f]{32}$`).MatchString(p.InstallationID) ||
+		!validName(p.Name) || !validHomeVolume(p) || p.Image == "" || p.DockerContext == "" ||
+		p.Port < 1024 || p.Port > 65535 || p.MemoryMiB < 1024 || p.CPUs < 1 {
+		return manifest, errors.New("invalid or incomplete backup profile; current data was not changed")
+	}
 	if _, err := time.Parse(time.RFC3339Nano, manifest.CreatedAt); err != nil {
 		return manifest, errors.New("invalid backup date")
 	}
@@ -117,14 +123,12 @@ func readBackup(directory string, verify bool) (backupManifest, error) {
 	if err != nil || !info.Mode().IsRegular() || info.Size() != manifest.Bytes {
 		return manifest, errors.New("incomplete backup archive: size does not match")
 	}
-	if verify {
-		hash := sha256.New()
-		if _, err := io.Copy(hash, archive); err != nil {
-			return manifest, err
-		}
-		if hex.EncodeToString(hash.Sum(nil)) != manifest.SHA256 {
-			return manifest, errors.New("backup checksum does not match; current data was not changed")
-		}
+	hash := sha256.New()
+	if _, err := io.Copy(hash, archive); err != nil {
+		return manifest, err
+	}
+	if hex.EncodeToString(hash.Sum(nil)) != manifest.SHA256 {
+		return manifest, errors.New("backup checksum does not match; current data was not changed")
 	}
 	return manifest, nil
 }
@@ -146,7 +150,7 @@ func completedBackups(directory, installationID string) ([]backupSummary, []stri
 		if !backupID.MatchString(entry.Name()) {
 			continue
 		}
-		manifest, err := readBackup(filepath.Join(directory, entry.Name()), false)
+		manifest, err := readBackup(filepath.Join(directory, entry.Name()))
 		if err != nil {
 			incomplete = append(incomplete, entry.Name())
 			continue
@@ -413,7 +417,7 @@ func restoreBackup(p profile, opts options) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	manifest, err := readBackup(source, true)
+	manifest, err := readBackup(source)
 	if err != nil {
 		return nil, err
 	}

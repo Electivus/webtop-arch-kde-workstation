@@ -9,7 +9,7 @@ workstation.cmd backup --profile "%WS_PROFILE%" --list
 workstation.cmd start --profile "%WS_PROFILE%"
 ```
 
-Por padrão, as cópias ficam em `backups` dentro do perfil. `--backup-directory "D:\Workstation Backups"` escolhe outra pasta local; use a mesma opção ao listar esse armazenamento. Cada instalação mantém suas próprias duas cópias concluídas mais recentes, mesmo quando várias instalações escolhem a mesma pasta. Tentativas incompletas aparecem separadamente na lista e não contam para a retenção.
+Por padrão, as cópias ficam em `backups` dentro do perfil. `--backup-directory "D:\Workstation Backups"` escolhe outra pasta local; use a mesma opção ao listar esse armazenamento. Cada instalação mantém suas próprias duas cópias concluídas mais recentes, mesmo quando várias instalações escolhem a mesma pasta. A listagem e a retenção verificam o SHA-256 dos arquivos. Cópias incompletas ou corrompidas aparecem separadamente e não contam para a retenção; o tempo dessa verificação depende do volume de dados armazenado.
 
 O resultado de criação informa o identificador, a pasta, o tamanho e a imagem associada. Cada pasta contém `home.tar` e `manifest.json`. Copie a pasta inteira ao transferir um backup. Esses arquivos pertencem ao estado privado da instalação.
 
@@ -32,7 +32,7 @@ workstation.cmd restore --profile "%WS_PROFILE%" --backup "D:\Workstation Backup
 workstation.cmd start --profile "%WS_PROFILE%"
 ```
 
-A restauração verifica o manifesto, o tamanho e o SHA-256 do arquivo antes de alterar os dados atuais. A imagem registrada precisa estar disponível no Docker local. A cópia é extraída em um novo volume Linux e o perfil passa a usá-lo somente depois da extração. Isso também permite recuperar uma instalação cujo container e volume pessoal tenham sido perdidos.
+A restauração verifica o manifesto, os campos obrigatórios do perfil, o tamanho e o SHA-256 do arquivo antes de alterar os dados atuais. A imagem registrada precisa estar disponível no Docker local. A cópia é extraída em um novo volume Linux e o perfil passa a usá-lo somente depois da extração. Isso também permite recuperar uma instalação cujo container e volume pessoal tenham sido perdidos.
 
 Os certificados arquivados anteriormente no perfil continuam disponíveis para `untrust`. Restaurar arquivos de certificados não altera por si só a confiança do Windows; `certificate`, `trust` e `untrust` continuam sendo os comandos de administração dessa confiança.
 
