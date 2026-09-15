@@ -2,7 +2,7 @@
 
 ## Parent
 
-[Especificacao #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1).
+[Especificacao #1](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1).
 
 ## What to build
 
@@ -22,7 +22,7 @@ A variante Salesforce abre projetos nos dois VS Codes oficiais, com CLI, extens√
 ## Planning context
 
 - Format: v1
-- Repository: manoelcalixto/webtop-arch-kde-workstation
+- Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
 - Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
@@ -40,4 +40,4 @@ A variante Salesforce abre projetos nos dois VS Codes oficiais, com CLI, extens√
 
 ## Blocked by
 
-- [T02 / #3](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/3): Usar Chrome oficial e terminal preparado na base.
+- [T02 / #3](https://github.com/Electivus/webtop-arch-kde-workstation/issues/3): Usar Chrome oficial e terminal preparado na base.

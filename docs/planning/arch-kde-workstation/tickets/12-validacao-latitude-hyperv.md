@@ -2,7 +2,7 @@
 
 ## Parent
 
-[Especificacao #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1).
+[Especificacao #1](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1).
 
 ## What to build
 
@@ -23,7 +23,7 @@ O candidato é instalado e medido no VMM em Full HD, o perfil de recursos é aju
 ## Planning context
 
 - Format: v1
-- Repository: manoelcalixto/webtop-arch-kde-workstation
+- Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
 - Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
@@ -41,8 +41,8 @@ O candidato é instalado e medido no VMM em Full HD, o perfil de recursos é aju
 
 ## Blocked by
 
-- [T05 / #6](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/6): Executar Docker e Compose a partir dos projetos Linux.
-- [T06 / #7](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/7): Preparar proxy e certificados com diagnóstico.
-- [T09 / #10](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/10): Atualizar a imagem com backup e recuperação.
-- [T10 / #11](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/11): Atualizar aplicativos independentemente da imagem.
-- [T11 / #12](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12): Produzir e testar candidatas no GitHub Actions.
+- [T05 / #6](https://github.com/Electivus/webtop-arch-kde-workstation/issues/6): Executar Docker e Compose a partir dos projetos Linux.
+- [T06 / #7](https://github.com/Electivus/webtop-arch-kde-workstation/issues/7): Preparar proxy e certificados com diagnóstico.
+- [T09 / #10](https://github.com/Electivus/webtop-arch-kde-workstation/issues/10): Atualizar a imagem com backup e recuperação.
+- [T10 / #11](https://github.com/Electivus/webtop-arch-kde-workstation/issues/11): Atualizar aplicativos independentemente da imagem.
+- [T11 / #12](https://github.com/Electivus/webtop-arch-kde-workstation/issues/12): Produzir e testar candidatas no GitHub Actions.

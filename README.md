@@ -2,7 +2,7 @@
 
 Workstation Linux local para Windows 11 com Docker Desktop em modo de containers Linux. O destino usa Hyper-V e opera pelo **CMD, com PowerShell bloqueado**. Os comandos e o atalho usam um executável Windows autossuficiente; não exigem WSL2, PowerShell, Python, Go ou habilitação de virtualização no notebook.
 
-Esta candidata acrescenta Chrome oficial, Git, Zsh/Oh My Zsh e a variante Salesforce ao desktop local. A publicação de `stable` e as operações de manutenção seguem nos tickets da [especificação](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1). Ainda não existe uma entrega pública aprovada.
+Esta candidata acrescenta Chrome oficial, Git, Zsh/Oh My Zsh e a variante Salesforce ao desktop local. A publicação de `stable` e as operações de manutenção seguem nos tickets da [especificação](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1). Ainda não existe uma entrega pública aprovada.
 
 ## Preparar e iniciar
 

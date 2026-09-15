@@ -2,7 +2,7 @@
 
 ## Parent
 
-[Especificacao #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1).
+[Especificacao #1](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1).
 
 ## What to build
 
@@ -22,7 +22,7 @@ Pacman e AUR têm inventário persistente e restauração assistida; falhas parc
 ## Planning context
 
 - Format: v1
-- Repository: manoelcalixto/webtop-arch-kde-workstation
+- Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
 - Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
@@ -37,4 +37,4 @@ Pacman e AUR têm inventário persistente e restauração assistida; falhas parc
 
 ## Blocked by
 
-- [T07 / #8](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/8): Fazer backup e recuperar o estado pessoal.
+- [T07 / #8](https://github.com/Electivus/webtop-arch-kde-workstation/issues/8): Fazer backup e recuperar o estado pessoal.

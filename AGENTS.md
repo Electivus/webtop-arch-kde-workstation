@@ -4,7 +4,7 @@
 
 ### Issue tracker
 
-Before issue or pull request operations, read `docs/agents/issue-tracker.md`; the configured tracker is GitHub Issues in `manoelcalixto/webtop-arch-kde-workstation`.
+Before issue or pull request operations, read `docs/agents/issue-tracker.md`; the configured tracker is GitHub Issues in `Electivus/webtop-arch-kde-workstation`.
 
 ### Triage labels
 

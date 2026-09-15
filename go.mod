@@ -1,3 +1,3 @@
-module github.com/manoelcalixto/webtop-arch-kde-workstation
+module github.com/Electivus/webtop-arch-kde-workstation
 
 go 1.27.1

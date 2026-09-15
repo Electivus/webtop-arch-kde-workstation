@@ -2,7 +2,7 @@
 
 ## Parent
 
-[Especificacao #1](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1).
+[Especificacao #1](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1).
 
 ## What to build
 
@@ -23,7 +23,7 @@ As duas imagens aprovadas chegam ao Docker Hub com instruções públicas, tags 
 ## Planning context
 
 - Format: v1
-- Repository: manoelcalixto/webtop-arch-kde-workstation
+- Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
 - Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
@@ -41,4 +41,4 @@ As duas imagens aprovadas chegam ao Docker Hub com instruções públicas, tags 
 
 ## Blocked by
 
-- [T12 / #13](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/13): Validar a entrega no Latitude e preparar o roteiro Hyper-V.
+- [T12 / #13](https://github.com/Electivus/webtop-arch-kde-workstation/issues/13): Validar a entrega no Latitude e preparar o roteiro Hyper-V.
