@@ -530,7 +530,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/7
-  - verification: ["ticket commits abccdd6/24fa1ad; docs/verification/t06-review.md; docs/verification/t06-connectivity.md: CMD optional configuration, real proxy and TLS in all supplied clients, invalid CA rejection, preexisting trust preservation, removal, failure journaling and recovery passed; two-axis review completed with one fix batch."]
+  - verification: ["ticket commits abccdd6/24fa1ad; docs/verification/t06-review.md; docs/verification/t06-connectivity.md: CMD optional configuration, real proxy and TLS in all supplied clients, invalid CA rejection, preexisting trust preservation, removal, failure journaling and recovery passed; two-axis review completed with one fix batch.","ticket commit 0a99563449cffa4068c17a7893e9f9916b8feb06; docs/verification/t06-review.md: PR18 feedback addressed: CMD rejects garbage and concatenated network JSON while preserving prior configuration; valid whitespace and clear still pass; native builds and vet pass."]
 ## DEC-035
 - Status: active
 - Decision: Usar electivus/webtop-arch-kde-base e electivus/webtop-arch-kde-salesforce como nomes dos dois repositorios publicos no Docker Hub.
