@@ -198,12 +198,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/6
-  - verification: none
-
+  - verification: ["ticket commit 55d3470c8cf5d49d8ecd6604eea919628e0d0741; docs/verification/t04-t05-projects.md; t05-compose.json: Docker identity matches host engine; real Compose local build, volume subpath, service writes, recreation and failure diagnostics passed in 11-test Windows VMM suite; independent Spec review at same code checkpoint passed."]
 ## DEC-014
 - Status: superseded
 - Superseded by: DEC-019
@@ -230,12 +229,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/5; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/6; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/8
-  - verification: none
-
+  - verification: ["ticket commit 55d3470c8cf5d49d8ecd6604eea919628e0d0741; docs/verification/t04-t05-projects.md; t04-files.json: Project contents, case-sensitive names, mode 0751, owner, executable symlink survive recreation; Windows exchange roundtrip with Unicode spaces and comma path passed; unshared path rejected before mount."]
 ## DEC-016
 - Status: active
 - Decision: Abrir o desktop local diretamente, sem senha propria da workstation, usando o acesso a sessao do Windows como controle.
