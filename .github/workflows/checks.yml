@@ -3,6 +3,18 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 10 * * 1'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Coordinated fixed tag; blank generates a dated candidate version'
+        type: string
+        required: false
+      prove_test_failure:
+        description: 'Run the deliberate failed-test proof; this run cannot approve a candidate'
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -11,57 +23,89 @@ concurrency:
 jobs:
   desktop-lifecycle:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
-    env:
-      WORKSTATION_TEST_IMAGE: electivus/webtop-arch-kde-base:ci
-      WORKSTATION_SALESFORCE_TEST_IMAGE: electivus/webtop-arch-kde-salesforce:ci
+    timeout-minutes: 180
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Make room for desktop images and prepared applications
         run: |
           test "$RUNNER_ENVIRONMENT" = github-hosted
           df -h /
-          # These preinstalled SDKs are unused by this disposable desktop runner.
-          # Keep Docker images and volumes; the acceptance tests own cleanup.
           sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
           df -h /
-          # Recovery holds the original home, its archive and a new volume together.
           available_kib=$(df --output=avail -k / | tail -n 1)
           if [ "$available_kib" -lt 33554432 ]; then
             echo 'Desktop acceptance needs at least 32 GiB free before building images.' >&2
             exit 1
           fi
+      - name: Use a Docker image store that preserves OCI indexes
+        uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5
+        with:
+          version: v29.7.2
+          daemon-config: |
+            {"features": {"containerd-snapshotter": true}}
+      - name: Set up the pinned build client
+        uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4
+        with:
+          version: v0.36.1
+          driver: docker
       - name: Check Bash
         run: shellcheck images/base/root/custom-cont-init.d/*.sh images/base/root/usr/local/bin/workstation-healthcheck images/base/root/usr/local/bin/google-chrome images/base/root/usr/local/bin/workstation-pacman images/base/root/etc/electivus/examples/compose-demo/write-result.sh images/salesforce/root/usr/local/bin/*
-      - name: Build and export native commands
-        run: docker build --file images/base/Dockerfile --target commands-export --output type=local,dest=.local/cli .
-      - name: Build desktop image
-        run: docker build --file images/base/Dockerfile --build-arg VERSION=ci --build-arg REVISION="$GITHUB_SHA" --tag "$WORKSTATION_TEST_IMAGE" .
-      - name: Build Salesforce from the matching base
-        run: docker build --file images/salesforce/Dockerfile --build-arg BASE_IMAGE="$WORKSTATION_TEST_IMAGE" --build-arg VERSION=ci --build-arg REVISION="$GITHUB_SHA" --tag "$WORKSTATION_SALESFORCE_TEST_IMAGE" .
-      - name: Exercise public lifecycle commands
-        run: python3 tests/test_commands.py
-      - name: Exercise browser preparation and terminal
-        run: python3 tests/test_preparation.py
-      - name: Exercise persistent projects and host exchange
-        run: python3 tests/test_projects.py
-      - name: Exercise Docker and Compose with a Linux project
-        run: python3 tests/test_docker_projects.py
-      - name: Exercise both editors, Salesforce services and interrupted preparation
-        run: python3 tests/test_salesforce.py
-      - name: Exercise optional proxy, CA trust, removal and preparation recovery
-        run: python3 tests/test_network.py
-      - name: Exercise editor and Salesforce connections through the configured proxy
-        run: python3 tests/test_network_apps.py
-      - name: Exercise personal backup, recovery, retention and failures
-        run: python3 tests/test_backups.py
-      - name: Exercise extra package inventory, rebuilds, recovery and failures
+      - name: Exercise the acceptance contract and candidate transport
         run: |
-          python3 tests/test_packages.py
-          WORKSTATION_TEST_IMAGE="$WORKSTATION_SALESFORCE_TEST_IMAGE" python3 tests/test_packages.py PackageAcceptance.test_inventory_distinguishes_image_components
-      - name: Exercise explicit application updates, failures and recovery
-        run: python3 tests/test_updates.py
-      - name: Exercise explicit image selection, updates and recovery
+          python3 tests/test_acceptance_contract.py
+          python3 tests/test_candidates.py
+      - name: Select the coordinated candidate version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
-          python3 tests/test_image_updates.py
-          WORKSTATION_TEST_IMAGE="$WORKSTATION_SALESFORCE_TEST_IMAGE" python3 tests/test_image_updates.py ImageUpdateAcceptance.test_explicit_image_update_restores_extras_and_recovers_the_previous_project
+          python3 - <<'PY'
+          import datetime, os, re
+          version = os.environ.get('REQUESTED_VERSION') or (datetime.datetime.now(datetime.timezone.utc).strftime('%Y.%m.%d') + '-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+          if not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}', version):
+              raise SystemExit('Invalid candidate version')
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
+              output.write('CANDIDATE_VERSION=' + version + '\n')
+          PY
+      - name: Build and identify the exact candidate pair
+        id: candidate
+        run: python3 scripts/candidate.py build --directory .local/candidate --version "$CANDIDATE_VERSION" --revision "$GITHUB_SHA"
+      - name: Run the common acceptance contract against those artifacts
+        env:
+          PROVE_TEST_FAILURE: ${{ inputs.prove_test_failure }}
+        run: |
+          args=()
+          if [ "$PROVE_TEST_FAILURE" = true ]; then
+            args+=(--prove-test-failure)
+          fi
+          python3 scripts/candidate.py test --directory .local/candidate "${args[@]}"
+      - name: Retain the candidate identity, commands and validation diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: candidate-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .local/candidate/*.json
+            .local/candidate/*.log
+            .local/candidate/commands.tar
+            .local/candidate/validation/
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: warn
+      - name: Retain the base archive
+        if: ${{ !cancelled() && steps.candidate.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: webtop-arch-kde-base-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .local/candidate/webtop-arch-kde-base.oci.tar
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: error
+      - name: Retain the Salesforce archive
+        if: ${{ !cancelled() && steps.candidate.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: webtop-arch-kde-salesforce-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .local/candidate/webtop-arch-kde-salesforce.oci.tar
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: error

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "checks": [
+    {"id": "commands", "script": "tests/test_commands.py"},
+    {"id": "preparation", "script": "tests/test_preparation.py"},
+    {"id": "projects", "script": "tests/test_projects.py"},
+    {"id": "docker-projects", "script": "tests/test_docker_projects.py"},
+    {"id": "salesforce", "script": "tests/test_salesforce.py"},
+    {"id": "network", "script": "tests/test_network.py"},
+    {"id": "network-apps", "script": "tests/test_network_apps.py"},
+    {"id": "backups", "script": "tests/test_backups.py"},
+    {"id": "packages", "script": "tests/test_packages.py"},
+    {"id": "salesforce-packages", "script": "tests/test_packages.py", "variant": "salesforce", "args": ["PackageAcceptance.test_inventory_distinguishes_image_components"]},
+    {"id": "updates", "script": "tests/test_updates.py"},
+    {"id": "image-updates", "script": "tests/test_image_updates.py"},
+    {"id": "salesforce-image-updates", "script": "tests/test_image_updates.py", "variant": "salesforce", "args": ["ImageUpdateAcceptance.test_explicit_image_update_restores_extras_and_recovers_the_previous_project"]}
+  ]
+}

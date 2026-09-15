@@ -3,9 +3,13 @@ FROM ${BASE_IMAGE}
 
 ARG VERSION=development
 ARG REVISION=unknown
+ARG BASE_IMAGE
+ARG BASE_DIGEST=unknown
 LABEL org.opencontainers.image.title="Electivus Arch KDE Salesforce" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}" \
+      org.opencontainers.image.base.name="${BASE_IMAGE}" \
+      org.opencontainers.image.base.digest="${BASE_DIGEST}" \
       io.electivus.workstation.variant="salesforce"
 
 RUN --mount=type=secret,id=corporate_ca \
