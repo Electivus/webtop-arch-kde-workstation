@@ -16,6 +16,32 @@ func systemDLL(name string) *syscall.LazyDLL {
 	return syscall.NewLazyDLL(filepath.Join(os.Getenv("SystemRoot"), "System32", name))
 }
 
+func lockOperationFile(file *os.File) error {
+	var offset syscall.Overlapped
+	result, _, callErr := systemDLL("kernel32.dll").NewProc("LockFileEx").Call(
+		file.Fd(), 3, 0, 1, 0, uintptr(unsafe.Pointer(&offset)))
+	runtime.KeepAlive(file)
+	if result == 0 {
+		return callErr
+	}
+	return nil
+}
+
+func availableDiskBytes(directory string) (uint64, error) {
+	encoded, err := syscall.UTF16PtrFromString(directory)
+	if err != nil {
+		return 0, err
+	}
+	var available uint64
+	result, _, callErr := systemDLL("kernel32.dll").NewProc("GetDiskFreeSpaceExW").Call(
+		uintptr(unsafe.Pointer(encoded)), uintptr(unsafe.Pointer(&available)), 0, 0)
+	runtime.KeepAlive(encoded)
+	if result == 0 {
+		return 0, fmt.Errorf("read backup disk free space: %w", callErr)
+	}
+	return available, nil
+}
+
 func openURL(address string) error {
 	verb, err := syscall.UTF16PtrFromString("open")
 	if err != nil {

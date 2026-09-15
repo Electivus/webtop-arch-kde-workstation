@@ -1,6 +1,7 @@
 """Official editors, extensions and Salesforce CLI through a real proxy and TLS."""
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import time
@@ -15,17 +16,27 @@ BASE = os.environ.get('WORKSTATION_TEST_IMAGE', 'electivus/webtop-arch-kde-base:
 
 class ApplicationNetworkAcceptance(unittest.TestCase):
     def test_editors_extensions_and_salesforce_use_configured_network(self):
-        name = 'ew-network-apps-' + uuid.uuid4().hex[:10]
+        resume = os.environ.get('WORKSTATION_NETWORK_TEST_RESUME', '')
+        if resume and not re.fullmatch(r'ew-network-apps-[0-9a-f]{10}', resume):
+            raise ValueError('resume requires the name of a retained network test fixture')
+        name = resume or 'ew-network-apps-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name
-        profile.mkdir(parents=True)
+        if resume:
+            retained = json.loads((profile / 'retained-fixture.json').read_text(encoding='utf-8'))
+            self.assertEqual(retained['name'], name)
+            self.assertEqual(retained['network'], name + '-net')
+            self.assertEqual(retained['fixture'], name + '-proxy')
+        else:
+            profile.mkdir(parents=True)
         network, fixture = name + '-net', name + '-proxy'
         succeeded = False
         try:
-            docker('network', 'create', network)
-            docker('create', '--name', fixture, '--network', network, '--network-alias', 'network-target',
-                   '--entrypoint', 'python3', BASE, '/tmp/network_fixture.py')
-            docker('cp', str(ROOT / 'tests/network_fixture.py'), fixture + ':/tmp/network_fixture.py')
-            docker('start', fixture)
+            if not resume:
+                docker('network', 'create', network)
+                docker('create', '--name', fixture, '--network', network, '--network-alias', 'network-target',
+                       '--entrypoint', 'python3', BASE, '/tmp/network_fixture.py')
+                docker('cp', str(ROOT / 'tests/network_fixture.py'), fixture + ':/tmp/network_fixture.py')
+                docker('start', fixture)
             deadline = time.monotonic() + 30
             while subprocess.run(['docker', 'exec', fixture, 'test', '-f', '/tmp/network-fixture/ready'],
                                  capture_output=True).returncode:
@@ -36,10 +47,12 @@ class ApplicationNetworkAcceptance(unittest.TestCase):
             config = profile / 'corporate-input.json'
             config.write_text(json.dumps({'proxy': 'http://' + fixture + ':3128', 'caFiles': [str(ca)]}), encoding='utf-8')
             cpus = str(min(4, int(docker('info', '--format', '{{.NCPU}}'))))
-            command('install', '--profile', profile, '--name', name, '--image', IMAGE, '--port', '13422',
-                    '--memory', '6144', '--cpus', cpus, '--no-shortcut', '--network-config', config)
+            if not resume:
+                command('install', '--profile', profile, '--name', name, '--image', IMAGE, '--port', '13422',
+                        '--memory', '6144', '--cpus', cpus, '--no-shortcut', '--network-config', config)
             command('start', '--profile', profile)
-            docker('network', 'connect', network, name)
+            if not resume:
+                docker('network', 'connect', network, name)
             prepared = command('prepare', '--profile', profile)
             self.assertEqual(prepared['state'], 'completed')
             connections = docker('exec', fixture, 'cat', '/tmp/network-fixture/connections.jsonl')

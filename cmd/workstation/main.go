@@ -61,20 +61,23 @@ type engineInfo struct {
 }
 
 type options struct {
-	directory     string
-	name          string
-	image         string
-	port          int
-	memory        int
-	cpus          int
-	noShortcut    bool
-	openBrowser   bool
-	prepareStatus bool
-	exchange      string
-	networkConfig string
-	clearNetwork  bool
-	checkNetwork  bool
-	networkURL    string
+	directory       string
+	name            string
+	image           string
+	port            int
+	memory          int
+	cpus            int
+	noShortcut      bool
+	openBrowser     bool
+	prepareStatus   bool
+	exchange        string
+	networkConfig   string
+	clearNetwork    bool
+	checkNetwork    bool
+	networkURL      string
+	listBackups     bool
+	backupDirectory string
+	backupSource    string
 }
 
 func main() {
@@ -96,7 +99,7 @@ func main() {
 
 func run(args []string) (any, error) {
 	if len(args) == 0 {
-		return nil, errors.New("usage: workstation.cmd install|start|stop|status|prepare|network|certificate|trust|untrust [options]")
+		return nil, errors.New("usage: workstation.cmd install|start|stop|status|prepare|network|backup|restore|certificate|trust|untrust [options]")
 	}
 	cache, _ := os.UserCacheDir()
 	opts := options{}
@@ -115,6 +118,9 @@ func run(args []string) (any, error) {
 	flags.BoolVar(&opts.clearNetwork, "clear", false, "remove this installation's network options on next start")
 	flags.BoolVar(&opts.checkNetwork, "check", false, "check preparation and Git connectivity from the workstation")
 	flags.StringVar(&opts.networkURL, "url", "https://github.com/git/git.git", "HTTPS endpoint for the connectivity check")
+	flags.BoolVar(&opts.listBackups, "list", false, "list completed personal backups")
+	flags.StringVar(&opts.backupDirectory, "backup-directory", "", "backup storage directory (default: profile/backups)")
+	flags.StringVar(&opts.backupSource, "backup", "", "completed backup directory to restore")
 	if err := flags.Parse(args[1:]); err != nil {
 		return nil, err
 	}
@@ -133,6 +139,33 @@ func run(args []string) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	readOnly := args[0] == "status" || (args[0] == "backup" && opts.listBackups) ||
+		(args[0] == "prepare" && opts.prepareStatus) ||
+		(args[0] == "network" && opts.networkConfig == "" && !opts.clearNetwork)
+	if !readOnly {
+		operationLock, err := os.OpenFile(filepath.Join(directory, ".operation.lock"), os.O_CREATE|os.O_RDWR, 0600)
+		if err != nil {
+			return nil, fmt.Errorf("open installation operation lock: %w", err)
+		}
+		defer operationLock.Close()
+		lockErr := lockOperationFile(operationLock)
+		if args[0] == "certificate" || args[0] == "trust" || args[0] == "untrust" {
+			// The shortcut starts asynchronously. Let its final certificate export
+			// finish before the user's certificate command acquires this same lock.
+			deadline := time.Now().Add(10 * time.Second)
+			for lockErr != nil && time.Now().Before(deadline) {
+				time.Sleep(100 * time.Millisecond)
+				lockErr = lockOperationFile(operationLock)
+			}
+		}
+		if lockErr != nil {
+			return nil, fmt.Errorf("another workstation operation is active; wait for it to finish and retry: %w", lockErr)
+		}
+		p, err = readProfile(directory)
+		if err != nil {
+			return nil, err
+		}
+	}
 	switch args[0] {
 	case "start":
 		return start(p, directory, opts.openBrowser)
@@ -142,6 +175,10 @@ func run(args []string) (any, error) {
 		return prepare(p, opts.prepareStatus)
 	case "network":
 		return network(p, opts)
+	case "backup":
+		return backup(p, opts)
+	case "restore":
+		return restoreBackup(p, opts)
 	case "stop":
 		c, err := ownedContainer(p)
 		if err != nil {
@@ -209,7 +246,7 @@ func readProfile(directory string) (profile, error) {
 	if err := json.Unmarshal(bytes.TrimPrefix(data, []byte{0xef, 0xbb, 0xbf}), &p); err != nil {
 		return p, err
 	}
-	if p.Schema != 1 || p.InstallationID == "" || p.DockerContext == "" || !validName(p.Name) || p.HomeVolume != p.Name+"-home" {
+	if p.Schema != 1 || p.InstallationID == "" || p.DockerContext == "" || !validName(p.Name) || !validHomeVolume(p) {
 		return p, errors.New("invalid installation profile")
 	}
 	return p, nil
