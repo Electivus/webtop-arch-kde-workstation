@@ -31,4 +31,22 @@ A restauração passou a reconciliar as razões salvas com `pacman -D` depois de
 
 O novo cenário passou junto com a prova de falha/recompilação local em 154,828 s. Além de preservar os pacotes locais instalados como dependências, o segundo teste renderizou uma página real no Chrome depois da falha proposital de compilação e concluiu a nova tentativa. As sugestões heurísticas de Standards permaneceram adiadas; não há mudança que exija reiniciar aquele eixo.
 
-As imagens foram reconstruídas. Os outros sete cenários de pacotes passaram em 369,493 s; todos os nove casos da implementação final foram cobertos em dois grupos sem sobreposição. A bateria completa de backup passou (13, 1.136,115 s), e o inventário Salesforce passou em 17,434 s incluindo o runner. O processo final terminou com código zero. O único follow-up Spec solicitado avaliará o achado original, regressões da correção e esses resultados concluídos, sem abrir outro ciclo inicial.
+As imagens foram reconstruídas. Os outros sete cenários de pacotes passaram em 369,493 s; todos os nove casos daquele lote foram cobertos em dois grupos sem sobreposição. A bateria completa de backup passou (13, 1.136,115 s), e o inventário Salesforce passou em 17,434 s incluindo o runner. O processo final terminou com código zero. Esses resultados foram apresentados ao único follow-up Spec solicitado, junto do achado original e das regressões da correção.
+
+## Único follow-up Spec
+
+O revisor examinou `fa550f5a095513e1c3817729221d68d646edc769`, mantendo o ponto fixo original. Confirmou todos os recibos locais acima e a validade da ancestralidade Planning, sem executar Docker ou testes. A revisão não usou o relatório do outro eixo.
+
+O P2 foi considerado parcialmente resolvido: se o novo `pacman -D` falhasse, os hooks anteriores já poderiam ter sobrescrito a razão persistente, enquanto a escolha original existia apenas em memória. Uma nova tentativa poderia terminar com sucesso e ainda perder o pacote durante uma remoção recursiva. O revisor citou o requisito de inventário persistente e nova tentativa; identificou o caminho por inspeção, deixando a reprodução real para o coordenador.
+
+## Lote final de correções
+
+O coordenador confirmou que `pacman -D` recusa uma base bloqueada. A primeira fixture não posicionou o bloqueio no intervalo correto: terminou em 94,247 s sem provocar a falha exigida e não conta como reprodução do defeito. A fixture corrigida usa um hook real, pausa apenas seu comando ancestral de restauração, espera a transação liberar a base e injeta um arquivo de lock antes de retomar o comando. A coordenação tem prazo de 20 segundos e retoma o processo ao terminar.
+
+O cenário reproduziu a falha em 145,779 s: a primeira restauração foi rejeitada por `unable to lock database`; depois de recriar o container e repetir, o relatório terminou `completed`, mas toolbelt estava como dependência e a importação falhou após remover HTTPie. A fixture não substitui pacman ou Docker. A recriação remove o lock e o hook de ensaio, conservando somente o volume pessoal.
+
+A correção grava as razões desejadas antes da primeira transação. Os hooks e a captura de inicialização preservam essa intenção enquanto a restauração está pendente. Sua remoção acontece na mesma gravação atômica da captura final e do relatório concluído; erros mantêm a intenção para outra tentativa.
+
+As imagens finais foram reconstruídas: base `sha256:9472b7644b4c4de11d2fdd3669edcb5b5a50035f8ed1dc3cd1bb2a54f7f0a641` e Salesforce `sha256:77615b11ba11d7a0efcc9f5a3dc764403f9c2415c3ee2eb553a109650939a272`. O novo cenário e os nove anteriores passaram juntos em 557,390 s, incluindo a integração com backup, concorrência, dependências explícitas e implícitas, proxy, falha/retry e DOM do Chrome. O inventário Salesforce também passou, em 16,265 s incluindo o runner. O processo final terminou com código zero; sintaxe Python e `git diff --check` passaram.
+
+O lote final foi validado pelo coordenador, sem nova revisão independente. O ciclo delimitado está encerrado: o P2 inicial e seu caminho residual foram corrigidos e reproduzidos em testes reais; permanecem adiadas as duas sugestões opcionais de Standards. Não há achado funcional conhecido pendente. O CI Linux novo e a validação real Hyper-V continuam sendo evidências separadas da aceitação local VMM.

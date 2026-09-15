@@ -69,12 +69,16 @@ def capture(transaction=()):
         return capture_locked(transaction)
 
 
-def capture_locked(transaction):
+def capture_locked(transaction, completed_restore=None):
     baseline = package_versions(BASELINE.read_text())
     installed = package_versions(query('-Q'))
     native = set(query('-Qnq').splitlines())
     explicit = set(query('-Qeq').splitlines())
     saved = inventory()
+    if completed_restore is not None:
+        saved.pop('restoringReasons', None)
+        saved['lastRestore'] = completed_restore
+    reasons = saved.get('restoringReasons', {})
     # A recreated container can be missing desired extras. Keep their records
     # so a fresh inventory does not erase the target of assisted recovery.
     removed = set(transaction) - installed.keys()
@@ -84,7 +88,7 @@ def capture_locked(transaction):
         if name not in baseline:
             extras[name] = {**extras.get(name, {}), 'name': name, 'version': version,
                             'origin': 'official' if name in native else 'foreign',
-                            'reason': 'explicit' if name in explicit else 'dependency'}
+                            'reason': reasons.get(name, 'explicit' if name in explicit else 'dependency')}
     saved.update(schema=1, extras=[extras[name] for name in sorted(extras)],
                  capturedAt=datetime.now(timezone.utc).isoformat(),
                  imageFingerprint=hashlib.sha256(BASELINE.read_bytes()).hexdigest())
@@ -231,7 +235,15 @@ def restore_reasons(desired):
 
 def restore():
     require_image_components()
-    desired = inventory()['extras']
+    with inventory_lock():
+        saved = inventory()
+        reasons = saved.get('restoringReasons', {})
+        desired = [{**entry, 'reason': reasons.get(entry['name'], entry.get('reason', 'explicit'))}
+                   for entry in saved['extras']]
+        # Hooks run between restoration transactions. Preserve the user's
+        # intent before the first one, including across failure and recreation.
+        saved['restoringReasons'] = {entry['name']: entry['reason'] for entry in desired}
+        save(saved)
     code, diagnostic = run_package_command('pacman', '-Syu', '--needed', '--noconfirm',
                                            '--disable-download-timeout', '--noprogressbar')
     if code:
@@ -260,14 +272,13 @@ def restore():
                 result.update(state='restored', installedVersion=installed[name])
         results.append(result)
     restore_reasons(desired)
-    capture()
     require_image_components()
     report = {'state': 'completed' if all(entry['state'] in {'restored', 'installed'} for entry in results) else 'partial',
               'packages': results, 'completedAt': datetime.now(timezone.utc).isoformat()}
     with inventory_lock():
-        saved = inventory()
-        saved['lastRestore'] = report
-        save(saved)
+        # Clear the pending intent together with the completed capture/report.
+        # A failed query or write keeps the durable intent for another attempt.
+        capture_locked((), completed_restore=report)
     return report
 
 

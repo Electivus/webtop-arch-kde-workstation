@@ -34,6 +34,8 @@ O registro não busca uma receita desconhecida na internet. Mantenha os arquivos
 
 A restauração verifica os componentes fornecidos pela imagem, executa uma atualização completa `pacman -Syu`, instala os extras oficiais ausentes e recompila as receitas registradas contra o Arch atual. Ela conserva a classificação de instalação explícita ou dependência. Não copia bibliotecas nem binários arbitrários do sistema antigo. Uma receita compartilhada por vários pacotes é compilada uma vez por tentativa.
 
+Se houver interrupção ou falha ao gravar a classificação, as escolhas originais continuam no volume pessoal. Depois de resolver a causa indicada, repita `packages --restore`; essa proteção também vale quando o container precisou ser recriado antes da nova tentativa.
+
 O relatório JSON inclui um resultado por extra:
 
 | Estado | Significado |

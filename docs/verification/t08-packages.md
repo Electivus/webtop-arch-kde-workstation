@@ -50,6 +50,10 @@ Depois da revisão independente, o encadeamento real de dependências revelou pe
 
 Nessas imagens corrigidas, a bateria completa de backup passou: 13 testes em 1.136,115 s, incluindo recuperação Salesforce com os downloads bloqueados, perda do volume, integridade, retenção e concorrência. O inventário Salesforce também passou, em 17,434 s incluindo o runner: Node, npm e Java pertencem ao baseline da variante e não aparecem como extras. O processo final terminou com código zero. As verificações locais previstas estão concluídas; o CI fará uma instalação nova no seu próprio ambiente.
 
+O único follow-up Spec encontrou perda da intenção se a reconciliação de metadados falhasse. O [lote final](t08-review.md) preserva as razões desejadas antes das transações e só as libera junto da captura e do relatório finais. Uma base pacman deliberadamente bloqueada reproduziu o defeito em 145,779 s, incluindo recriação e nova tentativa. Após a correção, todos os dez casos de pacotes passaram em uma execução de 557,390 s; o inventário Salesforce passou em 16,265 s incluindo o runner. Esses casos incluem a recuperação real de inventário/fontes por backup; os treze testes completos de backup citados acima pertencem ao lote anterior.
+
+Artefatos locais do lote final: base `sha256:9472b7644b4c4de11d2fdd3669edcb5b5a50035f8ed1dc3cd1bb2a54f7f0a641` e Salesforce `sha256:77615b11ba11d7a0efcc9f5a3dc764403f9c2415c3ee2eb553a109650939a272`. Ambos incorporam a correção persistente; os rótulos de desenvolvimento continuam sem representar proveniência de release. A revisão está encerrada após o lote final validado pelo coordenador, sem uma terceira rodada independente.
+
 ## Limites
 
 A viabilidade demonstrada abrange pacotes oficiais disponíveis e receitas AUR/locais conhecidas, com recompilação contra a base atual. Não há promessa de preservar binários arbitrários nem de resolver automaticamente dependências AUR. O guia [Programas extras](../packages.md) documenta registro, resultados parciais, nova tentativa e recuperação do backup. A presença dos pacotes fornecidos pela imagem é verificada separadamente do funcionamento dos aplicativos, coberto pela bateria de entrega.

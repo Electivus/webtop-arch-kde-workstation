@@ -45,6 +45,12 @@ def install_local_fixture(name, source, package='workstation-local-example', dep
 
 class PackageAcceptance(unittest.TestCase):
     def test_explicit_dependency_survives_recursive_removal_after_recovery(self):
+        self.assert_explicit_dependency_recovery()
+
+    def test_failed_reason_reconciliation_keeps_explicit_choices_for_retry(self):
+        self.assert_explicit_dependency_recovery(interrupt=True)
+
+    def assert_explicit_dependency_recovery(self, interrupt=False):
         name = 'ew-packages-explicit-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name
         selected = ['httpie', 'python-requests-toolbelt']
@@ -61,6 +67,32 @@ class PackageAcceptance(unittest.TestCase):
             command('stop', '--profile', profile)
             docker('container', 'rm', name)
             command('start', '--profile', profile)
+            if interrupt:
+                # A real pacman post-transaction hook injects a stale database
+                # lock after HTTPie has pulled toolbelt in as a dependency.
+                # Pacman itself must reject the following metadata transaction.
+                docker('cp', str(ROOT / 'tests/package_reason_lock_fixture.py'),
+                       name + ':/tmp/package_reason_lock_fixture.py')
+                hook = ('[Trigger]\nOperation = Install\nType = Package\nTarget = httpie\n\n'
+                        '[Action]\nWhen = PostTransaction\n'
+                        'Exec = /usr/bin/python3 /tmp/package_reason_lock_fixture.py\n')
+                docker('exec', name, 'python3', '-c',
+                       'from pathlib import Path; import sys; '
+                       'Path("/etc/pacman.d/hooks/99-test-reason-lock.hook").write_text(sys.argv[1])', hook)
+                rejected = invoke(CLI, 'packages', '--profile', profile, '--restore')
+                docker('exec', name, 'test', '-f', '/tmp/package-reason-lock-injected')
+                self.assertNotEqual(rejected.returncode, 0, rejected.stdout)
+                self.assertIn('Could not restore saved package installation reasons', rejected.stderr)
+                self.assertIn('unable to lock database', rejected.stderr)
+                (profile / 'reconciliation-failure.txt').write_text(rejected.stderr, encoding='utf-8')
+                interrupted_inventory = command('packages', '--profile', profile)
+                (profile / 'interrupted-inventory.json').write_text(
+                    json.dumps(interrupted_inventory, indent=2), encoding='utf-8')
+                # A fresh container discards the injected lock and the test hook;
+                # only the user's persistent inventory can carry the intent.
+                command('stop', '--profile', profile)
+                docker('container', 'rm', name)
+                command('start', '--profile', profile)
             result = command('packages', '--profile', profile, '--restore')
             self.assertEqual(result['state'], 'completed', result)
             restored = {entry['name']: entry for entry in command('packages', '--profile', profile)['extras']}
@@ -70,6 +102,7 @@ class PackageAcceptance(unittest.TestCase):
             remaining = subprocess.run(['docker', 'exec', '--user', 'abc', name, 'python3', '-c',
                 'import requests_toolbelt; print(requests_toolbelt.__version__)'], capture_output=True, text=True)
             (profile / 'explicit-dependency-result.json').write_text(json.dumps({'restoration': result,
+                'retriedAfterDatabaseLockFailureAndRecreation': interrupt,
                 'selectedReasons': {package: restored[package]['reason'] for package in selected},
                 'toolbeltAfterRecursiveRemovalExit': remaining.returncode,
                 'toolbeltAfterRecursiveRemoval': remaining.stdout.strip()}, indent=2), encoding='utf-8')
