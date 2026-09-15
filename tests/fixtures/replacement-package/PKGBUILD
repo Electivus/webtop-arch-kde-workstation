@@ -1,0 +1,34 @@
+case "${WORKSTATION_REPLACEMENT_STAGE:-original}" in
+original)
+    pkgname=workstation-image-original
+    pkgver=1.0
+    ;;
+renamed)
+    pkgname=workstation-image-renamed
+    pkgver=2.0
+    replaces=('workstation-image-original<2')
+    ;;
+successor)
+    pkgname=workstation-image-successor
+    pkgver=3.0
+    replaces=('workstation-image-renamed<3')
+    ;;
+*) exit 1 ;;
+esac
+pkgrel=1
+pkgdesc='Acceptance fixture for signed Arch package replacements'
+arch=('x86_64')
+license=('MIT')
+options=('!debug')
+depends=('glibc')
+makedepends=('gcc')
+source=('example.c')
+sha256sums=('ab170c28457323363bc10f1a79ad08fc82e67976b5f09eef7a43becafb485bfd')
+
+build() {
+    cc -O2 example.c -o workstation-component-probe
+}
+
+package() {
+    install -Dm755 workstation-component-probe "$pkgdir/usr/bin/workstation-component-probe"
+}

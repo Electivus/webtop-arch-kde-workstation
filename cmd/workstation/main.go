@@ -78,6 +78,9 @@ type options struct {
 	listBackups     bool
 	backupDirectory string
 	backupSource    string
+	restorePackages bool
+	registerPackage string
+	packageSource   string
 }
 
 func main() {
@@ -99,7 +102,7 @@ func main() {
 
 func run(args []string) (any, error) {
 	if len(args) == 0 {
-		return nil, errors.New("usage: workstation.cmd install|start|stop|status|prepare|network|backup|restore|certificate|trust|untrust [options]")
+		return nil, errors.New("usage: workstation.cmd install|start|stop|status|prepare|network|packages|backup|restore|certificate|trust|untrust [options]")
 	}
 	cache, _ := os.UserCacheDir()
 	opts := options{}
@@ -121,6 +124,9 @@ func run(args []string) (any, error) {
 	flags.BoolVar(&opts.listBackups, "list", false, "list completed personal backups")
 	flags.StringVar(&opts.backupDirectory, "backup-directory", "", "backup storage directory (default: profile/backups)")
 	flags.StringVar(&opts.backupSource, "backup", "", "completed backup directory to restore")
+	flags.BoolVar(&opts.restorePackages, "restore", false, "restore recorded extra Arch packages")
+	flags.StringVar(&opts.registerPackage, "register", "", "extra package whose build source should be recorded")
+	flags.StringVar(&opts.packageSource, "source", "", "persistent Linux directory containing the package PKGBUILD")
 	if err := flags.Parse(args[1:]); err != nil {
 		return nil, err
 	}
@@ -139,7 +145,7 @@ func run(args []string) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	readOnly := args[0] == "status" || (args[0] == "backup" && opts.listBackups) ||
+	readOnly := args[0] == "status" || (args[0] == "packages" && !opts.restorePackages && opts.registerPackage == "") || (args[0] == "backup" && opts.listBackups) ||
 		(args[0] == "prepare" && opts.prepareStatus) ||
 		(args[0] == "network" && opts.networkConfig == "" && !opts.clearNetwork)
 	if !readOnly {
@@ -175,6 +181,8 @@ func run(args []string) (any, error) {
 		return prepare(p, opts.prepareStatus)
 	case "network":
 		return network(p, opts)
+	case "packages":
+		return packages(p, opts)
 	case "backup":
 		return backup(p, opts)
 	case "restore":

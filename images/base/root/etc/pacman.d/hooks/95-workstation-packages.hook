@@ -1,0 +1,13 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Recording personal extra packages...
+When = PostTransaction
+Depends = python
+Exec = /usr/local/bin/workstation-packages transaction
+NeedsTargets

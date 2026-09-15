@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# makepkg invokes this path after sudo has reset its environment.
+exec workstation-network exec -- pacman "$@"

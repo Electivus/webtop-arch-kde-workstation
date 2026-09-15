@@ -29,3 +29,4 @@ COPY --chmod=755 images/salesforce/root/usr/local/bin/ /usr/local/bin/
 COPY images/salesforce/root/usr/share/ /usr/share/
 COPY images/salesforce/root/etc/ /etc/
 RUN update-mime-database /usr/share/mime && update-desktop-database /usr/share/applications
+RUN pacman -Q >/etc/electivus/image-packages.txt
