@@ -79,6 +79,8 @@ Na primeira abertura, o KDE Wallet pode solicitar a criação de uma carteira pa
 
 O terminal usa Zsh com Oh My Zsh e os plugins `git`, `zsh-autosuggestions` e `zsh-syntax-highlighting`. `~/.zshrc` é criado somente quando ausente. Personalizações, histórico e diretórios `~/.config/oh-my-zsh/custom` e `~/.cache/oh-my-zsh` pertencem ao volume. Execuções não interativas não carregam a configuração interativa.
 
+Proxy e CAs corporativas podem ser configurados por `install --network-config` ou pelo comando `network` em uma instalação existente. O [guia de conectividade](docs/network.md) mostra o arquivo opcional, o diagnóstico e a remoção pelo CMD. A configuração fica no perfil local e é aplicada no início da workstation.
+
 ## Variante Salesforce
 
 A construção exige a base correspondente e produz um container autossuficiente:
@@ -117,6 +119,8 @@ python tests\test_preparation.py
 python tests\test_projects.py
 python tests\test_docker_projects.py
 python tests\test_salesforce.py
+python tests\test_network.py
+python tests\test_network_apps.py
 python tests\browser_acceptance.py
 python tests\browser_apps.py
 ```

@@ -1,0 +1,24 @@
+[
+  {
+    "image": "electivus/webtop-arch-kde-base:t06",
+    "id": "sha256:7d936464320a9d1b4970616f58717a4e3e18075f4f4406076029aeaf3981a8f3",
+    "inspection": {
+      "runtimeConfiguration": "absent",
+      "buildSecretAndAnchor": "absent",
+      "managedCorporateAnchors": 0,
+      "proxyEnvironment": "absent",
+      "systemRoots": 121
+    }
+  },
+  {
+    "image": "electivus/webtop-arch-kde-salesforce:t06",
+    "id": "sha256:ece5c66df3c3eac585d20ada634b0f9d2f3b9b36584c168065aeb701441dfeb9",
+    "inspection": {
+      "runtimeConfiguration": "absent",
+      "buildSecretAndAnchor": "absent",
+      "managedCorporateAnchors": 0,
+      "proxyEnvironment": "absent",
+      "systemRoots": 121
+    }
+  }
+]

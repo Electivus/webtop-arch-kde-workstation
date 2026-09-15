@@ -71,6 +71,10 @@ type options struct {
 	openBrowser   bool
 	prepareStatus bool
 	exchange      string
+	networkConfig string
+	clearNetwork  bool
+	checkNetwork  bool
+	networkURL    string
 }
 
 func main() {
@@ -92,7 +96,7 @@ func main() {
 
 func run(args []string) (any, error) {
 	if len(args) == 0 {
-		return nil, errors.New("usage: workstation.cmd install|start|stop|status|prepare|certificate|trust|untrust [options]")
+		return nil, errors.New("usage: workstation.cmd install|start|stop|status|prepare|network|certificate|trust|untrust [options]")
 	}
 	cache, _ := os.UserCacheDir()
 	opts := options{}
@@ -107,6 +111,10 @@ func run(args []string) (any, error) {
 	flags.BoolVar(&opts.openBrowser, "open-browser", false, "open the local desktop after startup")
 	flags.BoolVar(&opts.prepareStatus, "status", false, "report application preparation without starting it")
 	flags.StringVar(&opts.exchange, "exchange", "", "existing host directory for bidirectional file exchange")
+	flags.StringVar(&opts.networkConfig, "network-config", "", "local JSON with optional proxy, noProxy and caFiles")
+	flags.BoolVar(&opts.clearNetwork, "clear", false, "remove this installation's network options on next start")
+	flags.BoolVar(&opts.checkNetwork, "check", false, "check preparation and Git connectivity from the workstation")
+	flags.StringVar(&opts.networkURL, "url", "https://github.com/git/git.git", "HTTPS endpoint for the connectivity check")
 	if err := flags.Parse(args[1:]); err != nil {
 		return nil, err
 	}
@@ -132,6 +140,8 @@ func run(args []string) (any, error) {
 		return status(p)
 	case "prepare":
 		return prepare(p, opts.prepareStatus)
+	case "network":
+		return network(p, opts)
 	case "stop":
 		c, err := ownedContainer(p)
 		if err != nil {
@@ -297,6 +307,10 @@ func install(opts options) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	networkConfig, err := importNetwork(opts.networkConfig)
+	if err != nil {
+		return nil, err
+	}
 	p := profile{1, hex.EncodeToString(random[:]), opts.name, opts.image, opts.port, opts.memory, opts.cpus, opts.name + "-home", string(selectedContext), exchange}
 	info, err := engine(p)
 	if err != nil {
@@ -314,6 +328,11 @@ func install(opts options) (any, error) {
 	toolsDirectory := filepath.Join(opts.directory, "tools")
 	if err := os.MkdirAll(toolsDirectory, 0700); err != nil {
 		return nil, err
+	}
+	if opts.networkConfig != "" {
+		if err := saveNetwork(opts.directory, networkConfig); err != nil {
+			return nil, err
+		}
 	}
 	executable, err := os.Executable()
 	if err != nil {
@@ -459,7 +478,7 @@ func start(p profile, directory string, open bool) (any, error) {
 			return nil, err
 		}
 		defer os.Remove(policy)
-		args := []string{"run", "--detach", "--name", p.Name, "--platform", "linux/amd64", "--restart", "no",
+		args := []string{"create", "--name", p.Name, "--platform", "linux/amd64", "--restart", "no",
 			"--security-opt", "seccomp=" + policy,
 			"--label", ownerLabel + "=" + p.InstallationID, "--publish", fmt.Sprintf("127.0.0.1:%d:3001/tcp", p.Port),
 			"--mount", "type=volume,src=" + p.HomeVolume + ",dst=/config", "--memory", fmt.Sprintf("%dm", p.MemoryMiB),
@@ -474,7 +493,11 @@ func start(p profile, directory string, open bool) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-	} else if !c.State.Running {
+	}
+	if c == nil || !c.State.Running {
+		if err := syncNetwork(p, directory); err != nil {
+			return nil, err
+		}
 		if err := verifyExchange(p); err != nil {
 			return nil, err
 		}

@@ -1,0 +1,24 @@
+[
+  {
+    "inspection": {
+      "runtimeConfiguration": "absent",
+      "buildSecretAndAnchor": "absent",
+      "managedCorporateAnchors": 0,
+      "proxyEnvironment": "absent",
+      "systemRoots": 121
+    },
+    "id": "sha256:bf3720bfc27cdc42a9af6798137571e2d1c53e76678953f5a9619bb8e3d676c3",
+    "image": "electivus/webtop-arch-kde-base:t06"
+  },
+  {
+    "inspection": {
+      "runtimeConfiguration": "absent",
+      "buildSecretAndAnchor": "absent",
+      "managedCorporateAnchors": 0,
+      "proxyEnvironment": "absent",
+      "systemRoots": 121
+    },
+    "id": "sha256:34c0198a3b4164bd6bd844f2137da067c88240055b55d6ddbdcd5b2af5d7c512",
+    "image": "electivus/webtop-arch-kde-salesforce:t06"
+  }
+]

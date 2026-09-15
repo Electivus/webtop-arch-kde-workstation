@@ -1,0 +1,29 @@
+{
+  "network": {
+    "result": "passed",
+    "checks": [
+      {
+        "application": "preparation",
+        "state": "connected"
+      },
+      {
+        "application": "git",
+        "state": "connected"
+      }
+    ],
+    "invalidTrustRejected": true,
+    "systemRootCount": 122,
+    "proxyConnections": 41,
+    "configurationRemoved": true,
+    "existingBrowserCA": "preserved",
+    "terminalGitProxy": true,
+    "chromeProxyAndTLS": true
+  },
+  "preparationRecovery": {
+    "result": "passed",
+    "failedApplication": "chrome",
+    "failedStep": "resolve",
+    "redaction": "passed",
+    "resumed": "completed"
+  }
+}

@@ -5,4 +5,4 @@ if [ ! -x "$cli" ]; then
     printf '%s\n' 'Salesforce CLI is not ready. Run workstation-apps or use Prepare applications.' >&2
     exit 1
 fi
-exec "$cli" "$@"
+exec workstation-network exec "$cli" "$@"

@@ -16,12 +16,38 @@ import sys
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 PERSONAL_HOME = Path.home()
 STATE = PERSONAL_HOME / ".local/state/electivus/preparation.json"
 CACHE = PERSONAL_HOME / ".cache/electivus/downloads"
 APPS = PERSONAL_HOME / ".local/share/electivus/apps"
+
+
+def safe_message(message):
+    """Keep the application/step failure useful without publishing proxy inputs."""
+    private = set()
+    for key in ("http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"):
+        address = os.environ.get(key)
+        if not address:
+            continue
+        private.add(address)
+        try:
+            proxy = urllib.parse.urlsplit(address)
+            for value in (proxy.username, proxy.password, proxy.hostname):
+                if value:
+                    private.update((value, urllib.parse.unquote(value)))
+            if proxy.username and proxy.password:
+                credentials = urllib.parse.unquote(proxy.username) + ":" + urllib.parse.unquote(proxy.password)
+                private.add(base64.b64encode(credentials.encode()).decode())
+        except ValueError:
+            pass
+    if private:
+        message = re.sub("|".join(re.escape(value) for value in sorted(private, key=len, reverse=True)),
+                         "[private]", str(message))
+    message = re.sub(r"https?://[^\s<>\"']+", "[endpoint]", str(message))
+    return re.sub(r"-----BEGIN [^-]+-----.*?-----END [^-]+-----", "[certificate omitted]", message, flags=re.S)
 
 
 def configuration():
@@ -257,7 +283,7 @@ def prepare_deb(app, repository, state):
 def stream(*args):
     with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as process:
         for line in process.stdout:
-            print(line.rstrip(), file=sys.stderr, flush=True)
+            print(safe_message(line.rstrip()), file=sys.stderr, flush=True)
         if process.wait():
             raise RuntimeError("Application installer failed: " + args[0])
 
@@ -453,6 +479,8 @@ def main():
     with (STATE.parent / "preparation.lock").open("a+") as lock:
         if args.status:
             state = read_json(STATE, {"state": "pending", "step": "queued", "apps": {}})
+            if "error" in state:
+                state["error"] = safe_message(state["error"])
             if state["state"] == "running":
                 try:
                     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -466,9 +494,9 @@ def main():
         try:
             result = prepare(config, state)
         except Exception as error:
-            state.update(state="failed", error=str(error), updated=now())
+            state.update(state="failed", error=safe_message(str(error)), updated=now())
             write_json(STATE, state)
-            print("Preparation failed: " + str(error) + ". Run prepare to resume.", file=sys.stderr)
+            print("Preparation failed: " + safe_message(str(error)) + ". Run prepare to resume.", file=sys.stderr)
             if not args.console:
                 print(json.dumps(state))
             return 1
