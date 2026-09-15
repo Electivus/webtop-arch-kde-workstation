@@ -121,6 +121,7 @@ func readBackup(directory string) (backupManifest, error) {
 	p := manifest.Profile
 	if p.Schema != 1 || !regexp.MustCompile(`^[0-9a-f]{32}$`).MatchString(p.InstallationID) ||
 		!validName(p.Name) || !validHomeVolume(p) || p.Image == "" || p.DockerContext == "" ||
+		(p.ImageID != "" && !imageID.MatchString(p.ImageID)) ||
 		p.Port < 1024 || p.Port > 65535 || p.MemoryMiB < 1024 || p.CPUs < 1 {
 		return manifest, errors.New("invalid or incomplete backup profile; current data was not changed")
 	}
@@ -235,6 +236,9 @@ func stopForSnapshot(p profile, c *containerInfo) error {
 
 func snapshotImage(p profile, c *containerInfo) (containerInfo, error) {
 	reference := p.Image
+	if p.ImageID != "" {
+		reference = p.ImageID
+	}
 	if c != nil {
 		reference = c.Image
 	}
@@ -477,6 +481,7 @@ func restoreBackup(p profile, opts options) (any, error) {
 	}
 	selected := p
 	selected.Image = manifest.ImageID
+	selected.ImageID = manifest.ImageID
 	image, err := snapshotImage(selected, nil)
 	if err != nil {
 		return nil, fmt.Errorf("backup image unavailable; restore requires the recorded image: %w", err)
@@ -574,6 +579,7 @@ func restoreBackup(p profile, opts options) (any, error) {
 	restored := manifest.Profile
 	restored.Schema, restored.Name, restored.InstallationID = p.Schema, p.Name, p.InstallationID
 	restored.DockerContext, restored.HomeVolume, restored.Image = p.DockerContext, restoredVolume, image.ID
+	restored.ImageID = image.ID
 	data, err := json.MarshalIndent(restored, "", "  ")
 	if err != nil {
 		return nil, err

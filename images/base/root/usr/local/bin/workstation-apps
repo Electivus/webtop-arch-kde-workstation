@@ -255,8 +255,14 @@ def installed_deb(app):
     return installed
 
 
-def prepare_deb(app, repository, state):
+def prepare_deb(app, repository, state, update=False):
     installed = installed_deb(app)
+    if update:
+        save(state, "resolve")
+        selected = resolve_deb(app, repository)
+        write_json(CACHE / (app["id"] + "-source.json"), selected)
+        if installed and installed["sha256"] != selected["sha256"]:
+            installed = None
     if not installed:
         source = CACHE / (app["id"] + "-source.json")
         manifest = read_json(source)
@@ -280,11 +286,17 @@ def prepare_deb(app, repository, state):
     return installed
 
 
-def stream(*args):
+def stream(*args, failure_prefix=None):
+    failure = None
     with subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as process:
         for line in process.stdout:
             print(safe_message(line.rstrip()), file=sys.stderr, flush=True)
-        if process.wait():
+            if failure_prefix and line.startswith(failure_prefix) and failure is None:
+                failure = safe_message(line.rstrip())
+        exit_code = process.wait()
+        if failure:
+            raise RuntimeError(failure)
+        if exit_code:
             raise RuntimeError("Application installer failed: " + args[0])
 
 
@@ -298,9 +310,27 @@ def installed_cli():
     return installed
 
 
-def prepare_cli(config, state):
+def current_cli_release(config):
+    with urllib.request.urlopen('https://registry.npmjs.org/@salesforce/cli/latest', timeout=45) as response:
+        release = json.load(response)
+    version = release.get('version', '')
+    distribution = release.get('dist', {})
+    integrity = distribution.get('integrity', '')
+    expected_source = 'https://registry.npmjs.org/@salesforce/cli/-/cli-' + version + '.tgz'
+    if (release.get('name') != '@salesforce/cli' or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version)
+            or distribution.get('tarball') != expected_source or not integrity.startswith('sha512-')
+            or len(base64.b64decode(integrity[7:], validate=True)) != 64):
+        raise RuntimeError('Unexpected Salesforce CLI release metadata from the official registry')
+    return {**config, 'cliVersion': version, 'cliIntegrity': integrity, 'cliResolvedAt': now()}
+
+
+def prepare_cli(config, state, update=False):
     installed = installed_cli()
-    if installed:
+    if update:
+        save(state, 'resolve')
+        config = current_cli_release(config)
+    if installed and (not update or (installed['version'] == config['cliVersion']
+                                    and installed['integrity'] == config['cliIntegrity'])):
         return installed
     root = APPS / "salesforce-cli"
     versions = root / "versions"
@@ -335,6 +365,8 @@ def prepare_cli(config, state):
         installed = {"version": package["version"], "source": source,
                      "integrity": package["integrity"], "lockSha256": sha256(staging / "package-lock.json"),
                      "actualVersion": actual, "installedAt": now()}
+        if 'cliResolvedAt' in config:
+            installed['resolvedAt'] = config['cliResolvedAt']
         return promote(staging, root, installed, package["version"])
 
 
@@ -384,7 +416,7 @@ def extension_requirements(editor, config, versions):
     return required
 
 
-def prepare_extensions(config, state):
+def prepare_extensions(config, state, update=False):
     previous = state["apps"].get("extensions", {})
     installed = dict(previous)
     for editor, folder in (("code", "Code"), ("code-insiders", "Code - Insiders")):
@@ -395,6 +427,12 @@ def prepare_extensions(config, state):
                                  "extensions.autoUpdate": False,
                                  "salesforcedx-vscode-apex.java.home": "/usr/lib/jvm/java-21-openjdk",
                                  "terminal.integrated.defaultProfile.linux": "zsh"})
+        if update:
+            save(state, 'update')
+            # The editor can report an individual installation error and still
+            # exit successfully. Keep this diagnostic in a known language.
+            stream(editor, '--locale=en', '--update-extensions',
+                   failure_prefix='Error while updating extension ')
         versions = extension_versions(editor)
         attempted = set()
         while True:
@@ -439,17 +477,17 @@ def ready(config, state):
     return True
 
 
-def prepare(config, state):
+def prepare(config, state, update=False):
     for app in config["apps"]:
         state["app"] = app["id"]
-        installed = prepare_deb(app, config["repositories"][app["repository"]], state)
+        installed = prepare_deb(app, config["repositories"][app["repository"]], state, update=update)
         state["apps"][app["id"]] = installed
         save(state, "ready")
     if "salesforce" in config:
         state["app"] = "salesforce-cli"
-        state["apps"]["salesforce-cli"] = prepare_cli(config["salesforce"], state)
+        state["apps"]["salesforce-cli"] = prepare_cli(config["salesforce"], state, update=update)
         save(state, "ready")
-        state["apps"]["extensions"] = prepare_extensions(config["salesforce"], state)
+        state["apps"]["extensions"] = prepare_extensions(config["salesforce"], state, update=update)
         state["runtime"] = {"node": run("node", "--version").decode().strip(),
                             "java": run("java", "--version").decode().strip()}
     state.update(state="completed", step="ready", updated=now())
@@ -466,7 +504,10 @@ def main():
     parser.add_argument("--status", action="store_true")
     parser.add_argument("--window", action="store_true", help="show first preparation in the desktop")
     parser.add_argument("--console", action="store_true", help="show a concise result in a terminal")
+    parser.add_argument("--update", action="store_true", help="explicitly resolve and install current application releases")
     args = parser.parse_args()
+    if args.update and (args.status or args.window):
+        parser.error("--update cannot be combined with --status or --window")
     config = configuration()
     if args.window:
         existing = read_json(STATE, {})
@@ -492,11 +533,16 @@ def main():
         fcntl.flock(lock, fcntl.LOCK_EX)
         state = read_json(STATE, {"state": "pending", "step": "queued", "apps": {}})
         try:
-            result = prepare(config, state)
+            result = prepare(config, state, update=args.update)
         except Exception as error:
             state.update(state="failed", error=safe_message(str(error)), updated=now())
             write_json(STATE, state)
-            print("Preparation failed: " + safe_message(str(error)) + ". Run prepare to resume.", file=sys.stderr)
+            if args.update:
+                print("Application update failed: " + safe_message(str(error)) +
+                      ". Run update-apps to retry, or restore the backup reported by update-apps --status.",
+                      file=sys.stderr)
+            else:
+                print("Preparation failed: " + safe_message(str(error)) + ". Run prepare to resume.", file=sys.stderr)
             if not args.console:
                 print(json.dumps(state))
             return 1

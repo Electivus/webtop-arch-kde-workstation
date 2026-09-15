@@ -2,7 +2,7 @@
 
 Workstation Linux local para Windows 11 com Docker Desktop em modo de containers Linux. O destino usa Hyper-V e opera pelo **CMD, com PowerShell bloqueado**. Os comandos e o atalho usam um executável Windows autossuficiente; não exigem WSL2, PowerShell, Python, Go ou habilitação de virtualização no notebook.
 
-Esta candidata acrescenta Chrome oficial, Git, Zsh/Oh My Zsh e a variante Salesforce ao desktop local. A publicação de `stable` e as operações de manutenção seguem nos tickets da [especificação](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1). Ainda não existe uma entrega pública aprovada.
+Esta candidata acrescenta Chrome oficial, Git, Zsh/Oh My Zsh, a variante Salesforce e comandos de manutenção ao desktop local. A publicação de `stable` segue nos tickets da [especificação](https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1). Ainda não existe uma entrega pública aprovada.
 
 ## Preparar e iniciar
 
@@ -96,7 +96,7 @@ A variante oferece Node 24 LTS e Java 21, instala a CLI Salesforce selecionada c
 
 No terminal Linux, `code-insiders` abre o editor padrão, `code` abre Stable e `workstation-project` abre o diretório atual no Insiders. Arquivos de texto e projetos `.code-workspace` usam Insiders por padrão. `sf project generate --name exemplo --output-dir ~/projects` cria um projeto sem credenciais de organização.
 
-Perfis novos dos editores desativam atualizações automáticas do editor e das extensões; configurações pessoais existentes são preservadas. O comando `prepare` recupera a preparação e mantém instalações já funcionais. O comando separado de atualização explícita pertence a T10.
+Perfis novos dos editores desativam atualizações automáticas do editor e das extensões; configurações pessoais existentes são preservadas. O comando `prepare` recupera a preparação e mantém instalações já funcionais. Para atualizar os aplicativos sem trocar a imagem, use `workstation.cmd update-apps`; ele conclui um backup antes de modificar as ferramentas. O [guia de atualização de aplicativos](docs/application-updates.md) descreve a interrupção, as versões registradas, o diagnóstico e a recuperação.
 
 Para remover a confiança local posteriormente, execute `untrust` e confirme a remoção do mesmo certificado caso o Windows apresente a janela:
 
@@ -109,6 +109,8 @@ workstation.cmd untrust
 O fluxo de [backup e recuperação](docs/backups.md) cria cópias locais pelo CMD, mantém as duas mais recentes de cada instalação e recupera o volume pessoal, aplicativos preparados e preferências. Ele informa a interrupção necessária e deixa a workstation parada ao concluir.
 
 O [guia de programas extras](docs/packages.md) mostra como consultar o inventário persistente, registrar receitas AUR/locais e restaurar os pacotes depois de recriar o container. A restauração recompila as fontes contra o Arch atual e informa falhas parciais para correção e nova tentativa.
+
+Para escolher outra imagem, use `workstation.cmd update-image --image REFERENCIA`. O comando conclui um backup antes da troca, restaura os extras e verifica o novo ambiente. O [guia de atualização da imagem](docs/image-updates.md) explica seleção fixa, uso de uma imagem local, resultados parciais e recuperação da versão anterior.
 
 ## Verificar
 
@@ -127,6 +129,8 @@ python tests\test_network.py
 python tests\test_network_apps.py
 python tests\test_backups.py
 python tests\test_packages.py
+python tests\test_updates.py
+python tests\test_image_updates.py
 python tests\browser_acceptance.py
 python tests\browser_apps.py
 ```

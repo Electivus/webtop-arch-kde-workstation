@@ -11,7 +11,7 @@ concurrency:
 jobs:
   desktop-lifecycle:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     env:
       WORKSTATION_TEST_IMAGE: electivus/webtop-arch-kde-base:ci
       WORKSTATION_SALESFORCE_TEST_IMAGE: electivus/webtop-arch-kde-salesforce:ci
@@ -59,3 +59,9 @@ jobs:
         run: |
           python3 tests/test_packages.py
           WORKSTATION_TEST_IMAGE="$WORKSTATION_SALESFORCE_TEST_IMAGE" python3 tests/test_packages.py PackageAcceptance.test_inventory_distinguishes_image_components
+      - name: Exercise explicit application updates, failures and recovery
+        run: python3 tests/test_updates.py
+      - name: Exercise explicit image selection, updates and recovery
+        run: |
+          python3 tests/test_image_updates.py
+          WORKSTATION_TEST_IMAGE="$WORKSTATION_SALESFORCE_TEST_IMAGE" python3 tests/test_image_updates.py ImageUpdateAcceptance.test_explicit_image_update_restores_extras_and_recovers_the_previous_project
