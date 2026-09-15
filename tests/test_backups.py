@@ -1,10 +1,13 @@
 """Personal backup and recovery through the delivered Windows commands."""
 import json
 import hashlib
+import base64
+import io
 import os
 import signal
 from pathlib import Path
 import subprocess
+import tarfile
 import unittest
 import uuid
 
@@ -24,7 +27,115 @@ def discard_backup_archives(directory):
         archive.unlink()
 
 
+def write_manifest(directory, manifest):
+    data = json.dumps(manifest, indent=2).encode('utf-8')
+    (directory / 'manifest.json').write_bytes(data)
+    (directory / 'manifest.sha256').write_text(hashlib.sha256(data).hexdigest() + '\n', encoding='ascii')
+
+
 class BackupAcceptance(unittest.TestCase):
+    def test_archive_replaced_after_validation_cannot_be_committed(self):
+        name = 'ew-backup-race-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        operation = None
+        try:
+            command('install', '--profile', profile, '--name', name, '--image', IMAGE,
+                    '--port', '13441', '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            command('start', '--profile', profile)
+            docker('exec', '--user', 'abc', name, 'python3', '-c',
+                   'from pathlib import Path; Path("/config/projects/live.txt").write_text("original data")')
+            saved = command('backup', '--profile', profile)
+            command('start', '--profile', profile)
+            original_profile = (profile / 'profile.json').read_bytes()
+            changed = io.BytesIO()
+            with tarfile.open(fileobj=changed, mode='w') as archive:
+                payload = b'changed after validation'
+                member = tarfile.TarInfo('projects/live.txt')
+                member.size = len(payload)
+                archive.addfile(member, io.BytesIO(payload))
+            executable = CLI.with_suffix('.exe') if os.name == 'nt' else CLI
+            operation = subprocess.Popen([str(executable), 'restore', '--profile', str(profile),
+                                          '--backup', saved['directory']],
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8')
+            progress = operation.stderr.readline()
+            self.assertIn('Stopping the workstation', progress)
+            # This public notice follows the initial validation and precedes
+            # Docker's graceful stop and creation of the extraction volume.
+            (Path(saved['directory']) / 'home.tar').write_bytes(changed.getvalue())
+            output, diagnostic = operation.communicate(timeout=180)
+            self.assertNotEqual(operation.returncode, 0, output)
+            self.assertIn('changed during restore', diagnostic.lower())
+            self.assertEqual((profile / 'profile.json').read_bytes(), original_profile)
+            command('start', '--profile', profile)
+            self.assertEqual(docker('exec', '--user', 'abc', name, 'cat', '/config/projects/live.txt'), 'original data')
+            (profile / 'archive-race-result.json').write_text(json.dumps({'result': 'passed',
+                'replacement': 'valid tar after initial validation', 'profileAndOriginalVolume': 'preserved'},
+                indent=2), encoding='utf-8')
+        finally:
+            if operation is not None and operation.poll() is None:
+                operation.communicate(timeout=180)
+            subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
+            for volume in docker('volume', 'ls', '--filter', 'name=' + name + '-home', '--format', '{{.Name}}').splitlines():
+                subprocess.run(['docker', 'volume', 'rm', volume], capture_output=True)
+            discard_backup_archives(profile / 'backups')
+
+    def test_manifest_corruption_is_rejected_even_when_fields_remain_valid(self):
+        name = 'ew-backup-metadata-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        try:
+            command('install', '--profile', profile, '--name', name, '--image', IMAGE,
+                    '--port', '13439', '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            command('start', '--profile', profile)
+            network_input = profile / 'network-input.json'
+            network_input.write_text(json.dumps({'proxy': 'http://127.0.0.1:9'}), encoding='utf-8')
+            command('network', '--profile', profile, '--network-config', network_input)
+            saved = command('backup', '--profile', profile)
+            command('start', '--profile', profile)
+            profile_before = (profile / 'profile.json').read_bytes()
+            network_before = (profile / 'network.json').read_bytes()
+            manifest_file = Path(saved['directory']) / 'manifest.json'
+            manifest_before = manifest_file.read_bytes()
+            for field in ['port', 'network']:
+                damaged = json.loads(manifest_before)
+                if field == 'port':
+                    damaged['profile']['port'] = 13440
+                else:
+                    payload = json.loads(base64.b64decode(damaged['hostFiles']['network.json']))
+                    payload['proxy'] = 'http://127.0.0.1:8'
+                    damaged['hostFiles']['network.json'] = base64.b64encode(json.dumps(payload).encode()).decode()
+                manifest_file.write_text(json.dumps(damaged), encoding='utf-8')
+                try:
+                    rejected = invoke(CLI, 'restore', '--profile', profile, '--backup', saved['directory'])
+                    self.assertNotEqual(rejected.returncode, 0, field)
+                    self.assertIn('manifest checksum', rejected.stderr.lower())
+                    self.assertEqual((profile / 'profile.json').read_bytes(), profile_before)
+                    self.assertEqual((profile / 'network.json').read_bytes(), network_before)
+                    self.assertEqual(command('status', '--profile', profile)['state'], 'running')
+                    listed = command('backup', '--profile', profile, '--list')
+                    self.assertEqual(listed['backups'], [])
+                    self.assertIn(saved['id'], listed['incomplete'])
+                finally:
+                    manifest_file.write_bytes(manifest_before)
+            checksum_file = Path(saved['directory']) / 'manifest.sha256'
+            checksum_before = checksum_file.read_bytes()
+            checksum_file.unlink()
+            try:
+                rejected = invoke(CLI, 'restore', '--profile', profile, '--backup', saved['directory'])
+                self.assertNotEqual(rejected.returncode, 0)
+                self.assertIn('incomplete backup manifest checksum', rejected.stderr.lower())
+                self.assertEqual(command('status', '--profile', profile)['state'], 'running')
+            finally:
+                checksum_file.write_bytes(checksum_before)
+            self.assertEqual(len(command('backup', '--profile', profile, '--list')['backups']), 1)
+            (profile / 'metadata-result.json').write_text(json.dumps({'result': 'passed',
+                'validPortChange': 'rejected', 'validNetworkChange': 'rejected',
+                'runningSessionAndHostState': 'preserved'}, indent=2), encoding='utf-8')
+        finally:
+            subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
+            for volume in docker('volume', 'ls', '--filter', 'name=' + name + '-home', '--format', '{{.Name}}').splitlines():
+                subprocess.run(['docker', 'volume', 'rm', volume], capture_output=True)
+            discard_backup_archives(profile / 'backups')
+
     def test_incomplete_backup_profile_is_rejected_before_changing_live_data(self):
         name = 'ew-backup-profile-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name
@@ -39,6 +150,8 @@ class BackupAcceptance(unittest.TestCase):
             profile_before = (profile / 'profile.json').read_bytes()
             manifest_file = Path(saved['directory']) / 'manifest.json'
             manifest_before = manifest_file.read_bytes()
+            checksum_file = Path(saved['directory']) / 'manifest.sha256'
+            checksum_before = checksum_file.read_bytes()
             manifest = json.loads(manifest_before)
             cases = [('missing', None), ('null', None), ('empty', {})]
             for field, value in {'schema': 2, 'installationId': '', 'name': 'invalid/name', 'image': '',
@@ -49,7 +162,7 @@ class BackupAcceptance(unittest.TestCase):
                 damaged = {**manifest, 'profile': damaged_profile}
                 if label == 'missing':
                     del damaged['profile']
-                manifest_file.write_text(json.dumps(damaged), encoding='utf-8')
+                write_manifest(manifest_file.parent, damaged)
                 try:
                     rejected = invoke(CLI, 'restore', '--profile', profile, '--backup', saved['directory'])
                     self.assertNotEqual(rejected.returncode, 0, label)
@@ -60,6 +173,7 @@ class BackupAcceptance(unittest.TestCase):
                                      'keep live data', label)
                 finally:
                     manifest_file.write_bytes(manifest_before)
+                    checksum_file.write_bytes(checksum_before)
             self.assertEqual([entry['id'] for entry in command('backup', '--profile', profile, '--list')['backups']],
                              [saved['id']])
             (profile / 'invalid-profile-result.json').write_text(json.dumps({'result': 'passed',
@@ -318,7 +432,7 @@ class BackupAcceptance(unittest.TestCase):
             manifest = json.loads((Path(copies[0]['directory']) / 'manifest.json').read_text())
             manifest.update(bytes=len(invalid_tar), sha256=hashlib.sha256(invalid_tar).hexdigest())
             (broken / 'home.tar').write_bytes(invalid_tar)
-            (broken / 'manifest.json').write_text(json.dumps(manifest), encoding='utf-8')
+            write_manifest(broken, manifest)
             original_profile = (profile / 'profile.json').read_bytes()
             rejected = invoke(CLI, 'restore', '--profile', profile, '--backup', broken)
             self.assertNotEqual(rejected.returncode, 0)
@@ -382,8 +496,10 @@ class BackupAcceptance(unittest.TestCase):
     def test_restore_after_personal_volume_loss(self):
         name = 'ew-backup-loss-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name
+        lost_tag = 'electivus/workstation-loss-test:' + uuid.uuid4().hex[:10]
         try:
-            command('install', '--profile', profile, '--name', name, '--image', IMAGE,
+            docker('image', 'tag', IMAGE, lost_tag)
+            command('install', '--profile', profile, '--name', name, '--image', lost_tag,
                     '--port', '13431', '--memory', '2560', '--cpus', '2', '--no-shortcut')
             command('start', '--profile', profile)
             docker('exec', '--user', 'abc', name, 'python3', '-c',
@@ -391,17 +507,21 @@ class BackupAcceptance(unittest.TestCase):
             saved = command('backup', '--profile', profile)
             docker('container', 'rm', name)
             docker('volume', 'rm', name + '-home')
+            docker('image', 'rm', lost_tag)
+            docker('image', 'inspect', saved['imageId'])
             recovered = command('restore', '--profile', profile, '--backup', saved['directory'])
             self.assertEqual(recovered['state'], 'restored')
             command('start', '--profile', profile)
             self.assertEqual(docker('exec', '--user', 'abc', name, 'cat', '/config/projects/recovered.txt'),
                              'recover after volume loss')
-            (profile / 'volume-loss-result.json').write_text(json.dumps({'result': 'passed', 'restore': recovered}, indent=2), encoding='utf-8')
+            (profile / 'volume-loss-result.json').write_text(json.dumps({'result': 'passed', 'restore': recovered,
+                'containerAndVolumeLost': True, 'oldTagRemoved': True, 'recordedImageAvailable': True}, indent=2), encoding='utf-8')
         finally:
             subprocess.run(['docker', 'container', 'rm', '--force', name], capture_output=True)
             for volume in docker('volume', 'ls', '--filter', 'name=' + name + '-home', '--format', '{{.Name}}').splitlines():
                 subprocess.run(['docker', 'volume', 'rm', volume], capture_output=True)
             discard_backup_archives(profile / 'backups')
+            subprocess.run(['docker', 'image', 'rm', lost_tag], capture_output=True)
 
     def test_base_files_preferences_and_applications_restore(self):
         name = 'ew-backup-base-' + uuid.uuid4().hex[:10]

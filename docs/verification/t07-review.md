@@ -31,3 +31,15 @@ As mudanças ficaram restritas às causas citadas e suas regressões. Nenhum rev
 Os Dockerfiles reais passaram novamente gofmt, go vet e builds Windows/Linux. Os dez cenários de backup passaram em 907,684 s nas duas imagens reconstruídas, incluindo as duas regressões, os casos de retenção/falha e a recuperação Salesforce com downloads indisponíveis. Os IDs dos artefatos e os limites da bateria estão no [relatório de validação](t07-backups.md#validação-após-a-revisão).
 
 Contagens iniciais: Standards 0 violações e 2 heurísticas; Spec 2 problemas P2. Os dois problemas foram corrigidos e verificados pelo coordenador; as duas heurísticas permanecem adiadas.
+
+## Feedback publicado na PR
+
+O bot `chatgpt-codex-connector` publicou três achados adicionais na [PR #19](https://github.com/manoelcalixto/webtop-arch-kde-workstation/pull/19), no head `031f945d337793783b5d07faa970da5660d0a6c3`:
+
+- [P1, integridade do manifesto](https://github.com/manoelcalixto/webtop-arch-kde-workstation/pull/19#discussion_r4012142397): um valor de porta válido ou uma configuração de rede alterada podiam passar porque só o tar tinha checksum. O cenário falhou em 36,241 s e passou em 33,170 s após adicionar `manifest.sha256`, exigido na leitura. A prova rejeita porta/rede alteradas e checksum ausente antes da interrupção, sem mudar o perfil, a rede ou a sessão. Uma cópia só informa conclusão e participa da retenção depois de passar pela verificação completa.
+- [P2, troca do tar depois da verificação](https://github.com/manoelcalixto/webtop-arch-kde-workstation/pull/19#discussion_r4012142401): o teste substitui o arquivo por outro tar válido depois do aviso público de parada, antes da extração. Falhou em 36,076 s porque a recuperação retornou sucesso. O fluxo lido para extrair passou a ser verificado antes do commit do perfil; a prova passou em 48,141 s, mantendo perfil e dados originais.
+- [P2, perda da tag antiga](https://github.com/manoelcalixto/webtop-arch-kde-workstation/pull/19#discussion_r4012142408): o teste de perda agora também remove uma tag descartável, preservando o ID da imagem. Falhou em 20,373 s por exigir essa tag. A restauração passou a validar primeiro a imagem registrada e, na ausência de container/imagem atual, usar a variante do backup quando ele pertence à mesma instalação. A prova passou em 33,884 s. Cópias de outra instalação continuam exigindo uma variante verificável no destino.
+
+Essas correções respondem ao feedback publicado do watcher, sem reiniciar os dois eixos independentes. As fixtures de perfil inválido e tar malformado passaram a fornecer um checksum de manifesto coerente para continuar exercitando as falhas estruturais e de extração, além da verificação de integridade.
+
+A bateria completa de backup passou nos artefatos reconstruídos: 12 testes em 1.030,865 s, incluindo recuperação Salesforce e os três casos do review. Gofmt, go vet e builds Windows/Linux também passaram. A aceitação Linux/CI deste novo commit e o fechamento dos três threads serão registrados na integração.

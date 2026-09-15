@@ -11,7 +11,7 @@ workstation.cmd start --profile "%WS_PROFILE%"
 
 Por padrão, as cópias ficam em `backups` dentro do perfil. `--backup-directory "D:\Workstation Backups"` escolhe outra pasta local; use a mesma opção ao listar esse armazenamento. Cada instalação mantém suas próprias duas cópias concluídas mais recentes, mesmo quando várias instalações escolhem a mesma pasta. A listagem e a retenção verificam o SHA-256 dos arquivos. Cópias incompletas ou corrompidas aparecem separadamente e não contam para a retenção; o tempo dessa verificação depende do volume de dados armazenado.
 
-O resultado de criação informa o identificador, a pasta, o tamanho e a imagem associada. Cada pasta contém `home.tar` e `manifest.json`. Copie a pasta inteira ao transferir um backup. Esses arquivos pertencem ao estado privado da instalação.
+O resultado de criação informa o identificador, a pasta, o tamanho e a imagem associada. Cada pasta contém `home.tar`, `manifest.json` e `manifest.sha256`. O checksum adicional protege também os metadados do perfil e da configuração de rede. Copie a pasta inteira ao transferir um backup. Esses arquivos pertencem ao estado privado da instalação.
 
 A criação estima o espaço necessário antes de interromper a workstation. Se não houver espaço suficiente, informa os valores estimado e disponível, preservando as cópias existentes e a sessão em execução. Durante uma operação que altera a instalação, outro comando de alteração retorna uma mensagem de operação em andamento; a listagem e o diagnóstico continuam disponíveis. Os comandos de certificado aguardam brevemente a finalização de um início pelo atalho antes de informar esse conflito. O bloqueio é liberado pelo sistema operacional quando o processo termina.
 
@@ -32,7 +32,9 @@ workstation.cmd restore --profile "%WS_PROFILE%" --backup "D:\Workstation Backup
 workstation.cmd start --profile "%WS_PROFILE%"
 ```
 
-A restauração verifica o manifesto, os campos obrigatórios do perfil, o tamanho e o SHA-256 do arquivo antes de alterar os dados atuais. A imagem registrada precisa estar disponível no Docker local. A cópia é extraída em um novo volume Linux e o perfil passa a usá-lo somente depois da extração. Isso também permite recuperar uma instalação cujo container e volume pessoal tenham sido perdidos.
+A restauração verifica o checksum do manifesto, os campos obrigatórios do perfil, o tamanho e o SHA-256 do arquivo antes de alterar os dados atuais. A imagem registrada precisa estar disponível no Docker local. A cópia é extraída em um novo volume Linux; o checksum do fluxo lido é conferido antes de trocar o perfil para esse volume. Uma alteração do arquivo durante a operação impede essa troca e preserva o volume original.
+
+Também é possível recuperar uma instalação cujo container e volume pessoal tenham sido perdidos. Se a tag antiga da imagem desapareceu, uma cópia criada pela mesma instalação fornece sua variante, conferida contra a imagem exata registrada. Para uma cópia de outra instalação, a variante do destino precisa continuar verificável pela imagem ou pelo container existente.
 
 Os certificados arquivados anteriormente no perfil continuam disponíveis para `untrust`. Restaurar arquivos de certificados não altera por si só a confiança do Windows; `certificate`, `trust` e `untrust` continuam sendo os comandos de administração dessa confiança.
 

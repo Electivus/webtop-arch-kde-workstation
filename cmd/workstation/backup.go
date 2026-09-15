@@ -99,8 +99,22 @@ func readBackup(directory string) (backupManifest, error) {
 	}
 	data, readErr := io.ReadAll(io.LimitReader(file, 64*1024*1024+1))
 	file.Close()
-	if readErr != nil || len(data) > 64*1024*1024 || json.Unmarshal(data, &manifest) != nil ||
+	if readErr != nil || len(data) > 64*1024*1024 {
+		return manifest, errors.New("invalid or incomplete backup manifest")
+	}
+	checksumFile, err := os.Open(filepath.Join(directory, "manifest.sha256"))
+	if err != nil {
+		return manifest, fmt.Errorf("incomplete backup manifest checksum: %w", err)
+	}
+	checksum, checksumErr := io.ReadAll(io.LimitReader(checksumFile, 67))
+	checksumFile.Close()
+	manifestHash := sha256.Sum256(data)
+	if checksumErr != nil || len(checksum) > 66 || strings.TrimSpace(string(checksum)) != hex.EncodeToString(manifestHash[:]) {
+		return manifest, errors.New("backup manifest checksum does not match; current data was not changed")
+	}
+	if json.Unmarshal(data, &manifest) != nil ||
 		manifest.Schema != 1 || !backupID.MatchString(manifest.ID) || filepath.Base(directory) != manifest.ID ||
+		(manifest.Variant != "base" && manifest.Variant != "salesforce") ||
 		!imageID.MatchString(manifest.ImageID) || manifest.Bytes <= 0 ||
 		!regexp.MustCompile(`^[0-9a-f]{64}$`).MatchString(manifest.SHA256) {
 		return manifest, errors.New("invalid or incomplete backup manifest")
@@ -385,6 +399,10 @@ func backup(p profile, opts options) (any, error) {
 	if err := atomicFile(filepath.Join(staging, "manifest.json"), data); err != nil {
 		return nil, err
 	}
+	manifestHash := sha256.Sum256(data)
+	if err := atomicFile(filepath.Join(staging, "manifest.sha256"), []byte(hex.EncodeToString(manifestHash[:])+"\n")); err != nil {
+		return nil, err
+	}
 	destination := filepath.Join(directory, id)
 	if err := os.Rename(staging, destination); err != nil {
 		return nil, err
@@ -392,6 +410,13 @@ func backup(p profile, opts options) (any, error) {
 	backups, _, err := completedBackups(directory, p.InstallationID)
 	if err != nil {
 		return nil, err
+	}
+	verified := false
+	for _, candidate := range backups {
+		verified = verified || candidate.ID == id
+	}
+	if !verified {
+		return nil, errors.New("new backup failed integrity verification; existing backups were preserved")
 	}
 	for _, old := range backups[minimum(2, len(backups)):] {
 		if err := removeWithin(directory, filepath.Join(directory, old.ID)); err != nil {
@@ -425,17 +450,24 @@ func restoreBackup(p profile, opts options) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	oldImage, err := snapshotImage(p, c)
-	if err != nil {
-		return nil, err
-	}
 	selected := p
 	selected.Image = manifest.ImageID
 	image, err := snapshotImage(selected, nil)
 	if err != nil {
 		return nil, fmt.Errorf("backup image unavailable; restore requires the recorded image: %w", err)
 	}
-	if image.Config.Labels["io.electivus.workstation.variant"] != oldImage.Config.Labels["io.electivus.workstation.variant"] {
+	variant := image.Config.Labels["io.electivus.workstation.variant"]
+	if variant != manifest.Variant {
+		return nil, errors.New("recorded image does not match the backup variant")
+	}
+	oldImage, currentImageErr := snapshotImage(p, c)
+	if currentImageErr != nil {
+		// A backup from this installation records its variant even after the
+		// container and the mutable image tag have disappeared.
+		if c != nil || manifest.Profile.InstallationID != p.InstallationID {
+			return nil, fmt.Errorf("cannot verify the target workstation variant: %w", currentImageErr)
+		}
+	} else if variant != oldImage.Config.Labels["io.electivus.workstation.variant"] {
 		return nil, errors.New("backup and installation must use the same workstation variant")
 	}
 	for name := range manifest.HostFiles {
@@ -473,11 +505,15 @@ func restoreBackup(p profile, opts options) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = streamVolume(p, archive, io.Discard, volumeCommand(p, image.ID, restoredVolume, false, "tar",
+	extractedHash := sha256.New()
+	err = streamVolume(p, io.TeeReader(archive, extractedHash), io.Discard, volumeCommand(p, image.ID, restoredVolume, false, "tar",
 		"--xattrs", "--xattrs-include=*", "--acls", "--numeric-owner", "--same-owner", "-xpf", "-", "-C", "/config"))
 	archive.Close()
 	if err != nil {
 		return nil, fmt.Errorf("restore failed; original personal volume was preserved: %w", err)
+	}
+	if hex.EncodeToString(extractedHash.Sum(nil)) != manifest.SHA256 {
+		return nil, errors.New("backup archive changed during restore; original personal volume and profile were preserved")
 	}
 	originalNetwork, readErr := os.ReadFile(filepath.Join(opts.directory, "network.json"))
 	if readErr != nil && !errors.Is(readErr, os.ErrNotExist) {
