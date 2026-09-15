@@ -17,7 +17,7 @@ A criação estima o espaço necessário antes de interromper a workstation. Se 
 
 ## O que é preservado
 
-- Todo o volume pessoal Linux: projetos, preferências, aplicativos oficiais preparados, extensões, caches e demais arquivos persistidos. Um inventário de pacotes também será incluído quando existir nesse volume.
+- Todo o volume pessoal Linux: projetos, preferências, aplicativos oficiais preparados, extensões, caches e demais arquivos persistidos. O [inventário de programas extras](packages.md) e suas receitas persistentes também integram a cópia.
 - Nomes que diferenciam maiúsculas/minúsculas, permissões, UID/GID, datas, links simbólicos e hard links. O arquivo é criado e extraído no Linux, preservando também ACLs e atributos estendidos suportados pelo filesystem.
 - Perfil da instalação, configuração local de proxy/CA e arquivo de certificados de localhost. A imagem exata e os registros dos aplicativos acompanham os dados.
 

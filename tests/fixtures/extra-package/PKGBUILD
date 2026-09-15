@@ -1,0 +1,18 @@
+pkgname=workstation-local-example
+pkgver=1.0
+pkgrel=1
+pkgdesc='Acceptance fixture for rebuilding a personal extra package'
+arch=('x86_64')
+license=('MIT')
+options=('debug')
+makedepends=('gcc')
+source=('example.c')
+sha256sums=('ab170c28457323363bc10f1a79ad08fc82e67976b5f09eef7a43becafb485bfd')
+
+build() {
+    cc -O2 example.c -o workstation-local-example
+}
+
+package() {
+    install -Dm755 workstation-local-example "$pkgdir/usr/bin/workstation-local-example"
+}

@@ -1,0 +1,281 @@
+#!/usr/bin/env python3
+"""Inventory and recover extra Arch packages using persistent personal state."""
+import argparse
+from contextlib import contextmanager
+from datetime import datetime, timezone
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import pwd
+import re
+import subprocess
+import sys
+import tempfile
+import urllib.parse
+
+BASELINE = Path('/etc/electivus/image-packages.txt')
+STATE = Path('/config/.local/state/electivus/packages.json')
+RUNTIME = Path('/run/electivus/packages-ready')
+
+
+def package_versions(text):
+    return dict(line.split(' ', 1) for line in text.splitlines() if line)
+
+
+def query(*args):
+    return subprocess.run(['pacman', *args], check=True, text=True, capture_output=True).stdout
+
+
+def inventory():
+    try:
+        value = json.loads(STATE.read_text())
+    except FileNotFoundError:
+        return {'schema': 1, 'extras': []}
+    if value.get('schema') != 1 or not isinstance(value.get('extras'), list):
+        raise ValueError('invalid persistent package inventory')
+    return value
+
+
+@contextmanager
+def inventory_lock():
+    STATE.parent.mkdir(parents=True, exist_ok=True)
+    with open(STATE.with_name('packages.lock'), 'a+b') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        yield
+
+
+def save(value):
+    """Atomically replace the inventory while its caller holds inventory_lock."""
+    STATE.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', dir=STATE.parent, delete=False) as stream:
+            temporary = Path(stream.name)
+            json.dump(value, stream, indent=2)
+            stream.flush()
+            os.fsync(stream.fileno())
+        account = pwd.getpwnam('abc')
+        os.chown(temporary, account.pw_uid, account.pw_gid)
+        os.replace(temporary, STATE)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def capture(transaction=()):
+    with inventory_lock():
+        return capture_locked(transaction)
+
+
+def capture_locked(transaction):
+    baseline = package_versions(BASELINE.read_text())
+    installed = package_versions(query('-Q'))
+    native = set(query('-Qnq').splitlines())
+    explicit = set(query('-Qeq').splitlines())
+    saved = inventory()
+    # A recreated container can be missing desired extras. Keep their records
+    # so a fresh inventory does not erase the target of assisted recovery.
+    removed = set(transaction) - installed.keys()
+    extras = {entry['name']: entry for entry in saved['extras']
+              if entry['name'] not in baseline and entry['name'] not in removed}
+    for name, version in installed.items():
+        if name not in baseline:
+            extras[name] = {**extras.get(name, {}), 'name': name, 'version': version,
+                            'origin': 'official' if name in native else 'foreign',
+                            'reason': 'explicit' if name in explicit else 'dependency'}
+    saved.update(schema=1, extras=[extras[name] for name in sorted(extras)],
+                 capturedAt=datetime.now(timezone.utc).isoformat(),
+                 imageFingerprint=hashlib.sha256(BASELINE.read_bytes()).hexdigest())
+    save(saved)
+    return status()
+
+
+def status():
+    result = inventory()
+    installed = package_versions(query('-Q'))
+    baseline = package_versions(BASELINE.read_text())
+    result['imageComponents'] = [{'name': name, 'imageVersion': version,
+                                  'installedVersion': installed.get(name),
+                                  'state': 'installed' if name in installed else 'missing'}
+                                 for name, version in sorted(baseline.items())]
+    result['extras'] = [{**entry, 'installedVersion': installed.get(entry['name']),
+                         'state': 'installed' if entry['name'] in installed else 'missing'}
+                        for entry in result['extras']]
+    if any(entry['state'] == 'missing' for entry in result['imageComponents']):
+        result['state'] = 'image-component-failure'
+    else:
+        result['state'] = 'partial' if any(entry['state'] == 'missing' for entry in result['extras']) else 'ready'
+    return result
+
+
+def run_package_command(*args):
+    # Drain the command while retaining a bounded diagnostic for the report.
+    with subprocess.Popen(['workstation-network', 'exec', '--', *args],
+                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
+        diagnostic = b''
+        for chunk in iter(lambda: process.stdout.read(8192), b''):
+            diagnostic = (diagnostic + chunk)[-16384:]
+        return process.wait(), diagnostic.decode('utf-8', errors='replace').strip()
+
+
+def require_image_components():
+    missing = [entry['name'] for entry in status()['imageComponents'] if entry['state'] == 'missing']
+    if missing:
+        raise RuntimeError('Supplied image components are missing: ' + ', '.join(missing))
+
+
+def source_directory(directory):
+    source = Path(directory).resolve(strict=True)
+    if source == Path('/config') or not source.is_relative_to('/config') or not source.is_dir():
+        raise ValueError('build source must be a directory inside the persistent /config volume')
+    recipe = (source / 'PKGBUILD').resolve(strict=True)
+    if not recipe.is_relative_to(source) or not recipe.is_file():
+        raise ValueError('PKGBUILD must be a file inside the registered source directory')
+    return source
+
+
+def builder_command(source, *arguments):
+    return ['s6-setuidgid', 'abc', 'env', 'HOME=/config', 'USER=abc', 'LOGNAME=abc',
+            'PACMAN=/usr/local/bin/workstation-pacman',
+            'makepkg', '--dir', str(source), *arguments]
+
+
+def built_archives(source):
+    code, filenames = run_package_command(*builder_command(source, '--packagelist'))
+    if code:
+        raise ValueError('Cannot inspect package outputs: ' + filenames)
+    packages = {}
+    for filename in filenames.splitlines():
+        archive = Path(filename)
+        if not archive.is_file():
+            continue
+        metadata = subprocess.run(['pacman', '-Qp', '--', str(archive)], capture_output=True, text=True)
+        if metadata.returncode == 0:
+            packages.setdefault(metadata.stdout.split()[0], []).append(str(archive))
+    return packages
+
+
+def require_foreign_extra(saved, name):
+    if not any(entry['name'] == name and entry['origin'] == 'foreign' for entry in saved['extras']):
+        raise ValueError('source registration requires a recorded AUR/local extra package')
+
+
+def register_source(name, directory):
+    if not name or not re.fullmatch(r'[a-z0-9@._+][a-z0-9@._+-]*', name):
+        raise ValueError('a valid extra package name is required')
+    source = source_directory(directory)
+    capture()
+    require_foreign_extra(inventory(), name)
+    remote = subprocess.run(['s6-setuidgid', 'abc', 'git', '-C', str(source), 'remote', 'get-url', 'origin'],
+                            capture_output=True, text=True)
+    origin = remote.stdout.strip() if remote.returncode == 0 else ''
+    url = urllib.parse.urlsplit(origin)
+    kind = 'aur' if url.scheme in {'https', 'ssh'} and url.hostname == 'aur.archlinux.org' else 'local'
+    outputs = built_archives(source)
+    # Source evaluation can be slow and can run package commands itself. Keep it
+    # outside the lock, then update the latest records as one critical section.
+    with inventory_lock():
+        saved = inventory()
+        require_foreign_extra(saved, name)
+        for candidate in saved['extras']:
+            if candidate['origin'] == 'foreign' and (candidate['name'] == name or candidate['name'] in outputs):
+                candidate['source'] = {'directory': str(source), 'kind': kind}
+        save(saved)
+    return status()
+
+
+def rebuild(entry, builds):
+    result = {'name': entry['name'], 'origin': entry['origin'], 'method': 'rebuilt'}
+    try:
+        source = source_directory(entry['source']['directory'])
+    except (KeyError, OSError, ValueError) as error:
+        return {**result, 'state': 'manual-required', 'diagnostic': str(error)}
+    if source not in builds:
+        code, diagnostic = run_package_command(*builder_command(source, '--force', '--cleanbuild', '--syncdeps', '--noconfirm'))
+        if code:
+            builds[source] = {'diagnostic': diagnostic}
+        else:
+            try:
+                builds[source] = {'archives': built_archives(source)}
+            except ValueError as error:
+                builds[source] = {'diagnostic': str(error)}
+    build = builds[source]
+    if 'diagnostic' in build:
+        return {**result, 'state': 'build-failed', 'diagnostic': build['diagnostic']}
+    matching = build['archives'].get(entry['name'], [])
+    if len(matching) != 1:
+        return {**result, 'state': 'build-failed', 'diagnostic': 'Build did not produce exactly one archive for the recorded package.'}
+    reason = ['--asdeps'] if entry.get('reason') == 'dependency' else []
+    code, diagnostic = run_package_command('pacman', '-U', '--noconfirm', *reason, '--', matching[0])
+    installed = package_versions(query('-Q'))
+    if code or entry['name'] not in installed:
+        return {**result, 'state': 'missing', 'diagnostic': diagnostic}
+    return {**result, 'state': 'restored', 'installedVersion': installed[entry['name']]}
+
+
+def restore():
+    require_image_components()
+    desired = inventory()['extras']
+    code, diagnostic = run_package_command('pacman', '-Syu', '--needed', '--noconfirm',
+                                           '--disable-download-timeout', '--noprogressbar')
+    if code:
+        raise RuntimeError('Arch base upgrade failed: ' + diagnostic)
+    results = []
+    builds = {}
+    for entry in desired:
+        name = entry['name']
+        result = {'name': name, 'origin': entry['origin']}
+        before = package_versions(query('-Q'))
+        if entry['origin'] != 'official':
+            if entry.get('source'):
+                result = rebuild(entry, builds)
+            else:
+                result.update(state='manual-required', diagnostic='Register the persistent build source before restoring this package.')
+        elif name in before:
+            result.update(state='installed', installedVersion=before[name])
+        else:
+            reason = ['--asdeps'] if entry.get('reason') == 'dependency' else []
+            code, diagnostic = run_package_command('pacman', '-S', '--needed', '--noconfirm',
+                                                   '--disable-download-timeout', '--noprogressbar', *reason, '--', name)
+            installed = package_versions(query('-Q'))
+            if code or name not in installed:
+                result.update(state='missing', diagnostic=diagnostic)
+            else:
+                result.update(state='restored', installedVersion=installed[name])
+        results.append(result)
+    capture()
+    require_image_components()
+    report = {'state': 'completed' if all(entry['state'] in {'restored', 'installed'} for entry in results) else 'partial',
+              'packages': results, 'completedAt': datetime.now(timezone.utc).isoformat()}
+    with inventory_lock():
+        saved = inventory()
+        saved['lastRestore'] = report
+        save(saved)
+    return report
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action', choices=['status', 'capture', 'transaction', 'restore', 'register'])
+    parser.add_argument('--package')
+    parser.add_argument('--source')
+    args = parser.parse_args()
+    if args.action == 'transaction':
+        # The base hook is inherited during Salesforce builds. Only initialized
+        # workstations have personal state to update after a package transaction.
+        if RUNTIME.exists():
+            capture(sys.stdin.read().splitlines())
+        return
+    actions = {'capture': capture, 'restore': restore, 'status': status,
+               'register': lambda: register_source(args.package, args.source)}
+    print(json.dumps(actions[args.action]()))
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as error:
+        print('Extra package operation failed: ' + str(error), file=sys.stderr)
+        sys.exit(1)

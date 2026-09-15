@@ -32,7 +32,7 @@ jobs:
             exit 1
           fi
       - name: Check Bash
-        run: shellcheck images/base/root/custom-cont-init.d/*.sh images/base/root/usr/local/bin/workstation-healthcheck images/base/root/usr/local/bin/google-chrome images/base/root/etc/electivus/examples/compose-demo/write-result.sh images/salesforce/root/usr/local/bin/*
+        run: shellcheck images/base/root/custom-cont-init.d/*.sh images/base/root/usr/local/bin/workstation-healthcheck images/base/root/usr/local/bin/google-chrome images/base/root/usr/local/bin/workstation-pacman images/base/root/etc/electivus/examples/compose-demo/write-result.sh images/salesforce/root/usr/local/bin/*
       - name: Build and export native commands
         run: docker build --file images/base/Dockerfile --target commands-export --output type=local,dest=.local/cli .
       - name: Build desktop image
@@ -55,3 +55,7 @@ jobs:
         run: python3 tests/test_network_apps.py
       - name: Exercise personal backup, recovery, retention and failures
         run: python3 tests/test_backups.py
+      - name: Exercise extra package inventory, rebuilds, recovery and failures
+        run: |
+          python3 tests/test_packages.py
+          WORKSTATION_TEST_IMAGE="$WORKSTATION_SALESFORCE_TEST_IMAGE" python3 tests/test_packages.py PackageAcceptance.test_inventory_distinguishes_image_components

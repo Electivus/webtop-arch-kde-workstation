@@ -56,6 +56,7 @@ ENV TITLE="Electivus Workstation" \
     SELKIES_SECOND_SCREEN=false \
     TZ=America/Bahia \
     SHELL=/bin/zsh \
+    PACMAN=/usr/local/bin/workstation-pacman \
     LC_ALL="" \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
@@ -70,7 +71,9 @@ COPY --chmod=755 images/base/root/usr/local/bin/ /usr/local/bin/
 COPY images/base/root/usr/share/applications/ /usr/share/applications/
 COPY images/base/root/etc/xdg/autostart/ /etc/xdg/autostart/
 COPY images/base/root/etc/electivus/ /etc/electivus/
+COPY images/base/root/etc/pacman.d/hooks/ /etc/pacman.d/hooks/
 RUN printf '\n%s\n' 'eval "$(workstation-network shell)"' >>/etc/zsh/zshenv
+RUN pacman -Q >/etc/electivus/image-packages.txt
 COPY --from=commands /out/workstation.exe /out/workstation.cmd /out/setup.cmd /opt/electivus/windows/
 COPY --from=commands /out/licenses/ /opt/electivus/windows/licenses/
 
