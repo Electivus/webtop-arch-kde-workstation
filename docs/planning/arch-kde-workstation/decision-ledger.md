@@ -232,7 +232,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/5; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/6; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/8
-  - verification: ["ticket commit 55d3470c8cf5d49d8ecd6604eea919628e0d0741; docs/verification/t04-t05-projects.md; t04-files.json: Project contents, case-sensitive names, mode 0751, owner, executable symlink survive recreation; Windows exchange roundtrip with Unicode spaces and comma path passed; unshared path rejected before mount."]
+  - verification: ["ticket commit 55d3470c8cf5d49d8ecd6604eea919628e0d0741; docs/verification/t04-t05-projects.md; t04-files.json: Project contents, case-sensitive names, mode 0751, owner, executable symlink survive recreation; Windows exchange roundtrip with Unicode spaces and comma path passed; unshared path rejected before mount.","ticket ticket #8; commits fd1ca264b6a6b3582c269211b2be384205893ea1 and 25eff8f08f2c55f654e69c1306b0f6761e871fb5; docs/verification/t07-backups.md: Ten public backup acceptance tests passed in 907.684s on rebuilt artifacts. Linux project content, ownership, permissions, timestamps, links and xattrs recover through CMD; malformed backup profiles preserve current projects and the running session."]
 ## DEC-016
 - Status: active
 - Decision: Abrir o desktop local diretamente, sem senha propria da workstation, usando o acesso a sessao do Windows como controle.
@@ -446,12 +446,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/8; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/9; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/10; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/11
-  - verification: none
-
+  - verification: ["ticket ticket #8; final reviewed commit 25eff8f08f2c55f654e69c1306b0f6761e871fb5; docs/verification/t07-review.md: Base and Salesforce restore persisted apps, extensions, preferences, projects and network settings. Two valid backups are retained per installation; corruption and 12 invalid profile shapes cannot displace copies or change current data. Low space, extraction failure, missing volume and concurrency cases passed. Standards: zero violations, two deferred heuristics. Spec: two P2 findings corrected and validated."]
 ## DEC-030
 - Status: active
 - Decision: Permitir a primeira publicacao apos os testes locais no Docker VMM, declarando a validacao real em Hyper-V como pendente e entregando um roteiro executavel de verificacao para o notebook de destino.
