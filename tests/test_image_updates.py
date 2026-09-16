@@ -65,6 +65,49 @@ class ImageUpdateAcceptance(unittest.TestCase):
             for tag in [stable, candidate, original]:
                 subprocess.run(['docker', 'image', 'rm', tag], capture_output=True)
 
+    def test_lost_legacy_container_requires_recovery_before_using_its_existing_home(self):
+        name = 'ew-image-legacy-lost-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        original, candidate, stable = [name + ':' + tag for tag in ['8.0.0', '8.1.0', 'stable']]
+        try:
+            original_id = self.build_image(profile, original, '8.0.0-t09')
+            self.build_image(profile, candidate, '8.1.0-t09')
+            docker('image', 'tag', original, stable)
+            command('install', '--profile', profile, '--name', name, '--image', stable,
+                    '--port', '13465', '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            configure_test_network(profile)
+            command('start', '--profile', profile)
+            docker('exec', '--user', 'abc', name, 'python3', '-c',
+                   'from pathlib import Path; Path("/config/projects/legacy.txt").write_text("recover my original workstation")')
+            legacy = json.loads((profile / 'profile.json').read_text(encoding='utf-8'))
+            legacy.pop('imageId')
+            (profile / 'profile.json').write_text(json.dumps(legacy, indent=2), encoding='utf-8')
+            saved = command('backup', '--profile', profile)
+            docker('image', 'tag', candidate, stable)
+            docker('container', 'rm', '--force', name)
+            rejected = {}
+            for action in [('start',), ('backup',), ('update-image', '--image', candidate, '--pull=false')]:
+                attempt = invoke(CLI, *action, '--profile', profile)
+                self.assertNotEqual(attempt.returncode, 0, 'An unknown original image must not be silently replaced')
+                self.assertIn('original image', attempt.stderr.lower())
+                rejected[action[0]] = attempt.stderr.strip()
+                self.assertEqual(docker('container', 'ls', '--all', '--quiet', '--filter', 'name=^/' + name + '$'), '')
+                self.assertNotIn('imageId', json.loads((profile / 'profile.json').read_text(encoding='utf-8')))
+            recovered = command('restore', '--profile', profile, '--backup', saved['directory'])
+            restarted = command('start', '--profile', profile)
+            self.assertEqual(restarted['imageId'], original_id)
+            self.assertEqual(docker('exec', '--user', 'abc', name, 'cat', '/config/projects/legacy.txt'),
+                             'recover my original workstation')
+            (profile / 'lost-legacy-result.json').write_text(json.dumps({'result': 'passed',
+                'rejected': rejected, 'recovery': recovered, 'restarted': restarted}, indent=2), encoding='utf-8')
+        finally:
+            subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
+            for volume in docker('volume', 'ls', '--filter', 'name=' + name + '-home', '--format', '{{.Name}}').splitlines():
+                subprocess.run(['docker', 'volume', 'rm', volume], capture_output=True)
+            discard_backup_archives(profile / 'backups')
+            for tag in [stable, candidate, original]:
+                subprocess.run(['docker', 'image', 'rm', tag], capture_output=True)
+
     def test_registry_tag_and_digest_are_resolved_only_by_explicit_updates(self):
         name = 'ew-image-registry-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name
@@ -91,8 +134,9 @@ class ImageUpdateAcceptance(unittest.TestCase):
         try:
             original_id = self.build_image(profile, original, '6.0.0-t09')
             candidate_id = self.build_image(profile, candidate, '6.1.0-t09')
-            docker('run', '--detach', '--name', registry, '--network', 'host', '--memory', '512m',
-                   '--cpus', '1', '--env', 'REGISTRY_HTTP_ADDR=127.0.0.1:' + port, REGISTRY)
+            docker('run', '--detach', '--name', registry, '--network', 'host', '--memory', '1024m',
+                   '--cpus', '1', '--env', 'GOMEMLIMIT=768MiB',
+                   '--env', 'REGISTRY_HTTP_ADDR=127.0.0.1:' + port, REGISTRY)
             deadline = time.monotonic() + 20
             while True:
                 try:
@@ -156,6 +200,11 @@ class ImageUpdateAcceptance(unittest.TestCase):
                 'oldManifest': old_manifest, 'newManifest': new_manifest,
                 'tagUpdate': tag_update, 'digestUpdate': digest_update}, indent=2), encoding='utf-8')
         finally:
+            for filename, arguments in [('registry-inspect.json', ['inspect']), ('registry.log', ['logs'])]:
+                diagnostic = subprocess.run(['docker', *arguments, registry], capture_output=True,
+                                            text=True, encoding='utf-8', errors='replace', timeout=30)
+                if profile.is_dir():
+                    (profile / filename).write_text(diagnostic.stdout + diagnostic.stderr, encoding='utf-8')
             subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
             for volume in docker('volume', 'ls', '--filter', 'name=' + name + '-home', '--format', '{{.Name}}').splitlines():
                 subprocess.run(['docker', 'volume', 'rm', volume], capture_output=True)

@@ -1,6 +1,7 @@
 """Explicit maintenance through the delivered commands and real applications."""
 import json
 import os
+import signal
 from pathlib import Path
 import subprocess
 import time
@@ -29,6 +30,63 @@ def chrome_page(name):
 
 
 class UpdateAcceptance(unittest.TestCase):
+    def test_status_distinguishes_a_killed_host_command_from_an_active_update(self):
+        name = 'ew-update-interrupted-' + uuid.uuid4().hex[:10]
+        profile = ROOT / '.local' / name
+        operation = None
+        reports = {}
+        try:
+            command('install', '--profile', profile, '--name', name, '--image', BASE,
+                    '--port', '13458', '--memory', '2560', '--cpus', '2', '--no-shortcut')
+            for action in ('update-apps', 'update-image'):
+                self.assertEqual(command(action, '--profile', profile, '--status')['state'], 'not-started')
+            for action in ('update-apps', 'update-image'):
+                with self.subTest(action=action):
+                    command('start', '--profile', profile)
+                    docker('exec', '--user', 'abc', name, 'python3', '-c',
+                           'from pathlib import Path; Path("/config/projects/interrupted-copy.bin").open("wb").truncate(512*1024*1024)')
+                    executable = CLI.with_suffix('.exe') if os.name == 'nt' else CLI
+                    arguments = ['--image', BASE, '--pull=false'] if action == 'update-image' else []
+                    operation = subprocess.Popen([str(executable), action, '--profile', str(profile), *arguments],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8')
+                    progress = operation.stderr.readline()
+                    self.assertIn('Stopping the workstation', progress)
+                    if os.name != 'nt':
+                        os.kill(operation.pid, signal.SIGSTOP)
+                        _, state = os.waitpid(operation.pid, os.WUNTRACED)
+                        self.assertTrue(os.WIFSTOPPED(state))
+                    active = command(action, '--profile', profile, '--status')
+                    self.assertEqual(active['state'], 'running')
+                    self.assertEqual(active['step'], 'backup')
+                    for previous in reports:
+                        self.assertEqual(command(previous, '--profile', profile, '--status')['state'], 'interrupted',
+                                         'A different active operation must not revive an abandoned update')
+                    self.assertIsNone(operation.poll(), 'The interruption must terminate a live command')
+                    operation.kill()
+                    operation.communicate(timeout=30)
+                    # Settle a Docker stop request that can outlive its host
+                    # command before checking the report and explicitly restarting.
+                    command('stop', '--profile', profile)
+                    interrupted = command(action, '--profile', profile, '--status')
+                    self.assertEqual(interrupted['state'], 'interrupted')
+                    self.assertEqual(interrupted['step'], active['step'])
+                    self.assertEqual(interrupted['startedAt'], active['startedAt'])
+                    self.assertNotIn('completedAt', interrupted)
+                    reports[action] = interrupted
+            command('start', '--profile', profile)
+            self.assertEqual(docker('exec', name, 'stat', '-c', '%s', '/config/projects/interrupted-copy.bin'),
+                             str(512*1024*1024))
+            (profile / 'host-interruption-result.json').write_text(json.dumps({'result': 'passed' if len(reports) == 2 else 'failed',
+                'attempts': reports, 'explicitRestart': 'healthy'}, indent=2), encoding='utf-8')
+        finally:
+            if operation is not None and operation.poll() is None:
+                operation.kill()
+                operation.communicate(timeout=30)
+            subprocess.run(['docker', 'container', 'rm', '--force', '--volumes', name], capture_output=True)
+            for volume in docker('volume', 'ls', '--filter', 'name=' + name + '-home', '--format', '{{.Name}}').splitlines():
+                subprocess.run(['docker', 'volume', 'rm', volume], capture_output=True)
+            discard_backup_archives(profile / 'backups')
+
     def test_extension_install_failure_is_reported_with_a_recoverable_backup(self):
         name = 'ew-update-extension-' + uuid.uuid4().hex[:10]
         profile = ROOT / '.local' / name

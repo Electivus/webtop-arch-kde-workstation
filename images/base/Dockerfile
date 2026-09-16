@@ -45,6 +45,13 @@ RUN --mount=type=secret,id=corporate_ca \
     rm -f /etc/ca-certificates/trust-source/anchors/electivus-build.crt && update-ca-trust && \
     rm -f /tmp/oh-my-zsh.tar.gz /var/cache/pacman/pkg/*.pkg.tar.*
 
+# The upstream AUR fancyindex binary targets its original nginx version.
+# Use nginx's built-in listing so full Arch upgrades keep downloads available.
+RUN pacman -R --noconfirm nginx-mod-fancyindex && \
+    rm -f /etc/nginx/modules.d/fancy.conf && \
+    sed -i -e '/fancyindex_header /d' -e '/fancyindex_footer /d' \
+      -e 's/fancyindex on;/autoindex on;/' /defaults/default.conf
+
 ENV TITLE="Electivus Workstation" \
     START_DOCKER=false \
     PIXELFLUX_WAYLAND=false \

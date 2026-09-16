@@ -1,0 +1,27 @@
+# Retomada local em WSL2
+
+Em 2026-09-16, o usuário substituiu o Docker VMM beta por Docker Desktop com WSL2 devido a problemas na engine anterior. DEC-037 e DEC-038 registram a mudança no checkpoint final `9c9f2c44531269dae4d785e4f8b7d197e56f0082`. A especificação e os 13 tickets foram sincronizados e validados. O destino continua sendo Windows com Docker via Hyper-V, operação por CMD e sem dependência de WSL2 ou PowerShell.
+
+O daemon observado é Docker Desktop 29.8.0, kernel `6.18.35.2-microsoft-standard-WSL2`, com 14 CPUs lógicas e 15.718 MiB de memória disponíveis. Isso identifica o ambiente de execução, sem equivaler à aceitação Hyper-V nem ao perfil final de dimensionamento.
+
+O armazenamento VMM antigo foi apagado após autorização explícita do usuário. A remoção liberou 93,39 GiB e preservou o disco WSL2 e os três serviços já ativos. Os repositórios e as evidências históricas foram preservados. As imagens de desenvolvimento foram reconstruídas; os antigos IDs não representam os artefatos desta execução.
+
+## Incompatibilidade encontrada na reconstrução
+
+O build original terminou com sucesso, mas o início pelo comando entregue falhou: o desktop não ficou saudável em quatro minutos. `nginx -t` isolou a mesma falha em menos de um segundo: nginx 1.30.5 recusava `nginx-mod-fancyindex` 0.5.2-1, compilado pelo upstream para nginx 1.30.4. O pacote externo não foi recompilado pela atualização completa do Arch.
+
+A imagem agora usa a listagem nativa `autoindex` no endpoint de arquivos e remove o módulo externo e sua configuração. O visual dessa listagem passa a ser o padrão do nginx; o desktop Selkies e os caminhos de download permanecem. Essa escolha permite atualizar o pacote nginx sem depender da compatibilidade binária daquele módulo externo.
+
+Pelo controlador Windows e seu ponto de entrada CMD, uma instalação descartável iniciou saudável. A listagem exibiu um arquivo com espaço e acento no nome; o download retornou o conteúdo esperado com `Content-Disposition: attachment` e `X-Content-Type-Options: nosniff`. `nginx -t` passou na configuração inicializada. A instalação e o volume de teste foram removidos ao final. Recibo: `.local/wsl-resume/native-file-listing-result.json`.
+
+## Artefatos e verificações
+
+| Artefato | Identidade local |
+| --- | --- |
+| Base | `sha256:2cf558e66f9778d69890d3be7db1ad72ad290feeea053739079d0522e873eae3` |
+| Salesforce | `sha256:785fce737856b48c41bdb15b6b834ddab10f982a5df0262c95293a882a4eacaf` |
+| Controlador Windows, exportado e dentro de ambas as imagens | SHA-256 `3ce8843aaace37a60a8b79f94dabb50ca8463c0b9bb54c03ee97578783edf91f` |
+
+Os builds executaram gofmt, go vet Linux/Windows e as duas compilações. Os arquivos de construção e de identidade estão em `.local/wsl-resume/rebuild-wsl2-nginx/`. São imagens de desenvolvimento, com versão `t09-t10-wsl2` e revisão marcada `dirty`; não são uma entrega pública.
+
+A reprodução inicialmente bloqueada por nginx foi preservada em `.local/resume-linux-corrections-nginx-red/`. Com as imagens corrigidas, o controlador Linux recuperou o perfil legado em 29,396 s e reconheceu a interrupção real dos dois comandos de atualização em 41,241 s. Recibo: `.local/resume-linux-corrections/result.json`. A regressão Windows completa e o acompanhamento delimitado da revisão ainda estão pendentes neste registro.

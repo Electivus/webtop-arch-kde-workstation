@@ -1,6 +1,8 @@
 # Atualizar a imagem da workstation
 
-Uma imagem nova só é aplicada por uma atualização explícita. Na primeira inicialização, o perfil grava o identificador da imagem escolhida; as próximas inicializações e recriações mantêm essa seleção, mesmo que a tag `stable` mude. Se a imagem selecionada for removida do Docker, carregue novamente essa imagem ou escolha uma atualização. O comando não avança para outra imagem por causa dessa ausência.
+Uma imagem nova só é aplicada por uma atualização explícita. Na primeira inicialização, o perfil grava o identificador da imagem escolhida; as próximas inicializações e recriações mantêm essa seleção, mesmo que a tag `stable` mude. Se a imagem selecionada for removida do Docker, carregue novamente essa imagem antes de iniciar ou atualizar. O comando não avança para outra imagem por causa dessa ausência.
+
+Perfis antigos adotam a imagem do container existente. Se esse container foi perdido antes da adoção e ainda há um volume pessoal, os comandos recusam usar uma imagem de origem desconhecida. Recupere o container original ou restaure um backup concluído da própria instalação; o backup registra a imagem correta.
 
 Salve o trabalho antes de atualizar. O comando cria e verifica um backup, encerra a sessão, troca o container, restaura os programas extras registrados e verifica o novo ambiente. Projetos, aplicativos preparados e preferências permanecem no volume pessoal. Processos em execução não fazem parte do backup.
 
@@ -44,6 +46,8 @@ As verificações executam a saúde do desktop, Git, Zsh, Konsole, o acesso ao D
 `completed` com `usable: true` indica que as verificações passaram. Uma falha de programa extra pode produzir `partial` com `usable: true`, mantendo o desktop disponível e o diagnóstico em `packages`. Use `workstation.cmd packages --restore` para tentar novamente depois de corrigir a causa. O [guia de programas extras](packages.md) explica o registro de fontes e a recompilação.
 
 Falhas de componentes fornecidos produzem `failed` com `usable: false`. Um desktop que ainda esteja acessível não significa que a atualização foi aprovada. Consulte a etapa e o diagnóstico; o backup anterior continua disponível para recuperação.
+
+`interrupted` indica que o processo do comando terminou sem registrar um resultado, por exemplo após reiniciar o Windows. O relatório preserva a última etapa, a seleção e o backup já registrado, sem inventar um horário de conclusão. Confira o estado com `workstation.cmd status` e escolha recuperar o backup indicado ou repetir explicitamente a atualização.
 
 ## Recuperar a imagem anterior
 
