@@ -19,7 +19,7 @@ Os identificadores T01-T13 são locais deste plano; sua correspondência com as 
 9. **T09 - Atualizar a imagem com backup e recuperação.** Bloqueado por: T08. O usuário escolhe quando trocar de imagem; o fluxo faz backup, verifica o novo ambiente e reaplica os programas extras sem ocultar falhas.
 10. **T10 - Atualizar aplicativos independentemente da imagem.** Bloqueado por: T07. Um comando atualiza editores, Chrome, CLI e extensões, registra versões e permite recuperar o backup correspondente.
 11. **T11 - Produzir e testar candidatas no GitHub Actions.** Bloqueado por: T03. Acionamentos semanal e manual produzem as duas imagens candidatas com versões, digests e resultados de testes identificáveis.
-12. **T12 - Validar a entrega no Latitude e preparar o roteiro Hyper-V.** Bloqueado por: T05, T06, T09, T10, T11. O candidato é instalado e medido no VMM em Full HD, o perfil de recursos é ajustado e um roteiro executável verifica o destino Hyper-V.
+12. **T12 - Validar a entrega no Latitude e preparar o roteiro Hyper-V.** Bloqueado por: T05, T06, T09, T10, T11. O candidato é instalado e medido no Docker Desktop com WSL2 em Full HD, o perfil de recursos é ajustado e um roteiro executável verifica o destino Hyper-V.
 13. **T13 - Publicar a primeira entrega e automatizar stable.** Bloqueado por: T12. As duas imagens aprovadas chegam ao Docker Hub com instruções públicas, tags fixas e stable; entregas posteriores seguem a automação semanal e sob demanda.
 
 ## Cobertura das decisões
@@ -32,7 +32,7 @@ Todas as 34 decisões ativas declaram a obrigação tickets. Cada entrada abaixo
 | DEC-002 | [T01 / #2](https://github.com/Electivus/webtop-arch-kde-workstation/issues/2), [T12 / #13](https://github.com/Electivus/webtop-arch-kde-workstation/issues/13) | Completa |
 | DEC-003 | [T13 / #14](https://github.com/Electivus/webtop-arch-kde-workstation/issues/14) | Completa |
 | DEC-004 | [T01 / #2](https://github.com/Electivus/webtop-arch-kde-workstation/issues/2), [T12 / #13](https://github.com/Electivus/webtop-arch-kde-workstation/issues/13) | Completa |
-| DEC-005 | [T01 / #2](https://github.com/Electivus/webtop-arch-kde-workstation/issues/2), [T12 / #13](https://github.com/Electivus/webtop-arch-kde-workstation/issues/13) | Completa |
+| DEC-037 | [T01 / #2](https://github.com/Electivus/webtop-arch-kde-workstation/issues/2), [T12 / #13](https://github.com/Electivus/webtop-arch-kde-workstation/issues/13) | Completa |
 | DEC-006 | [T02 / #3](https://github.com/Electivus/webtop-arch-kde-workstation/issues/3), [T03 / #4](https://github.com/Electivus/webtop-arch-kde-workstation/issues/4) | Completa |
 | DEC-007 | [T01 / #2](https://github.com/Electivus/webtop-arch-kde-workstation/issues/2) | Completa |
 | DEC-008 | [T06 / #7](https://github.com/Electivus/webtop-arch-kde-workstation/issues/7), [T11 / #12](https://github.com/Electivus/webtop-arch-kde-workstation/issues/12), [T13 / #14](https://github.com/Electivus/webtop-arch-kde-workstation/issues/14) | Completa |
@@ -56,7 +56,7 @@ Todas as 34 decisões ativas declaram a obrigação tickets. Cada entrada abaixo
 | DEC-027 | [T09 / #10](https://github.com/Electivus/webtop-arch-kde-workstation/issues/10) | Completa |
 | DEC-028 | [T10 / #11](https://github.com/Electivus/webtop-arch-kde-workstation/issues/11) | Completa |
 | DEC-029 | [T07 / #8](https://github.com/Electivus/webtop-arch-kde-workstation/issues/8), [T08 / #9](https://github.com/Electivus/webtop-arch-kde-workstation/issues/9), [T09 / #10](https://github.com/Electivus/webtop-arch-kde-workstation/issues/10), [T10 / #11](https://github.com/Electivus/webtop-arch-kde-workstation/issues/11) | Completa |
-| DEC-030 | [T12 / #13](https://github.com/Electivus/webtop-arch-kde-workstation/issues/13), [T13 / #14](https://github.com/Electivus/webtop-arch-kde-workstation/issues/14) | Completa |
+| DEC-038 | [T12 / #13](https://github.com/Electivus/webtop-arch-kde-workstation/issues/13), [T13 / #14](https://github.com/Electivus/webtop-arch-kde-workstation/issues/14) | Completa |
 | DEC-031 | [T12 / #13](https://github.com/Electivus/webtop-arch-kde-workstation/issues/13) | Completa |
 | DEC-032 | [T08 / #9](https://github.com/Electivus/webtop-arch-kde-workstation/issues/9), [T09 / #10](https://github.com/Electivus/webtop-arch-kde-workstation/issues/10) | Completa |
 | DEC-033 | [T01 / #2](https://github.com/Electivus/webtop-arch-kde-workstation/issues/2) | Completa |

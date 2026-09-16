@@ -15,7 +15,7 @@ Comando e atalho abrem um desktop local utilizável, com idioma e teclado acorda
 - [ ] Abrir o desktop por HTTPS apenas no próprio notebook, com entrada direta e procedimento de conexão local documentado.
 - [ ] Configurar interface em inglês, formatos brasileiros, America/Bahia e ABNT2; verificar acentos, cedilha e símbolos na sessão.
 - [ ] Fechar e reabrir a aba preserva uma tarefa observável e a sessão; o comando de parar encerra a execução e o comando de iniciar permite novo uso.
-- [ ] Registrar o backend efetivamente usado no teste VMM, os pré-requisitos do destino Hyper-V e o perfil de hardware; o fluxo não exige WSL2 nem habilita virtualização no Windows.
+- [ ] Registrar o backend efetivamente usado em cada teste local (VMM histórico; WSL2 nas novas execuções), os pré-requisitos do destino Hyper-V e o perfil de hardware; o fluxo não exige WSL2 nem habilita virtualização no Windows.
 - [ ] Entregar verificação repetível pelos comandos de uso e pelo desktop, com recursos de teste identificados e sem alterar containers alheios.
 
 ## Planning context
@@ -25,14 +25,14 @@ Comando e atalho abrem um desktop local utilizável, com idioma e teclado acorda
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
 - Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
-- Decisions: DEC-001, DEC-002, DEC-004, DEC-005, DEC-007, DEC-016, DEC-017, DEC-025, DEC-033, DEC-036
+- Decisions: DEC-001, DEC-002, DEC-004, DEC-037, DEC-007, DEC-016, DEC-017, DEC-025, DEC-033, DEC-036
 
 ### Decision consequences
 
 - `DEC-001`: Entregar o caminho completo entre uma imagem Webtop Arch/KDE e seu desktop em execução.
 - `DEC-002`: Implementar operação Windows sobre Docker Linux compatível com o destino Hyper-V, sem dependência de WSL2.
 - `DEC-004`: Identificar linux/amd64 e o hardware de referência no perfil inicial, deixando os recursos ajustáveis.
-- `DEC-005`: Registrar Docker VMM como backend efetivamente exercitado nesta etapa local.
+- `DEC-037`: Registrar o backend efetivamente exercitado: preservar evidências VMM históricas e identificar novas execuções como Docker Desktop com WSL2.
 - `DEC-007`: Disponibilizar uma sessão pessoal por endpoint restrito ao notebook.
 - `DEC-016`: Permitir entrada direta no desktop local sem senha adicional.
 - `DEC-017`: Aplicar e testar idioma, formatos brasileiros, ABNT2 e America/Bahia.
