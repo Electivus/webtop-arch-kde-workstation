@@ -498,6 +498,9 @@ func selectedImageReference(p profile, c *containerInfo) (string, error) {
 		return "", err
 	}
 	if len(volume) != 0 {
+		if err := personalVolume(p); err != nil {
+			return "", err
+		}
 		return "", errors.New("original image is unknown for this existing home; recover the original container or restore a completed backup from this installation before continuing")
 	}
 	return p.Image, nil

@@ -25,3 +25,18 @@ Pelo controlador Windows e seu ponto de entrada CMD, uma instalação descartáv
 Os builds executaram gofmt, go vet Linux/Windows e as duas compilações. Os arquivos de construção e de identidade estão em `.local/wsl-resume/rebuild-wsl2-nginx/`. São imagens de desenvolvimento, com versão `t09-t10-wsl2` e revisão marcada `dirty`; não são uma entrega pública.
 
 A reprodução inicialmente bloqueada por nginx foi preservada em `.local/resume-linux-corrections-nginx-red/`. Com as imagens corrigidas, o controlador Linux recuperou o perfil legado em 29,396 s e reconheceu a interrupção real dos dois comandos de atualização em 41,241 s. Recibo: `.local/resume-linux-corrections/result.json`. O acompanhamento delimitado Spec aprovou as duas correções no checkpoint `0e1df370678024f54e9d8a94cf46f4bbc92636b8`; a regressão Windows completa permanece pendente neste registro.
+
+## Regressão Windows e proteção de recursos alheios
+
+Os oito cenários de atualização de imagem passaram pelo controlador Windows em 942,914 s, incluindo envio ao registro local, seleção por tag, recuperação por digest e restauração dos programas extras. O registro permaneceu dentro do limite de memória. Recibo: `.local/resume-windows-regression/result.json` na cópia Windows usada pelos testes.
+
+Na etapa seguinte, o ciclo normal e o pacote CMD com atalho e confiança TLS passaram, mas o cenário de recursos alheios encontrou um diagnóstico incorreto. A execução GitHub `35121001036`, job `104878454332`, reproduziu exatamente a falha: o volume de outra instalação era recusado como um perfil antigo sem identidade de imagem. Nenhum dado alheio foi modificado. A seleção agora verifica a propriedade do volume antes de orientar uma recuperação do perfil legado. O teste público existente verifica tanto a mensagem correta quanto a preservação do volume; nenhuma asserção foi removida.
+
+A reconstrução e os testes dessa correção ficam em `.local/wsl-resume/rebuild-ownership-fix/` e `.local/resume-ownership-windows-regression/`. A execução mais ampla e o fechamento Planning ainda dependem dos resultados finais dessa rodada.
+
+A verificação de isolamento passou no Linux em 2,328 s. A recuperação de perfil legado passou novamente no Windows em 51,657 s, preservando a exigência de identidade original antes de reutilizar o volume. Na rodada corrigida, os três cenários de comandos passaram no Windows em 96,291 s, incluindo atalho e confiança TLS. As duas imagens contêm o mesmo controlador Windows exportado, SHA-256 `fba6ce1b23bcb1efe7ddc37a135536760dc6bcdb7099a01e906e9a1d5c407ea2`:
+
+| Artefato corrigido | Identidade local |
+| --- | --- |
+| Base | `sha256:b0ec5818f2e777e492a4a947960406803c01ee0f64a653713e4cb0e1d590dccf` |
+| Salesforce | `sha256:f0aff2bc171cceff6ca0bf3c6a3ab4878671221e68687955fba148c41986c743` |
