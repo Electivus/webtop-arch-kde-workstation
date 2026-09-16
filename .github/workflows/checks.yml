@@ -35,7 +35,9 @@ jobs:
           test -x /usr/bin/python3
           sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /usr/share/swift /usr/local/.ghcup \
             /usr/lib/jvm /usr/lib/llvm-* /usr/lib/google-cloud-sdk /opt/az \
-            /opt/google /opt/microsoft /usr/local/share/powershell /usr/local/lib/node_modules
+            /opt/google /opt/microsoft /usr/local/share/powershell /usr/local/lib/node_modules \
+            /usr/share/miniconda /usr/local/julia* /opt/pipx /usr/local/aws-cli \
+            /usr/local/aws-sam-cli /usr/share/az_*
           sudo find /opt/hostedtoolcache -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
           # These are unused images of the disposable runner's original daemon;
           # the isolated candidate engine is installed only in the next step.
