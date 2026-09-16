@@ -6,6 +6,8 @@ O workflow **Checks** constrói a base e a variante Salesforce a partir do mesmo
 
 O contrato comum está em [tests/acceptance.json](../tests/acceptance.json). Ele inclui comandos, aplicativos, projetos, Docker/Compose, rede, certificados, backup, pacotes e atualizações, com os casos específicos de Salesforce. Cada verificação conserva seu log, duração e resultado em `validation/checks/`. Uma falha interrompe a aprovação e identifica as verificações que ainda não rodaram.
 
+A [verificação de referência](verification/t11-candidates.md) registra uma execução completa aprovada, a rejeição de uma execução com falha e a importação dos mesmos artefatos no Windows com Docker Desktop WSL2.
+
 ## Levar a candidata ao Windows
 
 Na execução identificada do GitHub Actions, baixe os três artefatos: `candidate-results-RUN-TENTATIVA`, `webtop-arch-kde-base-RUN-TENTATIVA` e `webtop-arch-kde-salesforce-RUN-TENTATIVA`. Extraia os ZIPs na mesma pasta. O acesso aos artefatos segue a visibilidade privada do repositório, e a retenção é de sete dias.

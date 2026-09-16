@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 1,
+  "ticket": 12,
+  "state": "verified",
+  "sourceRevision": "85e13fae5732627ae24ff4393be2dc503d4481f7",
+  "planningCheckpoint": "9c9f2c44531269dae4d785e4f8b7d197e56f0082",
+  "workflow": {
+    "run": 35154433830,
+    "url": "https://github.com/Electivus/webtop-arch-kde-workstation/actions/runs/35154433830",
+    "conclusion": "success",
+    "approval": {
+      "schemaVersion": 1,
+      "state": "passed",
+      "approved": true,
+      "version": "2026.09.16-35154433830-1",
+      "revision": "85e13fae5732627ae24ff4393be2dc503d4481f7",
+      "digests": [
+        "sha256:604acd325d7e4b462a2cd346718147fbad554f44c3bd02aa8f8531fba1ad9211",
+        "sha256:6324a930fd6820f6afa7cee73e8d8cc3161a166e6b2f35f34871c34b3e7461c2"
+      ],
+      "failureProof": false,
+      "contractSha256": "df3b2ddb41ed54a117d2b36b188a617cdeaac3f52f3980785e36ac322d0d09cd"
+    },
+    "checks": [
+      {
+        "group": "commands",
+        "tests": 3,
+        "seconds": 35.304,
+        "skipped": 1,
+        "passed": 2
+      },
+      {
+        "group": "preparation",
+        "tests": 3,
+        "seconds": 97.892,
+        "skipped": 0,
+        "passed": 3
+      },
+      {
+        "group": "projects",
+        "tests": 2,
+        "seconds": 20.419,
+        "skipped": 1,
+        "passed": 1
+      },
+      {
+        "group": "docker-projects",
+        "tests": 1,
+        "seconds": 49.386,
+        "skipped": 0,
+        "passed": 1
+      },
+      {
+        "group": "salesforce",
+        "tests": 2,
+        "seconds": 462.494,
+        "skipped": 0,
+        "passed": 2
+      },
+      {
+        "group": "network",
+        "tests": 4,
+        "seconds": 88.668,
+        "skipped": 0,
+        "passed": 4
+      },
+      {
+        "group": "network-apps",
+        "tests": 1,
+        "seconds": 215.374,
+        "skipped": 0,
+        "passed": 1
+      },
+      {
+        "group": "backups",
+        "tests": 13,
+        "seconds": 751.255,
+        "skipped": 0,
+        "passed": 13
+      },
+      {
+        "group": "packages",
+        "tests": 12,
+        "seconds": 449.108,
+        "skipped": 0,
+        "passed": 12
+      },
+      {
+        "group": "salesforce-packages",
+        "tests": 1,
+        "seconds": 8.918,
+        "skipped": 0,
+        "passed": 1
+      },
+      {
+        "group": "updates",
+        "tests": 6,
+        "seconds": 1223.102,
+        "skipped": 0,
+        "passed": 6
+      },
+      {
+        "group": "image-updates",
+        "tests": 8,
+        "seconds": 398.611,
+        "skipped": 0,
+        "passed": 8
+      },
+      {
+        "group": "salesforce-image-updates",
+        "tests": 1,
+        "seconds": 607.729,
+        "skipped": 0,
+        "passed": 1
+      }
+    ],
+    "acceptanceSeconds": 4409.649,
+    "fixtureTestsPassed": 5,
+    "runnerDiskGiB": {
+      "beforeBuildApproximate": 56,
+      "beforeAcceptanceApproximate": 36
+    },
+    "reclaimedBuildCacheGB": 15.18
+  },
+  "candidate": {
+    "schemaVersion": 1,
+    "state": "built",
+    "version": "2026.09.16-35154433830-1",
+    "revision": "85e13fae5732627ae24ff4393be2dc503d4481f7",
+    "architecture": "linux/amd64",
+    "images": [
+      {
+        "variant": "base",
+        "reference": "electivus/webtop-arch-kde-base:2026.09.16-35154433830-1",
+        "digest": "sha256:604acd325d7e4b462a2cd346718147fbad554f44c3bd02aa8f8531fba1ad9211",
+        "archive": "webtop-arch-kde-base.oci.tar",
+        "archiveSha256": "ebc8bbe5455ec7dbe63c482367219f3641fa42b6a85096c1e3f9ab26b03faaff",
+        "archiveBytes": 3326185984
+      },
+      {
+        "variant": "salesforce",
+        "reference": "electivus/webtop-arch-kde-salesforce:2026.09.16-35154433830-1",
+        "digest": "sha256:6324a930fd6820f6afa7cee73e8d8cc3161a166e6b2f35f34871c34b3e7461c2",
+        "archive": "webtop-arch-kde-salesforce.oci.tar",
+        "archiveSha256": "e598786b5c720308dcd4a902e4a0494d2c9ecb9a931c1a84023669347c82e660",
+        "archiveBytes": 3738915328,
+        "baseDigest": "sha256:604acd325d7e4b462a2cd346718147fbad554f44c3bd02aa8f8531fba1ad9211"
+      }
+    ],
+    "commands": {
+      "licenses/GO-LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+      "licenses/MOBY-LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "licenses/THIRD-PARTY.md": "004e1213a2c4289f35cad3062077674520b1c102a15d668b7f9c181cfaae123f",
+      "setup.cmd": "1167e05688cf03a3c10802933398bd14f5aedc25feb6ef08e5972c33863f336a",
+      "workstation": "5e8ed8b4f9bff3687725791dd616dd3d30b9f7455fbb3ea35e3b229921d2b9a7",
+      "workstation.cmd": "6f9b3123686246fe9b676460d917ad47ee8fcbd04c20089110469e2c45b27a65",
+      "workstation.exe": "fba6ce1b23bcb1efe7ddc37a135536760dc6bcdb7099a01e906e9a1d5c407ea2"
+    },
+    "commandsArchive": "commands.tar",
+    "commandsArchiveSha256": "7f8732ee507af0a42343df0d91dda0d35df31d5b20739655aecc83010a089647"
+  },
+  "local": {
+    "state": "passed",
+    "backend": "Docker Desktop WSL2",
+    "kernel": "6.18.35.2-microsoft-standard-WSL2",
+    "dockerServerVersion": "29.8.0",
+    "transport": "all image archive and command checksums verified; both OCI digests preserved by import",
+    "windowsCMD": {
+      "state": "passed",
+      "seconds": 82.737,
+      "sameHostEngine": true,
+      "controllerSha256": "fba6ce1b23bcb1efe7ddc37a135536760dc6bcdb7099a01e906e9a1d5c407ea2",
+      "builtFromLocalContext": true,
+      "serviceWroteProject": true,
+      "survivedRecreation": true,
+      "missingPathDiagnosed": true,
+      "unavailableEngineDiagnosed": true
+    },
+    "contentInspection": {
+      "schemaVersion": 1,
+      "state": "passed",
+      "revision": "85e13fae5732627ae24ff4393be2dc503d4481f7",
+      "version": "2026.09.16-35154433830-1",
+      "images": [
+        {
+          "variant": "base",
+          "reference": "electivus/webtop-arch-kde-base:2026.09.16-35154433830-1",
+          "digest": "sha256:604acd325d7e4b462a2cd346718147fbad554f44c3bd02aa8f8531fba1ad9211",
+          "archiveSha256": "ebc8bbe5455ec7dbe63c482367219f3641fa42b6a85096c1e3f9ab26b03faaff",
+          "layers": 29,
+          "runtimeInspection": {
+            "runtimeConfigurationAbsent": true,
+            "buildSecretAbsent": true,
+            "buildAnchorAbsent": true,
+            "corporateAnchorsAbsent": true,
+            "proxyEnvironmentAbsent": true,
+            "preparedAppsAbsent": true,
+            "systemRootCount": 121
+          }
+        },
+        {
+          "variant": "salesforce",
+          "reference": "electivus/webtop-arch-kde-salesforce:2026.09.16-35154433830-1",
+          "digest": "sha256:6324a930fd6820f6afa7cee73e8d8cc3161a166e6b2f35f34871c34b3e7461c2",
+          "archiveSha256": "e598786b5c720308dcd4a902e4a0494d2c9ecb9a931c1a84023669347c82e660",
+          "layers": 35,
+          "runtimeInspection": {
+            "runtimeConfigurationAbsent": true,
+            "buildSecretAbsent": true,
+            "buildAnchorAbsent": true,
+            "corporateAnchorsAbsent": true,
+            "proxyEnvironmentAbsent": true,
+            "preparedAppsAbsent": true,
+            "systemRootCount": 121
+          }
+        }
+      ],
+      "commands": {
+        "licenses/GO-LICENSE": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+        "licenses/MOBY-LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "licenses/THIRD-PARTY.md": "004e1213a2c4289f35cad3062077674520b1c102a15d668b7f9c181cfaae123f",
+        "setup.cmd": "1167e05688cf03a3c10802933398bd14f5aedc25feb6ef08e5972c33863f336a",
+        "workstation": "5e8ed8b4f9bff3687725791dd616dd3d30b9f7455fbb3ea35e3b229921d2b9a7",
+        "workstation.cmd": "6f9b3123686246fe9b676460d917ad47ee8fcbd04c20089110469e2c45b27a65",
+        "workstation.exe": "fba6ce1b23bcb1efe7ddc37a135536760dc6bcdb7099a01e906e9a1d5c407ea2"
+      },
+      "uniqueLayers": 35,
+      "layerEntries": 288338,
+      "prohibitedLayerPaths": "absent",
+      "scope": "Known personal state, prepared vendor applications and corporate build/runtime configuration; not a general secret scanner"
+    }
+  },
+  "negativeEvidence": {
+    "realFailedWorkflow": 35147084812,
+    "url": "https://github.com/Electivus/webtop-arch-kde-workstation/actions/runs/35147084812",
+    "revision": "f1fcb20f32d5fa2a33820742ee8a8a3476a5cc07",
+    "approval": false,
+    "failedCheck": "docker-projects",
+    "subsequentGroupsNotRun": 9,
+    "allThreeArtifactsRetained": true,
+    "deliberateLocalFailure": {
+      "state": "rejected",
+      "approval": false,
+      "failureProof": true,
+      "archivesUnchanged": true,
+      "originalCIReportPreserved": true,
+      "firstCheck": "failed",
+      "remainingChecks": "not-run"
+    }
+  },
+  "controllerPathRegression": {
+    "redSeconds": 29.203,
+    "linuxPassedSeconds": 50.458,
+    "windowsCMDPassedSeconds": 82.33,
+    "assertionsUnchanged": true
+  },
+  "review": {
+    "mode": "self-review",
+    "independent": false,
+    "fixedPoint": "f334bfb1771f8d0472152b3407c0f4ffc15fb7a8",
+    "initialHead": "f1fcb20f32d5fa2a33820742ee8a8a3476a5cc07",
+    "specFollowupHead": "30a711eb5b14def4c064f51b55dc350aa7da1fd1",
+    "finalValidatedSource": "85e13fae5732627ae24ff4393be2dc503d4481f7",
+    "nativeDelegationFailure": "agent thread limit reached"
+  },
+  "scope": "T11 candidate production, transport and acceptance. Full device sizing and Hyper-V guide remain T12; public Docker Hub publication and stable promotion remain T13."
+}
