@@ -30,11 +30,16 @@ jobs:
         run: |
           test "$RUNNER_ENVIRONMENT" = github-hosted
           df -h /
-          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /opt/hostedtoolcache/CodeQL /usr/local/.ghcup
+          # Compilers and application runtimes are built inside Docker. Keep the
+          # system Python and the tool-cache directory, but remove unused SDKs.
+          test -x /usr/bin/python3
+          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /usr/share/swift /usr/local/.ghcup
+          sudo find /opt/hostedtoolcache -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+          python3 --version
           df -h /
           available_kib=$(df --output=avail -k / | tail -n 1)
-          if [ "$available_kib" -lt 33554432 ]; then
-            echo 'Desktop acceptance needs at least 32 GiB free before building images.' >&2
+          if [ "$available_kib" -lt 54525952 ]; then
+            echo 'Candidate archives and desktop recovery need at least 52 GiB free before building images.' >&2
             exit 1
           fi
       - name: Use a Docker image store that preserves OCI indexes
@@ -88,6 +93,17 @@ jobs:
       - name: Build and identify the exact candidate pair
         id: candidate
         run: python3 scripts/candidate.py build --directory .local/candidate --version "$CANDIDATE_VERSION" --revision "$GITHUB_SHA"
+      - name: Release build-only cache before full recovery acceptance
+        run: |
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          docker builder prune --all --force
+          docker system df
+          df -h /
+          available_kib=$(df --output=avail -k / | tail -n 1)
+          if [ "$available_kib" -lt 25165824 ]; then
+            echo 'Prepared applications, backup and recovery need at least 24 GiB free after building candidates.' >&2
+            exit 1
+          fi
       - name: Run the common acceptance contract against those artifacts
         env:
           PROVE_TEST_FAILURE: ${{ inputs.prove_test_failure }}

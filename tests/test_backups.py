@@ -430,7 +430,7 @@ class BackupAcceptance(unittest.TestCase):
             docker('start', helper)
             docker('exec', helper, 'mkdir', '-p', '/tmp/profile')
             docker('cp', str(profile / 'profile.json'), helper + ':/tmp/profile/profile.json')
-            docker('cp', str(ROOT / '.local/cli/workstation'), helper + ':/tmp/workstation')
+            docker('cp', str(CLI.with_name('workstation') if os.name == 'nt' else CLI), helper + ':/tmp/workstation')
             docker('exec', helper, 'chmod', '755', '/tmp/workstation')
             context = json.loads((profile / 'profile.json').read_text())['dockerContext']
             if context != 'default':
