@@ -162,14 +162,14 @@ func run(args []string) (any, error) {
 			return nil, fmt.Errorf("open installation operation lock: %w", err)
 		}
 		defer operationLock.Close()
-		lockErr := lockOperationFile(operationLock)
+		lockErr := lockOperationFile(operationLock, true)
 		if args[0] == "certificate" || args[0] == "trust" || args[0] == "untrust" {
 			// The shortcut starts asynchronously. Let its final certificate export
 			// finish before the user's certificate command acquires this same lock.
 			deadline := time.Now().Add(10 * time.Second)
 			for lockErr != nil && time.Now().Before(deadline) {
 				time.Sleep(100 * time.Millisecond)
-				lockErr = lockOperationFile(operationLock)
+				lockErr = lockOperationFile(operationLock, true)
 			}
 		}
 		if lockErr != nil {
@@ -486,6 +486,26 @@ func status(p profile) (any, error) {
 		"limits": map[string]int{"memoryMiB": p.MemoryMiB, "cpus": p.CPUs}}, nil
 }
 
+func selectedImageReference(p profile, c *containerInfo) (string, error) {
+	if c != nil {
+		return c.Image, nil
+	}
+	if p.ImageID != "" {
+		return p.ImageID, nil
+	}
+	volume, err := docker(p.DockerContext, "volume", "ls", "--quiet", "--filter", "name=^"+p.HomeVolume+"$")
+	if err != nil {
+		return "", err
+	}
+	if len(volume) != 0 {
+		if err := personalVolume(p); err != nil {
+			return "", err
+		}
+		return "", errors.New("original image is unknown for this existing home; recover the original container or restore a completed backup from this installation before continuing")
+	}
+	return p.Image, nil
+}
+
 func start(p profile, directory string, open bool) (any, error) {
 	info, err := engine(p)
 	if err != nil {
@@ -510,12 +530,12 @@ func start(p profile, directory string, open bool) (any, error) {
 		}
 	}
 	if c == nil {
-		reference := p.Image
-		if p.ImageID != "" {
-			reference = p.ImageID
+		reference, err := selectedImageReference(p, nil)
+		if err != nil {
+			return nil, err
 		}
 		var images []containerInfo
-		err := dockerJSON(p, &images, "image", "inspect", reference)
+		err = dockerJSON(p, &images, "image", "inspect", reference)
 		if err != nil && p.ImageID == "" && strings.Contains(err.Error(), "No such image") {
 			fmt.Fprintln(os.Stderr, "Downloading", p.Image)
 			if _, err := docker(p.DockerContext, "pull", "--platform", "linux/amd64", p.Image); err != nil {
@@ -525,7 +545,7 @@ func start(p profile, directory string, open bool) (any, error) {
 		}
 		if err != nil {
 			if p.ImageID != "" {
-				return nil, fmt.Errorf("selected image %s is unavailable; load that image or explicitly select an update: %w", p.ImageID, err)
+				return nil, fmt.Errorf("selected image %s is unavailable; load that image before starting or updating: %w", p.ImageID, err)
 			}
 			return nil, err
 		}
@@ -538,6 +558,14 @@ func start(p profile, directory string, open bool) (any, error) {
 		}
 		if err := verifyExchange(p); err != nil {
 			return nil, err
+		}
+		// Save the initial selection before creating personal storage so an
+		// interrupted first start cannot leave an existing home without its image.
+		if p.ImageID == "" {
+			p.ImageID = images[0].ID
+			if err := saveProfile(p, directory); err != nil {
+				return nil, err
+			}
 		}
 		volume, err := docker(p.DockerContext, "volume", "ls", "--quiet", "--filter", "name=^"+p.HomeVolume+"$")
 		if err != nil {
@@ -570,12 +598,6 @@ func start(p profile, directory string, open bool) (any, error) {
 			"--cpus", fmt.Sprint(p.CPUs), "--shm-size", "1g", "--env", "PUID=1000", "--env", "PGID=1000"}
 		if p.Exchange != "" {
 			args = append(args, "--mount", exchangeMount(p.Exchange))
-		}
-		if p.ImageID == "" {
-			p.ImageID = images[0].ID
-			if err := saveProfile(p, directory); err != nil {
-				return nil, err
-			}
 		}
 		args = append(args, p.ImageID)
 		_, err = docker(p.DockerContext, args...)

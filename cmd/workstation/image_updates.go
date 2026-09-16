@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -23,16 +21,7 @@ func imageDetails(reference string, image containerInfo) map[string]any {
 func updateImage(p profile, opts options) (any, error) {
 	filename := filepath.Join(opts.directory, "image-update.json")
 	if opts.prepareStatus {
-		data, err := os.ReadFile(filename)
-		if errors.Is(err, os.ErrNotExist) {
-			return map[string]any{"state": "not-started"}, nil
-		}
-		if err != nil {
-			return nil, err
-		}
-		var result map[string]any
-		err = json.Unmarshal(data, &result)
-		return result, err
+		return updateStatus(filename)
 	}
 	if opts.image == "" {
 		return nil, errors.New("update-image requires --image with the chosen tag or digest")
@@ -47,18 +36,12 @@ func updateImage(p profile, opts options) (any, error) {
 	}
 	report := map[string]any{"state": "running", "step": "resolve", "usable": false,
 		"requestedImage": opts.image, "previous": previous, "startedAt": time.Now().UTC().Format(time.RFC3339Nano)}
-	persist := func() error {
-		data, err := json.MarshalIndent(report, "", "  ")
-		if err != nil {
-			return err
-		}
-		return atomicFile(filename, data)
+	journal, err := beginUpdateReport(filename, report)
+	if err != nil {
+		return nil, err
 	}
-	fail := func(cause error) (any, error) {
-		report["state"], report["error"] = "failed", cause.Error()
-		report["completedAt"] = time.Now().UTC().Format(time.RFC3339Nano)
-		return nil, errors.Join(cause, persist())
-	}
+	defer journal.lock.Close()
+	persist, fail := journal.persist, journal.fail
 	resumeOriginal := func(cause error) (any, error) {
 		if c != nil && c.State.Running {
 			// Preserve the original runtime's applied network after a failed
@@ -68,9 +51,6 @@ func updateImage(p profile, opts options) (any, error) {
 		}
 		return fail(cause)
 	}
-	if err := persist(); err != nil {
-		return nil, err
-	}
 	if opts.pullImage {
 		if _, err := docker(p.DockerContext, "pull", "--platform", "linux/amd64", opts.image); err != nil {
 			return fail(err)
@@ -78,7 +58,7 @@ func updateImage(p profile, opts options) (any, error) {
 	}
 	selected := p
 	selected.Image, selected.ImageID = opts.image, ""
-	candidate, err := snapshotImage(selected, nil)
+	candidate, err := inspectWorkstationImage(p, opts.image)
 	if err != nil {
 		return fail(err)
 	}

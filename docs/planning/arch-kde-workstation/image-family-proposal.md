@@ -36,7 +36,7 @@ O Docker compartilha camadas com conteúdo idêntico; não é necessário execut
 - No notebook de trabalho, usar a entrega fixa e seu digest para identificar exatamente o artefato escolhido. DEC-027 exige comando explícito e backup antes da troca de imagem; a publicação de um novo `stable` não atualiza sozinha uma workstation em uso.
 - Fixar também a base consumida por digest e atualizar essa referência de forma controlada. Isso identifica a base exata; sozinho, não garante reconstrução idêntica quando a instalação consulta repositórios de pacotes que mudam, como no Arch.
 - As duas imagens terão versões coordenadas, conforme DEC-018. A automação seguirá DEC-026; o procedimento de construção, validação e promoção conjunta ainda será detalhado.
-- DEC-030 permite a primeira publicação após os testes locais em VMM, identificando a validação real em Hyper-V como pendente e fornecendo um roteiro executável para o destino. Essa distinção deve acompanhar as evidências da entrega.
+- DEC-038 permite a primeira publicação após os testes locais em Docker Desktop com WSL2, identificando a validação real em Hyper-V como pendente e fornecendo um roteiro executável para o destino. Essa distinção deve acompanhar as evidências da entrega.
 - No Docker Hub, há configuração de imutabilidade para todas as tags ou para padrões específicos. Tags numéricas fixas podem ser protegidas preservando a mobilidade de aliases. A disponibilidade/configuração efetiva dos repositórios Electivus ainda não foi inspecionada.
 
 ## Estado pessoal e atualização
@@ -65,13 +65,13 @@ DEC-015 mantém projetos no armazenamento Linux e uma pasta de troca com Windows
 
 ## Instalação e verificação a implementar
 
-O perfil inicial será `linux/amd64`, correspondente ao Latitude 5450 com Core Ultra 7 165U e 32 GB. A instalação parte de Docker Desktop já disponível com containers Linux; o notebook de destino utiliza Hyper-V e o notebook de teste utiliza Docker VMM. O fluxo Windows será documentado em PowerShell, com operações para instalar, iniciar, parar, atualizar a imagem, atualizar aplicativos, fazer backup, restaurar e diagnosticar. O acesso ao desktop será por um endpoint HTTPS limitado ao próprio notebook.
+O perfil inicial será `linux/amd64`, correspondente ao Latitude 5450 com Core Ultra 7 165U e 32 GB. A instalação parte de Docker Desktop já disponível com containers Linux; o notebook de destino utiliza Hyper-V e o notebook de teste utiliza Docker Desktop com WSL2 desde 2026-09-16. O fluxo Windows será documentado para CMD, sem executar PowerShell (DEC-036), com operações para instalar, iniciar, parar, atualizar a imagem, atualizar aplicativos, fazer backup, restaurar e diagnosticar. O acesso ao desktop será por um endpoint HTTPS limitado ao próprio notebook.
 
 Os comandos e as instruções necessários ao uso público deverão acompanhar a distribuição no Docker Hub. A solução de entrega desses arquivos será detalhada na implementação, preservando a visibilidade privada atual do repositório de código.
 
 A verificação deverá cobrir as duas variantes: desktop e localização ABNT2; aplicativos oficiais e extensões nos dois canais do VS Code; retomada do preparo inicial; persistência de projetos e preferências; troca de arquivos com Windows; backup e recuperação; inventário e restauração assistida, incluindo falha de pacote extra; manutenção da sessão ao fechar a aba; e configuração opcional de rede com diagnóstico.
 
-O fluxo Docker/Compose será verificado com um projeto que use arquivos do armazenamento Linux, leitura e escrita em volume montado e construção a partir de contexto local. O dimensionamento será medido em Full HD com Insiders, um projeto Salesforce e Chrome, partindo dos recursos propostos em DEC-023. A automação de entrega só promoverá `stable` após seus testes; a evidência da primeira publicação identificará os testes VMM realizados e a verificação Hyper-V ainda necessária no destino.
+O fluxo Docker/Compose será verificado com um projeto que use arquivos do armazenamento Linux, leitura e escrita em volume montado e construção a partir de contexto local. O dimensionamento será medido em Full HD com Insiders, um projeto Salesforce e Chrome, partindo dos recursos propostos em DEC-023. A automação de entrega só promoverá `stable` após seus testes; a evidência da primeira publicação identificará os testes WSL2 realizados e as evidências VMM históricas e a verificação Hyper-V ainda necessária no destino.
 
 ## Fontes primárias
 

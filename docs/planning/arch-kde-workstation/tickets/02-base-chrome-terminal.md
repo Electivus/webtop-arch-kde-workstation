@@ -24,7 +24,7 @@ A base oferece Chrome, Git e Zsh/Oh My Zsh; a preparação inicial mostra progre
 - Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
+- Planning checkpoint: 9c9f2c44531269dae4d785e4f8b7d197e56f0082
 - Decisions: DEC-006, DEC-011, DEC-012, DEC-020, DEC-021
 
 ### Decision consequences

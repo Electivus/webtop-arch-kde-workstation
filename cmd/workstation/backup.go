@@ -235,13 +235,14 @@ func stopForSnapshot(p profile, c *containerInfo) error {
 }
 
 func snapshotImage(p profile, c *containerInfo) (containerInfo, error) {
-	reference := p.Image
-	if p.ImageID != "" {
-		reference = p.ImageID
+	reference, err := selectedImageReference(p, c)
+	if err != nil {
+		return containerInfo{}, err
 	}
-	if c != nil {
-		reference = c.Image
-	}
+	return inspectWorkstationImage(p, reference)
+}
+
+func inspectWorkstationImage(p profile, reference string) (containerInfo, error) {
 	var images []containerInfo
 	if err := dockerJSON(p, &images, "image", "inspect", reference); err != nil {
 		return containerInfo{}, err

@@ -27,13 +27,15 @@ O relatório da tentativa inclui:
 
 | Campo | Conteúdo |
 | --- | --- |
-| `state` | `running`, `completed` ou `failed`. |
+| `state` | `running`, `completed`, `failed` ou `interrupted`. |
 | `step` | Etapa atual ou etapa em que ocorreu a falha. |
 | `previous` | Identidade da workstation antes da manutenção, incluindo a imagem. |
 | `backup` | Cópia concluída, com `id` e `directory` para recuperação. |
 | `applications` | Versões, origens e diagnóstico do trabalho nos aplicativos. |
 
 `update-apps --status` consulta a última tentativa sem começar outra. Depois de uma falha de download ou instalação, confira esse relatório. Ferramentas atualizadas antes da falha podem continuar na nova versão; o backup permite recuperar o conjunto anterior e o estado pessoal.
+
+`interrupted` indica que o processo do comando terminou sem registrar um resultado, por exemplo após reiniciar o Windows. A consulta preserva a última etapa e o backup já registrado. Confira a workstation com `workstation.cmd status`; depois escolha recuperar essa cópia ou iniciar a workstation e repetir explicitamente `update-apps`.
 
 Para recuperar a cópia indicada em `backup.directory`:
 

@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"time"
 )
@@ -12,16 +10,7 @@ import (
 func updateApplications(p profile, opts options) (any, error) {
 	filename := filepath.Join(opts.directory, "application-update.json")
 	if opts.prepareStatus {
-		data, err := os.ReadFile(filename)
-		if errors.Is(err, os.ErrNotExist) {
-			return map[string]any{"state": "not-started"}, nil
-		}
-		if err != nil {
-			return nil, err
-		}
-		var result map[string]any
-		err = json.Unmarshal(data, &result)
-		return result, err
+		return updateStatus(filename)
 	}
 	c, err := ownedContainer(p)
 	if err != nil {
@@ -36,21 +25,12 @@ func updateApplications(p profile, opts options) (any, error) {
 	}
 	report := map[string]any{"state": "running", "step": "backup", "previous": previous,
 		"startedAt": time.Now().UTC().Format(time.RFC3339Nano)}
-	persist := func() error {
-		data, err := json.MarshalIndent(report, "", "  ")
-		if err != nil {
-			return err
-		}
-		return atomicFile(filename, data)
-	}
-	fail := func(cause error) (any, error) {
-		report["state"], report["error"] = "failed", cause.Error()
-		report["completedAt"] = time.Now().UTC().Format(time.RFC3339Nano)
-		return nil, errors.Join(cause, persist())
-	}
-	if err := persist(); err != nil {
+	journal, err := beginUpdateReport(filename, report)
+	if err != nil {
 		return nil, err
 	}
+	defer journal.lock.Close()
+	persist, fail := journal.persist, journal.fail
 	copy, err := backup(p, options{directory: opts.directory, backupDirectory: opts.backupDirectory})
 	if err != nil {
 		// A snapshot can fail after stopping. Resume the same container without

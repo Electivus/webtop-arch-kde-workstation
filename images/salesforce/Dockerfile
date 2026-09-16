@@ -24,6 +24,7 @@ RUN --mount=type=secret,id=corporate_ca \
 
 ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk \
     NODE_USE_SYSTEM_CA=1 \
+    DONT_PROMPT_WSL_INSTALL=1 \
     SF_AUTOUPDATE_DISABLE=true \
     SF_DISABLE_TELEMETRY=true \
     EDITOR="code-insiders --wait" \

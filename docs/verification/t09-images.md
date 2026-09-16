@@ -40,4 +40,4 @@ O caso completo de troca e recuperação também passou com a variante Salesforc
 
 ## Fechamento
 
-ShellCheck, análise sintática Python e leitura do workflow com Mike Farah yq passaram. A revisão delimitada, a regressão final com as imagens reconstruídas e o fechamento Planning serão registrados sobre o conjunto concluído. Os ensaios locais usam Docker VMM, não Hyper-V.
+ShellCheck, análise sintática Python e leitura do workflow com Mike Farah yq passaram. Os ensaios descritos acima são históricos, feitos em Docker VMM. A [revisão delimitada](t09-t10-review.md) foi concluída, e a [regressão final em WSL2](wsl2-resume.md#fechamento-da-regressão-windows-em-wsl2) aprovou os oito cenários da base e a troca/recuperação Salesforce, incluindo os serviços Apex/LWC dos dois editores. Nenhuma dessas execuções representa aceitação no Hyper-V.

@@ -6,7 +6,7 @@ O usuário precisa de uma workstation Linux para desenvolvimento em um notebook 
 
 Uma imagem de desktop isolada não resolve todo o uso diário: também são necessários instalação e início pelo Windows, aplicativos oficiais, continuidade da sessão, atualização controlada, backup e recuperação dos dados. Programas instalados manualmente no sistema podem desaparecer quando o container é recriado; sua recuperação precisa ser tratada explicitamente, dentro da viabilidade técnica.
 
-O notebook de teste é um Dell Latitude 5450, com Core Ultra 7 165U e 32 GB de RAM, equivalente ao notebook de destino segundo o usuário. Aqui, Docker VMM oferece o ambiente de teste disponível. A entrega precisa distinguir essa evidência da validação real em Hyper-V no destino.
+O notebook de teste é um Dell Latitude 5450, com Core Ultra 7 165U e 32 GB de RAM, equivalente ao notebook de destino segundo o usuário. Desde 2026-09-16, Docker Desktop com backend WSL2 oferece o ambiente de teste disponível, após o usuário substituir o Docker VMM beta por problemas de funcionamento. A entrega precisa distinguir essa evidência da validação real em Hyper-V no destino.
 
 ## Solution
 
@@ -23,7 +23,7 @@ Chrome e os dois canais oficiais do VS Code serão obtidos diretamente dos forne
 
 Projetos, perfil e aplicativos persistidos serão acompanhados de backup local no Windows, realizado antes das atualizações e também sob demanda, mantendo os dois backups concluídos mais recentes. Programas extras terão inventário e restauração assistida separados para pacman e AUR, com relatório, nova tentativa e recuperação disponíveis. Sua preservação depende de viabilidade técnica.
 
-As imagens terão versões coordenadas, tags fixas e um alias stable. GitHub Actions construirá e publicará entregas semanalmente e sob demanda, promovendo stable depois dos testes. A workstation em uso receberá novas imagens e atualizações de aplicativos por comandos explícitos separados. A primeira publicação poderá seguir após os testes locais no VMM, acompanhada do roteiro executável de verificação Hyper-V no notebook de destino.
+As imagens terão versões coordenadas, tags fixas e um alias stable. GitHub Actions construirá e publicará entregas semanalmente e sob demanda, promovendo stable depois dos testes. A workstation em uso receberá novas imagens e atualizações de aplicativos por comandos explícitos separados. A primeira publicação poderá seguir após os testes locais no WSL2, acompanhada do roteiro executável de verificação Hyper-V no notebook de destino.
 
 ## User Stories
 
@@ -76,7 +76,7 @@ As imagens terão versões coordenadas, tags fixas e um alias stable. GitHub Act
 47. Como responsável pela distribuição pública, quero manter configurações e conteúdo corporativos fora das imagens, para disponibilizar artefatos genéricos reutilizáveis.
 48. Como usuário de um notebook com 32 GB, quero ajustar recursos equilibrando Windows, workstation e outros containers, para manter o conjunto utilizável.
 49. Como desenvolvedor, quero avaliar o ambiente em Full HD com Insiders, projeto Salesforce e Chrome, para medir uma carga representativa do meu uso.
-50. Como responsável pela entrega, quero testar localmente no VMM e identificar o backend usado em cada evidência, para saber o que foi efetivamente verificado.
+50. Como responsável pela entrega, quero testar localmente no WSL2 e identificar o backend usado em cada evidência, para saber o que foi efetivamente verificado.
 51. Como usuário do notebook de destino, quero um roteiro executável de verificação em Hyper-V, para comprovar o funcionamento no ambiente real.
 52. Como consumidor das imagens públicas, quero escolher uma versão fixa e identificar seu digest, para saber qual artefato da workstation estou usando.
 53. Como responsável pela distribuição, quero versões coordenadas de base e Salesforce, para identificar uma entrega compatível da família.
@@ -92,7 +92,7 @@ A implementação será organizada em três responsabilidades: composição e pr
 - DEC-002: Fornecer execução em containers Linux do Docker Desktop via Hyper-V e instruções Windows que não dependam de WSL2.
 - DEC-003: Preparar a distribuição pública das imagens e das instruções de uso no Docker Hub da Electivus.
 - DEC-004: Disponibilizar um perfil inicial linux/amd64 ajustável para o Latitude 5450 com Core Ultra 7 165U e 32 GB.
-- DEC-005: Executar a validação disponível no Docker VMM local e registrar o backend nas evidências, preservando a distinção em relação ao destino Hyper-V.
+- DEC-037: Executar a validação disponível no Docker Desktop com WSL2 local e registrar o backend nas evidências, preservando a distinção em relação ao destino Hyper-V.
 - DEC-006: Tornar editor, navegador, terminal e ferramentas de projeto utilizáveis em conjunto no fluxo principal de desenvolvimento.
 - DEC-007: Limitar a publicação do endpoint do desktop ao próprio notebook e atender uma sessão pessoal.
 - DEC-008: Manter imagens e conteúdo público genéricos, recebendo dados, configurações corporativas e credenciais somente na instalação em uso.
@@ -116,7 +116,7 @@ A implementação será organizada em três responsabilidades: composição e pr
 - DEC-027: Exigir atualização da imagem por comando explícito e conclusão do backup antes da troca, mantendo identificação da versão anterior para recuperação.
 - DEC-028: Disponibilizar atualização explícita dos aplicativos separada da imagem, incluindo os dois editores, Chrome, CLI e extensões, com registro das versões resultantes.
 - DEC-029: Incluir projetos, perfil, aplicativos persistidos e inventário em backups no Windows, antes das atualizações e sob demanda, retendo as duas cópias concluídas mais recentes.
-- DEC-030: Permitir a primeira publicação após os testes locais definidos, entregar o roteiro Hyper-V executável e identificar a validação real no destino como pendente até sua execução.
+- DEC-038: Permitir a primeira publicação após os testes locais definidos, entregar o roteiro Hyper-V executável e identificar a validação real no destino como pendente até sua execução.
 - DEC-031: Medir e verificar a experiência em uma tela 1920 x 1080 com Insiders, projeto Salesforce e Chrome ativos.
 - DEC-032: Tratar falha de restauração de programa extra como resultado parcial visível, mantendo o ambiente atualizado disponível e oferecendo nova tentativa ou recuperação do backup.
 - DEC-033: Preservar sessão e processos quando a aba for fechada e encerrar a execução apenas pelo comando de parar ou por encerramento do próprio ambiente anfitrião.
@@ -134,7 +134,7 @@ O backup deve representar um ponto consistente do estado pessoal. Falha ou falta
 
 A interface principal de aceitação será a workstation entregue: os comandos públicos de instalação e operação, o desktop resultante e os artefatos publicados. Os testes devem observar comportamento, arquivos produzidos, disponibilidade dos aplicativos e resultados dos comandos, evitando depender da organização interna dos módulos. Essa interface reúne os cenários de instalação e verificação apresentados no entendimento consolidado e confirmados pelo usuário em Q27; a especificação preserva essa aprovação.
 
-O repositório contém documentação de descoberta, vocabulário e decisões; não há código, harness ou testes existentes para reutilizar. Será necessário criar a automação de aceitação no nível dessas operações públicas. O CI executará os cenários automatizáveis das imagens e da operação; o notebook de teste verificará o fluxo Windows com Docker VMM. O roteiro de destino verificará o mesmo comportamento aplicável com Hyper-V, registrando separadamente o resultado.
+Na entrevista inicial, o repositório continha documentação de descoberta, vocabulário e decisões, e a automação de aceitação ainda precisava ser criada no nível dessas operações públicas. O CI executará os cenários automatizáveis das imagens e da operação; o notebook de teste verificará o fluxo Windows com Docker Desktop e WSL2. O roteiro de destino verificará o mesmo comportamento aplicável com Hyper-V, registrando separadamente o resultado.
 
 Os cenários devem usar projetos, dados e recursos Docker dedicados à validação, com resultados repetíveis e diagnóstico suficiente para localizar a etapa que falhou.
 
@@ -153,7 +153,7 @@ Os cenários devem usar projetos, dados e recursos Docker dedicados à validaç�
 13. **Dimensionamento e experiência:** medir partida com preparo inicial separado das partidas seguintes, CPU, RAM e comportamento do desktop em Full HD durante uso de Insiders, projeto Salesforce e Chrome. Avaliar a carga conjunta do Windows e dos demais containers, registrar o perfil escolhido e eventuais limitações de renderização ou resposta.
 14. **Contrato da entrega:** verificar os nomes públicos, arquitetura, digests, versões coordenadas, relação entre base e Salesforce, preservação de tags fixas e destino de stable. Uma falha nos testes deve impedir a promoção; uma falha parcial de publicação deve ser visível e não pode ser anunciada como entrega coordenada concluída.
 15. **Automação e conteúdo público:** exercitar o acionamento sob demanda e validar a configuração semanal, além das instruções que permitem usar a distribuição pública. Inspecionar os artefatos para confirmar a estratégia de obtenção dos aplicativos oficiais e a ausência de configurações, credenciais e conteúdo corporativos embutidos.
-16. **Evidência de plataforma:** produzir relatório da validação VMM local e fornecer o roteiro executável Hyper-V com resultados e limitações identificáveis. A primeira publicação pode ocorrer com a execução no destino pendente; sucesso no VMM não deve ser reportado como teste real em Hyper-V.
+16. **Evidência de plataforma:** produzir relatório da validação WSL2 local e fornecer o roteiro executável Hyper-V com resultados e limitações identificáveis. A primeira publicação pode ocorrer com a execução no destino pendente; sucesso no WSL2 não deve ser reportado como teste real em Hyper-V.
 17. **Operação pelo CMD:** executar instalação, atalho e comandos de operação a partir de `cmd.exe`, sem invocar `powershell.exe` ou `pwsh.exe`; o roteiro de destino e as instruções públicas devem exercer o mesmo contrato.
 
 Os testes dos componentes fornecidos são critérios de aprovação da entrega. A tolerância à restauração parcial se limita aos programas extras do usuário. Não foi acordado um número fixo de latência, consumo ou tempo de instalação; o perfil deverá ser escolhido a partir das medições do cenário confirmado.
@@ -175,13 +175,13 @@ Os testes dos componentes fornecidos são critérios de aprovação da entrega. 
 
 ## Further Notes
 
-O escopo resulta da entrevista Q1–Q27, encerrada e confirmada em 2026-09-14. O levantamento técnico anterior identificou a variante upstream Arch/KDE, o hardware local e Docker VMM; não executou uma workstation derivada nem demonstrou desempenho, restauração, integração Compose ou compatibilidade real no notebook de destino. Esses resultados são entregáveis da implementação.
+O escopo resulta da entrevista Q1–Q27, encerrada e confirmada em 2026-09-14. O levantamento técnico anterior identificou a variante upstream Arch/KDE, o hardware local e Docker VMM; naquele momento, ainda não havia executado uma workstation derivada nem demonstrado desempenho, restauração, integração Compose ou compatibilidade real no notebook de destino. Esses resultados são entregáveis da implementação. As evidências VMM produzidas posteriormente permanecem históricas; novos testes locais usam WSL2.
 
-As 35 decisões ativas do ledger declaram as obrigações specification, tickets e verification. Cada uma possui uma consequência acionável em Implementation Decisions e está incluída no marcador abaixo. Não há decisão ativa sem obrigação de especificação que exija nota de inaplicabilidade. DEC-014 está substituída por DEC-019 e não constitui uma obrigação ativa desta especificação. DEC-036 registra a correção do usuário em 2026-09-14: a operação no destino deve usar CMD, pois PowerShell é bloqueado.
+As 35 decisões ativas do ledger declaram as obrigações specification, tickets e verification. Cada uma possui uma consequência acionável em Implementation Decisions e está incluída no marcador abaixo. Não há decisão ativa sem obrigação de especificação que exija nota de inaplicabilidade. DEC-014 está substituída por DEC-019 e não constitui uma obrigação ativa desta especificação. DEC-036 registra a correção do usuário em 2026-09-14: a operação no destino deve usar CMD, pois PowerShell é bloqueado. DEC-037 e DEC-038 substituem DEC-005 e DEC-030 após a mudança do ambiente local para WSL2 em 2026-09-16, mantendo Hyper-V como requisito de destino.
 
 A publicação desta especificação conclui a cobertura de specification, após seu registro no ledger. A decomposição em tickets e as evidências de execução são etapas posteriores; o checkpoint de planejamento usado aqui é intermediário. O marcador deverá ser atualizado para o checkpoint final quando a cobertura dos tickets estiver concluída, antes de uma nova sessão de implementação.
 
-O requisito de destino Hyper-V permanece válido. DEC-030 autoriza a primeira publicação com testes locais e roteiro de destino, sem converter a validação Hyper-V pendente em resultado aprovado. A preparação da publicação também deverá verificar, com autenticação, os repositórios Docker Hub e as permissões necessárias.
+O requisito de destino Hyper-V permanece válido. DEC-038 autoriza a primeira publicação com testes locais e roteiro de destino, sem converter a validação Hyper-V pendente em resultado aprovado. A preparação da publicação também deverá verificar, com autenticação, os repositórios Docker Hub e as permissões necessárias.
 
 O mecanismo de caminhos compartilhados com Docker/Compose, o preparo dos aplicativos e a recuperação consistente dos dados precisam de validação concreta. Se a implementação não puder atender uma decisão ativa, a limitação deverá voltar ao planejamento para ajuste explícito, preservando a condição de viabilidade já acordada para programas extras.
 
@@ -191,5 +191,5 @@ O mecanismo de caminhos compartilhados com Docker/Compose, o preparo dos aplicat
 - Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
-- Decisions: DEC-001, DEC-002, DEC-003, DEC-004, DEC-005, DEC-006, DEC-007, DEC-008, DEC-009, DEC-010, DEC-011, DEC-012, DEC-013, DEC-015, DEC-016, DEC-017, DEC-018, DEC-019, DEC-020, DEC-021, DEC-022, DEC-023, DEC-024, DEC-025, DEC-026, DEC-027, DEC-028, DEC-029, DEC-030, DEC-031, DEC-032, DEC-033, DEC-034, DEC-035, DEC-036
+- Planning checkpoint: 9c9f2c44531269dae4d785e4f8b7d197e56f0082
+- Decisions: DEC-001, DEC-002, DEC-003, DEC-004, DEC-006, DEC-007, DEC-008, DEC-009, DEC-010, DEC-011, DEC-012, DEC-013, DEC-015, DEC-016, DEC-017, DEC-018, DEC-019, DEC-020, DEC-021, DEC-022, DEC-023, DEC-024, DEC-025, DEC-026, DEC-027, DEC-028, DEC-029, DEC-031, DEC-032, DEC-033, DEC-034, DEC-035, DEC-036, DEC-037, DEC-038
