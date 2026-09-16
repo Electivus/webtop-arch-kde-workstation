@@ -1,0 +1,133 @@
+{
+  "sourceHead": "66f705e8ffca613bb5d370d11318f4c070e15b8e",
+  "planningCheckpoint": "9c9f2c44531269dae4d785e4f8b7d197e56f0082",
+  "completedAt": "2026-09-16T18:46:52.274970+00:00",
+  "platform": "Windows CMD and native executable; Docker Desktop WSL2",
+  "engine": {
+    "ServerVersion": "29.8.0",
+    "KernelVersion": "6.18.35.2-microsoft-standard-WSL2",
+    "OperatingSystem": "Docker Desktop",
+    "NCPU": 14,
+    "MemTotal": 16481652736
+  },
+  "images": [
+    {
+      "id": "sha256:b0ec5818f2e777e492a4a947960406803c01ee0f64a653713e4cb0e1d590dccf",
+      "tags": [
+        "electivus/webtop-arch-kde-base:t09-t10"
+      ]
+    },
+    {
+      "id": "sha256:956ff64450cad9575d3f635cff343b992942ab15f1eb48ef6c8337001547182d",
+      "tags": [
+        "electivus/webtop-arch-kde-salesforce:t09-t10"
+      ]
+    }
+  ],
+  "windowsControllerSha256": "fba6ce1b23bcb1efe7ddc37a135536760dc6bcdb7099a01e906e9a1d5c407ea2",
+  "finalRun": [
+    {
+      "name": "salesforce_offline_backup",
+      "state": "passed",
+      "startedAt": "2026-09-16T17:20:45.451986+00:00",
+      "returncode": 0,
+      "seconds": 882.689
+    },
+    {
+      "name": "updates",
+      "state": "passed",
+      "startedAt": "2026-09-16T17:35:28.143457+00:00",
+      "returncode": 0,
+      "seconds": 2915.393
+    },
+    {
+      "name": "salesforce_image_updates",
+      "state": "passed",
+      "startedAt": "2026-09-16T18:24:03.544835+00:00",
+      "returncode": 0,
+      "seconds": 1368.727
+    }
+  ],
+  "earlierPassedCases": [
+    {
+      "name": "base_image_updates",
+      "tests": 8,
+      "seconds": 942.914,
+      "scope": "Initial WSL2 image build; foreign-volume diagnostic and lost-legacy paths revalidated after correction."
+    },
+    {
+      "name": "windows_commands",
+      "tests": 3,
+      "seconds": 96.291
+    },
+    {
+      "name": "lost_legacy_identity",
+      "tests": 1,
+      "seconds": 51.657
+    },
+    {
+      "name": "other_backup_cases",
+      "tests": 12,
+      "scope": "Completed before the WSL prompt fix; Salesforce offline backup passed in finalRun."
+    }
+  ],
+  "salesforceEditorServices": {
+    "image-restored-code-insiders-services": {
+      "editor": "Visual Studio Code - Insiders",
+      "version": "1.139.0-insider",
+      "result": "passed",
+      "step": "lwc-completion",
+      "apexDiagnostic": "Missing ';' at '}'",
+      "apexExtension": "67.17.2",
+      "apexRepair": "syntax error cleared after adding the missing semicolon",
+      "apexCompletion": "System.debug method",
+      "lwcCompletion": "lightning-button label attribute",
+      "lwcExtension": "67.17.2"
+    },
+    "image-restored-code-services": {
+      "editor": "Visual Studio Code",
+      "version": "1.138.0",
+      "result": "passed",
+      "step": "lwc-completion",
+      "apexDiagnostic": "Missing ';' at '}'",
+      "apexExtension": "67.17.2",
+      "apexRepair": "syntax error cleared after adding the missing semicolon",
+      "apexCompletion": "System.debug method",
+      "lwcCompletion": "lightning-button label attribute",
+      "lwcExtension": "67.17.2"
+    },
+    "image-updated-code-insiders-services": {
+      "editor": "Visual Studio Code - Insiders",
+      "version": "1.139.0-insider",
+      "result": "passed",
+      "step": "lwc-completion",
+      "apexDiagnostic": "Missing ';' at '}'",
+      "apexExtension": "67.17.2",
+      "apexRepair": "syntax error cleared after adding the missing semicolon",
+      "apexCompletion": "System.debug method",
+      "lwcCompletion": "lightning-button label attribute",
+      "lwcExtension": "67.17.2"
+    },
+    "image-updated-code-services": {
+      "editor": "Visual Studio Code",
+      "version": "1.138.0",
+      "result": "passed",
+      "step": "lwc-completion",
+      "apexDiagnostic": "Missing ';' at '}'",
+      "apexExtension": "67.17.2",
+      "apexRepair": "syntax error cleared after adding the missing semicolon",
+      "apexCompletion": "System.debug method",
+      "lwcCompletion": "lightning-button label attribute",
+      "lwcExtension": "67.17.2"
+    }
+  },
+  "sourceComparison": {
+    "files": 95,
+    "mismatches": []
+  },
+  "limitations": [
+    "Development images, not public release artifacts.",
+    "Hyper-V destination validation remains pending.",
+    "Independent Spec follow-up reviewed 0e1df370678024f54e9d8a94cf46f4bbc92636b8; later runtime fixes were checked by the implementer and acceptance tests."
+  ]
+}

@@ -33,8 +33,8 @@ A correção reconhece esse diagnóstico individual, conserva a saída para diag
 
 Depois de incorporar T08, as imagens para este ensaio são base `sha256:c8dc4b025cd389a1e92f806b967ee72b019180eb87aa9c85f91f031f63392583` e Salesforce `sha256:c33a3269d0d8a36cd8349ded8405d4df245982d7f612f29da4ea36101451efd2`. O teste de falha e recuperação passou em **693,791 s**: o comando informou falha na extensão do Stable, preservou o backup concluído e a extensão anterior, e manteve o desktop utilizável com o projeto renderizado no Chrome. A recuperação devolveu exatamente os aplicativos e o projeto anteriores, mantendo o relatório da tentativa disponível. Recibo local: `.local/ew-update-extension-cd0877c040/extension-failure-update-result.json`; log: `.local/t10-extension-install-failure-first-green.log`.
 
-## Verificações pendentes
+## Fechamento
 
 O workflow inclui as duas novas suítes de manutenção, preservando os testes anteriores. O limite do job passa de 60 para 120 minutos: o CI final de T08 levou 44 min 24 s e os cinco casos T10, medidos individualmente no Windows, somaram aproximadamente 36 min 25 s. Esses tempos vêm de ambientes diferentes e não são uma medição do novo CI completo; justificam reservar tempo para as suítes adicionais, sem remover verificações.
 
-Ainda faltam a regressão final, a revisão delimitada, os registros Planning de implementação e o CI da futura PR. Os resultados locais usam Docker VMM; não são aceitação real no Hyper-V.
+Os resultados descritos acima são históricos, feitos em Docker VMM. A [revisão delimitada](t09-t10-review.md) foi concluída. Na [regressão final em WSL2](wsl2-resume.md#fechamento-da-regressão-windows-em-wsl2), os seis cenários passaram em 2.915,393 s, incluindo reconhecimento de interrupções reais dos comandos, falhas de backup/download/extensão, atualização efetiva da CLI/extensões e recuperação com os serviços Apex/LWC nos dois editores. A aceitação real no Hyper-V continua pendente.

@@ -55,4 +55,27 @@ Na imagem corrigida, a preparação automática concluiu ambos os editores sem i
 
 A preparação corrigida passou pelos dois editores, CLI e extensões, e o backup Salesforce concluiu com 6.686.289.920 bytes. A extração na recuperação avançou por mais de 4,6 GB e terminou selecionando o novo volume no perfil, mas o prazo de 300 s do helper de testes expirou antes da conclusão. A execução encerrou com `TimeoutExpired` em 983,633 s totais; esse resultado não comprova as comparações finais e foi preservado em `.local/wsl-resume/windows-wsl-editor-regression/`.
 
-O helper passa a conceder 900 s apenas a `backup` e `restore`, mantendo 300 s nos comandos comuns e 1.500 s na preparação. Não muda o comportamento do produto nem remove as verificações de checksum, versões, extensões, preferências ou projeto. A repetição com prazo adequado fica em `.local/resume-copy-window-windows-regression/`; sua conclusão ainda é necessária. O tempo de cópia observado deve ser considerado no dimensionamento e no roteiro de uso, sem confundir velocidade com integridade.
+O helper passa a conceder 900 s apenas a `backup` e `restore`, mantendo 300 s nos comandos comuns e 1.500 s na preparação. Não muda o comportamento do produto nem remove as verificações de checksum, versões, extensões, preferências ou projeto. A repetição com prazo adequado concluiu com sucesso, conforme o fechamento abaixo. O tempo de cópia observado deve ser considerado no dimensionamento e no roteiro de uso, sem confundir velocidade com integridade.
+
+## Fechamento da regressão Windows em WSL2
+
+A última execução terminou em 2026-09-16 às 18:46:52 UTC, com código de saída zero. Os resultados finais substituem as pendências das rodadas históricas acima:
+
+| Cenário | Resultado |
+| --- | --- |
+| Oito casos de atualização da imagem base | Aprovados em 942,914 s; seleção por tag/digest, `stable` movida, falhas, extras e recuperação |
+| Comandos Windows, isolamento e pacote CMD | Três casos aprovados em 96,291 s após a correção do diagnóstico |
+| Perfil legado sem identidade recuperável | Aprovado novamente em 51,657 s |
+| Backup Salesforce e recuperação sem downloads | Aprovado em 882,689 s; completa os 12 outros casos de backup já aprovados |
+| Atualização de aplicativos | Seis casos aprovados em 2.915,393 s, incluindo interrupções reais e falhas recuperáveis |
+| Atualização e recuperação da imagem Salesforce | Aprovada em 1.368,727 s, com extras e projeto recuperados |
+
+O último cenário preservou as versões de Chrome, Stable, Insiders e Salesforce CLI. Os quatro recibos dos serviços dos editores confirmam diagnóstico, correção e conclusão Apex e conclusão LWC, nos dois canais, depois da atualização e depois da recuperação. O registro da imagem distingue o identificador local e os digests informados pelo engine; a publicação no Docker Hub permanece responsabilidade de T13.
+
+As identidades finais são a base `sha256:b0ec5818f2e777e492a4a947960406803c01ee0f64a653713e4cb0e1d590dccf`, Salesforce `sha256:956ff64450cad9575d3f635cff343b992942ab15f1eb48ef6c8337001547182d` e controlador Windows `fba6ce1b23bcb1efe7ddc37a135536760dc6bcdb7099a01e906e9a1d5c407ea2`. Continuam sendo artefatos locais de desenvolvimento, sem proveniência de release. Oito cenários iniciais da base antecederam o pequeno ajuste de diagnóstico de propriedade; o caso afetado e a recuperação legada foram repetidos depois dele.
+
+Os 95 arquivos de código, imagens, testes e configuração de build presentes na cópia Windows foram comparados por SHA-256 com o checkpoint `66f705e8ffca613bb5d370d11318f4c070e15b8e`, sem diferenças. A cópia serve para executar o controlador Windows; as operações Git ocorrem no checkout Linux.
+
+Recibos preservados em `.local/wsl-resume/windows-final-regression/`, `.local/wsl-resume/windows-source-comparison.json` e `.local/wsl-resume/salesforce-image-services/`. O resumo portável está em [t09-t10-wsl2-final.json](t09-t10-wsl2-final.json). Os três serviços preexistentes continuaram saudáveis e não restaram containers dos testes. Estes resultados demonstram execução pelo CMD sobre Docker Desktop WSL2; a aceitação real em Hyper-V continua pendente.
+
+O [CI 35128163401](https://github.com/Electivus/webtop-arch-kde-workstation/actions/runs/35128163401), executado sobre o mesmo checkpoint de código `66f705e8ffca613bb5d370d11318f4c070e15b8e`, aprovou o job `desktop-lifecycle` em 87 min 23 s. Todos os passos passaram, incluindo construção das duas imagens, comandos, preparação, projetos, Docker/Compose, serviços Salesforce, rede e certificados, backups, pacotes, aplicativos e seleção/troca/recuperação das imagens. Esse resultado é de um runner Linux do GitHub, registrado separadamente da execução Windows local.
