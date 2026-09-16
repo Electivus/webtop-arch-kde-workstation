@@ -50,3 +50,9 @@ Dos 13 cenários de backup Windows, 12 passaram. A preparação Salesforce ficou
 A imagem Salesforce declara essa variável, aplicável aos dois canais oficiais e à preparação automática. A imagem reconstruída é `sha256:956ff64450cad9575d3f635cff343b992942ab15f1eb48ef6c8337001547182d` ; a base e o controlador não mudaram. A variável na imagem e a identidade do controlador foram verificadas. A rodada `.local/resume-wsl-editor-windows-regression/` repete o backup Salesforce e continua pelas suítes de atualização de aplicativos e troca da imagem Salesforce; sua conclusão ainda é necessária.
 
 Na imagem corrigida, a preparação automática concluiu ambos os editores sem intervenção: Stable e Insiders têm recibos de instalação e versões executadas em `.local/wsl-resume/wsl-editors-prepared.json`. A preparação avançou para a CLI Salesforce. Isso valida a variável no fluxo real do desktop WSL2, além da reprodução isolada.
+
+## Tempo da cópia completa no Docker Desktop WSL2
+
+A preparação corrigida passou pelos dois editores, CLI e extensões, e o backup Salesforce concluiu com 6.686.289.920 bytes. A extração na recuperação avançou por mais de 4,6 GB e terminou selecionando o novo volume no perfil, mas o prazo de 300 s do helper de testes expirou antes da conclusão. A execução encerrou com `TimeoutExpired` em 983,633 s totais; esse resultado não comprova as comparações finais e foi preservado em `.local/wsl-resume/windows-wsl-editor-regression/`.
+
+O helper passa a conceder 900 s apenas a `backup` e `restore`, mantendo 300 s nos comandos comuns e 1.500 s na preparação. Não muda o comportamento do produto nem remove as verificações de checksum, versões, extensões, preferências ou projeto. A repetição com prazo adequado fica em `.local/resume-copy-window-windows-regression/`; sua conclusão ainda é necessária. O tempo de cópia observado deve ser considerado no dimensionamento e no roteiro de uso, sem confundir velocidade com integridade.
