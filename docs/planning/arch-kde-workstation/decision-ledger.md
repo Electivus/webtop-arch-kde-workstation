@@ -126,7 +126,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/7; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/14
-  - verification: ["ticket commits abccdd6/24fa1ad; docs/verification/t06-image-privacy-after-review.json: Both rebuilt images retain 121 public roots, no private configuration, proxy environment, corporate runtime anchors or build CA secret."]
+  - verification: ["ticket commits abccdd6/24fa1ad; docs/verification/t06-image-privacy-after-review.json: Both rebuilt images retain 121 public roots, no private configuration, proxy environment, corporate runtime anchors or build CA secret.","ticket ticket T11/#12; CI35154433830; source 85e13fae5732627ae24ff4393be2dc503d4481f7: T11 scope: both approved CI35154433830 archives imported with matching checksums/digests;35unique layers and pristine runtime inspections retain121public roots and exclude known personal, prepared-vendor-app and corporate configuration paths. docs/verification/t11-candidates.json."]
 ## DEC-009
 - Status: active
 - Decision: Incluir uma variante da workstation especializada em desenvolvimento Salesforce.
@@ -157,7 +157,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12
-  - verification: ["ticket commit d3fc05b; images/salesforce/Dockerfile; docs/verification/t02-t03-apps.md: Only base and Salesforce images exist; inspected Salesforce layers include the matching base layers."]
+  - verification: ["ticket commit d3fc05b; images/salesforce/Dockerfile; docs/verification/t02-t03-apps.md: Only base and Salesforce images exist; inspected Salesforce layers include the matching base layers.","ticket ticket T11/#12; CI35154433830; source 85e13fae5732627ae24ff4393be2dc503d4481f7: CI35154433830 produced exactly base and Salesforce from85e13fa; candidate manifest verifies direct inheritance, corresponding base digest and matching layers. Both approved OCI digests were preserved on Docker Desktop WSL2."]
 ## DEC-011
 - Status: active
 - Decision: Disponibilizar VS Code Stable e VS Code Insiders, Google Chrome oficial, Git, Salesforce CLI e extensoes Salesforce na workstation de desenvolvimento Salesforce.
@@ -278,7 +278,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/10; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/14
-  - verification: ["ticket T09/T10 at 66f705e8ffca613bb5d370d11318f4c070e15b8e; CI 35128163401: T09 scope: eight Windows base-image cases verify fixed trial versions, moved stable, registry tags and manifest digests, with explicit selection and recovery. Public coordinated Docker Hub publication remains T11/T13, not claimed here. docs/verification/wsl2-resume.md."]
+  - verification: ["ticket T09/T10 at 66f705e8ffca613bb5d370d11318f4c070e15b8e; CI 35128163401: T09 scope: eight Windows base-image cases verify fixed trial versions, moved stable, registry tags and manifest digests, with explicit selection and recovery. Public coordinated Docker Hub publication remains T11/T13, not claimed here. docs/verification/wsl2-resume.md.","ticket ticket T11/#12; CI35154433830; source 85e13fae5732627ae24ff4393be2dc503d4481f7: T11 scope: both named candidates use version2026.09.16-35154433830-1 with source, digest, archive and command hashes. Native Windows CMD consumed that pair successfully. Public fixed-tag/stable promotion remains T13."]
 ## DEC-019
 - Status: active
 - Decision: Preservar programas instalados manualmente com pacman ou AUR somente se houver uma solucao tecnicamente viavel.
@@ -396,12 +396,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/14
-  - verification: none
-
+  - verification: ["ticket ticket T11/#12; CI35154433830; source 85e13fae5732627ae24ff4393be2dc503d4481f7: T11 scope: weekly/manual workflow passed all13acceptance groups at85e13fa (55tests plus2Windows-only skips). Real failed CI35147084812 retained diagnostics/artifacts with approvalfalse; deliberate local rejection preserved its archive hashes. Public promotion remains T13."]
 ## DEC-027
 - Status: active
 - Decision: Aplicar novas versoes da imagem no notebook por comando explicito, com backup antes da troca.
@@ -535,12 +534,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/14
-  - verification: none
-
+  - verification: ["ticket ticket T11/#12; CI35154433830; source 85e13fae5732627ae24ff4393be2dc503d4481f7: T11 artifacts, metadata and local imported references use electivus/webtop-arch-kde-base and electivus/webtop-arch-kde-salesforce, with native Windows CMD consumption verified. Creation and public publication of those Hub repositories remain T13."]
 ## DEC-036
 - Status: active
 - Decision: Instalar, iniciar, parar, diagnosticar, atualizar e recuperar a workstation por comandos CMD no Windows, sem executar PowerShell no notebook de destino.
