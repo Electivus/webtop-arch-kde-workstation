@@ -41,3 +41,12 @@ Final source: `85e13fae5732627ae24ff4393be2dc503d4481f7`. The same logical final
 Normal workflow35154433830 completed successfully against this source. All13acceptance groups passed (55passed unittest cases plus2Windows-specific skips, as explicitly recorded in the portable result); `approved:true` matches the job conclusion, source, candidate digests and contract checksum. No application source changed during the CI remediation. The approved pair was imported with matching digests, its35unique layers were inspected, and Windows CMD Docker/Compose passed in82.737s; see t11-candidates.json. There are no known unresolved source defects; T12 device measurement and T13 public promotion remain their own ticket scopes.
 
 The earlier real failures and deliberate local rejection remain negative evidence. They were not waived, rerun blindly or converted into approvals. The review checkpoint is closed as a bounded self-review with final validation; no new Standards or Spec pass is implied by the later correction commits.
+
+## Published PR feedback — validator identity and run isolation
+
+The automated review on PR22 at `e696218f71f88fd4daed8eb1e4113778f2c8074d` subsequently identified two actionable P2 defects. This is external published feedback, not a restarted self-review cycle:
+
+- [Validator source identity](https://github.com/Electivus/webtop-arch-kde-workstation/pull/22#discussion_r4031823887): local acceptance previously used the invoking checkout while reporting the candidate revision. Validation now requires the exact clean candidate checkout before loading and again before approval, and records `validatorRevision`. A real temporary Git repository reproduced the missing guard; the regression now rejects mismatched, staged, unstaged and untracked sources before archive loading. Matching clean code reaches archive validation.
+- [Run isolation](https://github.com/Electivus/webtop-arch-kde-workstation/pull/22#discussion_r4031823892): scheduled/manual candidates previously shared cancellation with main pushes. Only superseded checks for the same PR now share a cancellable group; all other runs receive unique groups and retain their full execution.
+
+The previous production receipts remain evidence for their stated source. The updated source requires the replacement PR checks before integration; those results will be recorded separately.

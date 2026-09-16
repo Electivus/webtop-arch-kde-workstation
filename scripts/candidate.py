@@ -159,6 +159,16 @@ def load(args):
     return dict(candidate, state='loaded')
 
 
+def verify_validation_source(revision):
+    head = subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip()
+    if not re.fullmatch(r'[0-9a-f]{40}', revision) or head != revision:
+        raise ValueError('Validation must run from the exact candidate Git revision')
+    dirty = subprocess.check_output(['git', '-C', str(ROOT), 'status', '--porcelain'], text=True).strip()
+    if dirty:
+        raise ValueError('Uncommitted validator source cannot approve a candidate')
+    return head
+
+
 def test_candidate(args):
     candidate = json.loads((args.directory / 'candidate.json').read_text(encoding='utf-8'))
     output = args.output or args.directory / 'validation'
@@ -170,6 +180,7 @@ def test_candidate(args):
     report_path = output / 'validation.json'
     report_path.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     try:
+        report['validatorRevision'] = verify_validation_source(candidate['revision'])
         load(args)
         environment = dict(os.environ,
                            WORKSTATION_TEST_IMAGE=candidate['images'][0]['reference'],
@@ -201,6 +212,7 @@ def test_candidate(args):
                 raise ValueError('A candidate image changed during acceptance')
         if args.prove_test_failure:
             raise ValueError('A deliberate failure proof cannot approve a candidate')
+        verify_validation_source(candidate['revision'])
         report.update(state='passed', approved=True, contractSha256=checks['contractSha256'])
     except (OSError, ValueError, KeyError, tarfile.TarError, subprocess.SubprocessError) as error:
         report.update(state='failed', error=str(error))

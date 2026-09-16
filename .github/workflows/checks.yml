@@ -18,8 +18,10 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: checks-${{ github.ref }}
-  cancel-in-progress: true
+  # Only superseded PR checks may be cancelled. Every scheduled, manual and
+  # main-push candidate keeps its own run and complete diagnostic artifacts.
+  group: checks-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   desktop-lifecycle:
     runs-on: ubuntu-latest

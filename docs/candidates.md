@@ -2,6 +2,8 @@
 
 O workflow **Checks** constrói a base e a variante Salesforce a partir do mesmo commit, com uma versão coordenada. A execução semanal ocorre às segundas-feiras, às 10:00 UTC. Em **Actions → Checks → Run workflow**, a execução manual aceita uma versão fixa; deixar o campo vazio gera uma identificação com data, número da execução e tentativa.
 
+Cada execução semanal, manual ou originada por uma alteração em `main` conserva sua própria construção e validação. Uma nova alteração cancela somente os testes anteriores do mesmo pull request; não cancela uma candidata solicitada manualmente ou pelo calendário.
+
 `candidate.json` identifica o commit, a arquitetura `linux/amd64`, os digests das imagens, a base usada pelo Salesforce e os checksums dos arquivos de transporte e comandos. O estado `built` informa que a construção terminou. A aprovação fica em `validation/validation.json`: ela exige `state: passed`, `approved: true`, os mesmos digests e o contrato completo de aceitação concluído. A conclusão do job também precisa ser bem-sucedida.
 
 O contrato comum está em [tests/acceptance.json](../tests/acceptance.json). Ele inclui comandos, aplicativos, projetos, Docker/Compose, rede, certificados, backup, pacotes e atualizações, com os casos específicos de Salesforce. Cada verificação conserva seu log, duração e resultado em `validation/checks/`. Uma falha interrompe a aprovação e identifica as verificações que ainda não rodaram.
@@ -51,7 +53,7 @@ Proxy e certificados opcionais seguem [a configuração de rede](network.md), an
 
 ## Reproduzir a validação e provar a rejeição
 
-Para manutenção no checkout do código identificado, Python executa o mesmo contrato usado pelo CI:
+Para manutenção, use um checkout limpo no commit exato de `revision` em `candidate.json`, inclusive quando a construção usou `--source`. Execute o script desse checkout. Python executa o mesmo contrato usado pelo CI:
 
 ```text
 python scripts/candidate.py load --directory CAMINHO_DA_CANDIDATA
@@ -59,6 +61,8 @@ python scripts/candidate.py test --directory CAMINHO_DA_CANDIDATA --output .loca
 ```
 
 O comando de importação confere as duas imagens e o pacote de comandos antes de carregá-los. O teste usa os executáveis distribuídos com aquela candidata e registra um novo resultado na pasta escolhida. Uma validação local deve conservar o resultado original do CI e identificar o hardware/backend em que foi executada.
+
+O teste recusa uma revisão diferente ou alterações locais no checkout, antes de importar as imagens, e confere novamente o código antes de aprovar. O resultado registra `validatorRevision`. Mantenha os artefatos e resultados fora do checkout ou dentro de sua pasta ignorada `.local`, para não criar arquivos de fonte não identificados.
 
 O acionamento manual oferece `prove_test_failure` para demonstrar o bloqueio. Nesse ensaio, os testes recebem um caminho de controlador indisponível e falham pelo seu fluxo real. Os arquivos da candidata permanecem intactos, o relatório identifica `failureProof: true` e a aprovação continua falsa. Esse modo nunca produz uma entrega aprovada. A execução normal e a execução negativa devem ser relacionadas pelos números dos runs, commits e digests registrados.
 

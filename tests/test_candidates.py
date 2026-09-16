@@ -20,6 +20,50 @@ def run(*args):
 
 
 class CandidateAcceptance(unittest.TestCase):
+    def test_validation_rejects_mismatched_or_dirty_source_before_loading_images(self):
+        with tempfile.TemporaryDirectory(prefix='candidate-validator-', dir=ROOT / '.local') as directory:
+            fixture = Path(directory)
+            source = fixture / 'source'
+            scripts = source / 'scripts'
+            scripts.mkdir(parents=True)
+            shutil.copyfile(ROOT / 'scripts/candidate.py', scripts / 'candidate.py')
+            (source / 'tracked.txt').write_text('original\n', encoding='utf-8')
+            run('git', '-C', source, 'init', '--quiet')
+            run('git', '-C', source, 'add', '.')
+            run('git', '-C', source, '-c', 'user.name=Workstation fixture', '-c', 'user.email=fixture@example.invalid',
+                'commit', '--quiet', '-m', 'Create validation source fixture')
+            revision = run('git', '-C', source, 'rev-parse', 'HEAD').strip()
+            bundle = fixture / 'bundle'
+            bundle.mkdir()
+            candidate = {'schemaVersion': 1, 'version': 'validator-probe', 'revision': '0' * 40,
+                         'images': [{'digest': 'sha256:' + '1' * 64, 'archive': 'wrong.tar', 'variant': 'base'},
+                                    {'digest': 'sha256:' + '2' * 64, 'archive': 'wrong.tar', 'variant': 'salesforce'}]}
+
+            def rejected(name, message):
+                (bundle / 'candidate.json').write_text(json.dumps(candidate), encoding='utf-8')
+                output = fixture / name
+                process = subprocess.run([sys.executable, str(scripts / 'candidate.py'), 'test',
+                                          '--directory', str(bundle), '--output', str(output)],
+                                         cwd=ROOT, capture_output=True, text=True, encoding='utf-8')
+                self.assertNotEqual(process.returncode, 0)
+                report = json.loads((output / 'validation.json').read_text(encoding='utf-8'))
+                self.assertFalse(report['approved'])
+                self.assertEqual(report['state'], 'failed')
+                self.assertIn(message, report['error'])
+                self.assertFalse((output / 'runner.log').exists())
+
+            rejected('different-revision', 'exact candidate Git revision')
+            candidate['revision'] = revision
+            # Clean matching code reaches archive validation; dirty code must not.
+            rejected('matching-revision', 'Candidate archive and variant')
+            (source / 'tracked.txt').write_text('changed\n', encoding='utf-8')
+            rejected('unstaged-source', 'Uncommitted validator source')
+            run('git', '-C', source, 'add', 'tracked.txt')
+            rejected('staged-source', 'Uncommitted validator source')
+            run('git', '-C', source, 'restore', '--staged', '--worktree', 'tracked.txt')
+            (source / 'extra-test.py').write_text('pass\n', encoding='utf-8')
+            rejected('untracked-source', 'Uncommitted validator source')
+
     def test_builder_uses_one_clean_source_for_the_coordinated_pair(self):
         version = 'build-probe-' + uuid.uuid4().hex[:10]
         tags = [f'electivus/webtop-arch-kde-{variant}:{version}' for variant in ('base', 'salesforce')]
@@ -62,12 +106,13 @@ LABEL io.electivus.workstation.variant="salesforce" org.opencontainers.image.bas
                 shutil.rmtree(command_directory)
                 run(sys.executable, 'scripts/candidate.py', 'load', '--directory', bundle)
                 self.assertEqual((bundle / 'commands/workstation.exe').read_bytes(), controller)
-                rejected = subprocess.run([sys.executable, 'scripts/candidate.py', 'test', '--directory', str(bundle),
-                                           '--prove-test-failure'], cwd=ROOT, capture_output=True, text=True, encoding='utf-8')
+                rejected = subprocess.run([sys.executable, str(source / 'scripts/candidate.py'), 'test', '--directory', str(bundle),
+                                           '--prove-test-failure'], cwd=source, capture_output=True, text=True, encoding='utf-8')
                 self.assertNotEqual(rejected.returncode, 0)
                 validation = json.loads((bundle / 'validation/validation.json').read_text(encoding='utf-8'))
                 self.assertFalse(validation['approved'])
                 self.assertTrue(validation['failureProof'])
+                self.assertEqual(json.loads((bundle / 'validation/checks/acceptance.json').read_text(encoding='utf-8'))['checks'][0]['state'], 'failed')
                 self.assertEqual(hashlib.sha256((bundle / 'commands/workstation.exe').read_bytes()).hexdigest(),
                                  produced['commands']['workstation.exe'])
                 changed_source = source / 'cmd/workstation/main.go'
