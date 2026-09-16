@@ -26,8 +26,8 @@ O candidato é instalado e medido no Docker Desktop com WSL2 em Full HD, o perfi
 - Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
-- Decisions: DEC-002, DEC-004, DEC-037, DEC-023, DEC-038, DEC-031, DEC-036
+- Planning checkpoint: 9c9f2c44531269dae4d785e4f8b7d197e56f0082
+- Decisions: DEC-002, DEC-004, DEC-023, DEC-031, DEC-036, DEC-037, DEC-038
 
 ### Decision consequences
 
