@@ -24,7 +24,7 @@ Um comando atualiza editores, Chrome, CLI e extensões, registra versões e perm
 - Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
+- Planning checkpoint: 9c9f2c44531269dae4d785e4f8b7d197e56f0082
 - Decisions: DEC-011, DEC-028, DEC-029
 
 ### Decision consequences

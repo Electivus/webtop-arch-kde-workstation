@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha1"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,15 +17,23 @@ func systemDLL(name string) *syscall.LazyDLL {
 	return syscall.NewLazyDLL(filepath.Join(os.Getenv("SystemRoot"), "System32", name))
 }
 
-func lockOperationFile(file *os.File) error {
+func lockOperationFile(file *os.File, exclusive bool) error {
 	var offset syscall.Overlapped
+	flags := uintptr(1) // LOCKFILE_FAIL_IMMEDIATELY
+	if exclusive {
+		flags |= 2 // LOCKFILE_EXCLUSIVE_LOCK
+	}
 	result, _, callErr := systemDLL("kernel32.dll").NewProc("LockFileEx").Call(
-		file.Fd(), 3, 0, 1, 0, uintptr(unsafe.Pointer(&offset)))
+		file.Fd(), flags, 0, 1, 0, uintptr(unsafe.Pointer(&offset)))
 	runtime.KeepAlive(file)
 	if result == 0 {
 		return callErr
 	}
 	return nil
+}
+
+func operationLockBusy(err error) bool {
+	return errors.Is(err, syscall.Errno(33)) // ERROR_LOCK_VIOLATION
 }
 
 func availableDiskBytes(directory string) (uint64, error) {

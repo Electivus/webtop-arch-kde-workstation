@@ -31,6 +31,7 @@ type profile struct {
 	InstallationID string `json:"installationId"`
 	Name           string `json:"name"`
 	Image          string `json:"image"`
+	ImageID        string `json:"imageId,omitempty"`
 	Port           int    `json:"port"`
 	MemoryMiB      int    `json:"memoryMiB"`
 	CPUs           int    `json:"cpus"`
@@ -44,6 +45,7 @@ type containerInfo struct {
 	Image        string
 	Architecture string
 	OS           string `json:"Os"`
+	RepoDigests  []string
 	Config       struct{ Labels map[string]string }
 	State        struct {
 		Running bool
@@ -81,6 +83,7 @@ type options struct {
 	restorePackages bool
 	registerPackage string
 	packageSource   string
+	pullImage       bool
 }
 
 func main() {
@@ -102,20 +105,25 @@ func main() {
 
 func run(args []string) (any, error) {
 	if len(args) == 0 {
-		return nil, errors.New("usage: workstation.cmd install|start|stop|status|prepare|network|packages|backup|restore|certificate|trust|untrust [options]")
+		return nil, errors.New("usage: workstation.cmd install|start|stop|status|prepare|update-apps|update-image|network|packages|backup|restore|certificate|trust|untrust [options]")
 	}
 	cache, _ := os.UserCacheDir()
 	opts := options{}
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flags.StringVar(&opts.directory, "profile", filepath.Join(cache, "Electivus", "Workstation", "base"), "installation directory")
 	flags.StringVar(&opts.name, "name", "electivus-workstation-base", "Docker resource name")
-	flags.StringVar(&opts.image, "image", "electivus/webtop-arch-kde-base:stable", "workstation image tag or digest")
+	defaultImage := ""
+	if args[0] == "install" {
+		defaultImage = "electivus/webtop-arch-kde-base:stable"
+	}
+	flags.StringVar(&opts.image, "image", defaultImage, "workstation image tag or digest")
+	flags.BoolVar(&opts.pullImage, "pull", true, "resolve the selected update image from its registry; use --pull=false for an already loaded image")
 	flags.IntVar(&opts.port, "port", 3001, "localhost HTTPS port")
 	flags.IntVar(&opts.memory, "memory", 6144, "container memory limit in MiB")
 	flags.IntVar(&opts.cpus, "cpus", 4, "container CPU limit")
 	flags.BoolVar(&opts.noShortcut, "no-shortcut", false, "omit the Windows shortcut")
 	flags.BoolVar(&opts.openBrowser, "open-browser", false, "open the local desktop after startup")
-	flags.BoolVar(&opts.prepareStatus, "status", false, "report application preparation without starting it")
+	flags.BoolVar(&opts.prepareStatus, "status", false, "report application preparation or update without starting it")
 	flags.StringVar(&opts.exchange, "exchange", "", "existing host directory for bidirectional file exchange")
 	flags.StringVar(&opts.networkConfig, "network-config", "", "local JSON with optional proxy, noProxy and caFiles")
 	flags.BoolVar(&opts.clearNetwork, "clear", false, "remove this installation's network options on next start")
@@ -146,7 +154,7 @@ func run(args []string) (any, error) {
 		return nil, err
 	}
 	readOnly := args[0] == "status" || (args[0] == "packages" && !opts.restorePackages && opts.registerPackage == "") || (args[0] == "backup" && opts.listBackups) ||
-		(args[0] == "prepare" && opts.prepareStatus) ||
+		((args[0] == "prepare" || args[0] == "update-apps" || args[0] == "update-image") && opts.prepareStatus) ||
 		(args[0] == "network" && opts.networkConfig == "" && !opts.clearNetwork)
 	if !readOnly {
 		operationLock, err := os.OpenFile(filepath.Join(directory, ".operation.lock"), os.O_CREATE|os.O_RDWR, 0600)
@@ -154,14 +162,14 @@ func run(args []string) (any, error) {
 			return nil, fmt.Errorf("open installation operation lock: %w", err)
 		}
 		defer operationLock.Close()
-		lockErr := lockOperationFile(operationLock)
+		lockErr := lockOperationFile(operationLock, true)
 		if args[0] == "certificate" || args[0] == "trust" || args[0] == "untrust" {
 			// The shortcut starts asynchronously. Let its final certificate export
 			// finish before the user's certificate command acquires this same lock.
 			deadline := time.Now().Add(10 * time.Second)
 			for lockErr != nil && time.Now().Before(deadline) {
 				time.Sleep(100 * time.Millisecond)
-				lockErr = lockOperationFile(operationLock)
+				lockErr = lockOperationFile(operationLock, true)
 			}
 		}
 		if lockErr != nil {
@@ -179,6 +187,10 @@ func run(args []string) (any, error) {
 		return status(p)
 	case "prepare":
 		return prepare(p, opts.prepareStatus)
+	case "update-apps":
+		return updateApplications(p, opts)
+	case "update-image":
+		return updateImage(p, opts)
 	case "network":
 		return network(p, opts)
 	case "packages":
@@ -254,10 +266,19 @@ func readProfile(directory string) (profile, error) {
 	if err := json.Unmarshal(bytes.TrimPrefix(data, []byte{0xef, 0xbb, 0xbf}), &p); err != nil {
 		return p, err
 	}
-	if p.Schema != 1 || p.InstallationID == "" || p.DockerContext == "" || !validName(p.Name) || !validHomeVolume(p) {
+	if p.Schema != 1 || p.InstallationID == "" || p.DockerContext == "" || !validName(p.Name) || !validHomeVolume(p) ||
+		(p.ImageID != "" && !imageID.MatchString(p.ImageID)) {
 		return p, errors.New("invalid installation profile")
 	}
 	return p, nil
+}
+
+func saveProfile(p profile, directory string) error {
+	data, err := json.MarshalIndent(p, "", "  ")
+	if err != nil {
+		return err
+	}
+	return atomicFile(filepath.Join(directory, "profile.json"), append(data, '\n'))
 }
 
 func validName(name string) bool {
@@ -356,7 +377,9 @@ func install(opts options) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	p := profile{1, hex.EncodeToString(random[:]), opts.name, opts.image, opts.port, opts.memory, opts.cpus, opts.name + "-home", string(selectedContext), exchange}
+	p := profile{Schema: 1, InstallationID: hex.EncodeToString(random[:]), Name: opts.name, Image: opts.image,
+		Port: opts.port, MemoryMiB: opts.memory, CPUs: opts.cpus, HomeVolume: opts.name + "-home",
+		DockerContext: string(selectedContext), Exchange: exchange}
 	info, err := engine(p)
 	if err != nil {
 		return nil, err
@@ -463,6 +486,26 @@ func status(p profile) (any, error) {
 		"limits": map[string]int{"memoryMiB": p.MemoryMiB, "cpus": p.CPUs}}, nil
 }
 
+func selectedImageReference(p profile, c *containerInfo) (string, error) {
+	if c != nil {
+		return c.Image, nil
+	}
+	if p.ImageID != "" {
+		return p.ImageID, nil
+	}
+	volume, err := docker(p.DockerContext, "volume", "ls", "--quiet", "--filter", "name=^"+p.HomeVolume+"$")
+	if err != nil {
+		return "", err
+	}
+	if len(volume) != 0 {
+		if err := personalVolume(p); err != nil {
+			return "", err
+		}
+		return "", errors.New("original image is unknown for this existing home; recover the original container or restore a completed backup from this installation before continuing")
+	}
+	return p.Image, nil
+}
+
 func start(p profile, directory string, open bool) (any, error) {
 	info, err := engine(p)
 	if err != nil {
@@ -478,10 +521,22 @@ func start(p profile, directory string, open bool) (any, error) {
 	if err != nil {
 		return nil, err
 	}
+	if c != nil && p.ImageID == "" {
+		// Older profiles adopt the existing container's actual selection, even
+		// if its original tag already points to another image.
+		p.ImageID = c.Image
+		if err := saveProfile(p, directory); err != nil {
+			return nil, err
+		}
+	}
 	if c == nil {
+		reference, err := selectedImageReference(p, nil)
+		if err != nil {
+			return nil, err
+		}
 		var images []containerInfo
-		err := dockerJSON(p, &images, "image", "inspect", p.Image)
-		if err != nil && strings.Contains(err.Error(), "No such image") {
+		err = dockerJSON(p, &images, "image", "inspect", reference)
+		if err != nil && p.ImageID == "" && strings.Contains(err.Error(), "No such image") {
 			fmt.Fprintln(os.Stderr, "Downloading", p.Image)
 			if _, err := docker(p.DockerContext, "pull", "--platform", "linux/amd64", p.Image); err != nil {
 				return nil, err
@@ -489,6 +544,9 @@ func start(p profile, directory string, open bool) (any, error) {
 			err = dockerJSON(p, &images, "image", "inspect", p.Image)
 		}
 		if err != nil {
+			if p.ImageID != "" {
+				return nil, fmt.Errorf("selected image %s is unavailable; load that image before starting or updating: %w", p.ImageID, err)
+			}
 			return nil, err
 		}
 		if len(images) != 1 {
@@ -500,6 +558,14 @@ func start(p profile, directory string, open bool) (any, error) {
 		}
 		if err := verifyExchange(p); err != nil {
 			return nil, err
+		}
+		// Save the initial selection before creating personal storage so an
+		// interrupted first start cannot leave an existing home without its image.
+		if p.ImageID == "" {
+			p.ImageID = images[0].ID
+			if err := saveProfile(p, directory); err != nil {
+				return nil, err
+			}
 		}
 		volume, err := docker(p.DockerContext, "volume", "ls", "--quiet", "--filter", "name=^"+p.HomeVolume+"$")
 		if err != nil {
@@ -533,7 +599,7 @@ func start(p profile, directory string, open bool) (any, error) {
 		if p.Exchange != "" {
 			args = append(args, "--mount", exchangeMount(p.Exchange))
 		}
-		args = append(args, p.Image)
+		args = append(args, p.ImageID)
 		_, err = docker(p.DockerContext, args...)
 		if err != nil {
 			return nil, err

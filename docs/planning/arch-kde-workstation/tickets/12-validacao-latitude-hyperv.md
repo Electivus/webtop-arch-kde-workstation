@@ -6,11 +6,11 @@
 
 ## What to build
 
-O candidato é instalado e medido no VMM em Full HD, o perfil de recursos é ajustado e um roteiro executável verifica o destino Hyper-V.
+O candidato é instalado e medido no Docker Desktop com WSL2 em Full HD, o perfil de recursos é ajustado e um roteiro executável verifica o destino Hyper-V.
 
 ## Acceptance criteria
 
-- [ ] Instalar e exercitar no notebook de teste o candidato identificável produzido pelo CI, registrando seus digests, o backend VMM e o hardware.
+- [ ] Instalar e exercitar no notebook de teste o candidato identificável produzido pelo CI, registrando seus digests, o backend WSL2 e o hardware.
 - [ ] Validar pelo CMD o fluxo Windows completo disponível: início e parada, aplicações, projetos e Compose, conectividade opcional, backup, recuperação e atualizações, sem executar PowerShell.
 - [ ] Medir o uso em uma tela 1920 x 1080 com Insiders, projeto Salesforce e Chrome, incluindo resposta do desktop, CPU e RAM.
 - [ ] Separar medições de preparo inicial das partidas seguintes e considerar a carga do Windows e dos demais containers.
@@ -26,16 +26,16 @@ O candidato é instalado e medido no VMM em Full HD, o perfil de recursos é aju
 - Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: 7575b9991bfbd00b514f6f75c0f555b2e9bd7236
-- Decisions: DEC-002, DEC-004, DEC-005, DEC-023, DEC-030, DEC-031, DEC-036
+- Planning checkpoint: 9c9f2c44531269dae4d785e4f8b7d197e56f0082
+- Decisions: DEC-002, DEC-004, DEC-023, DEC-031, DEC-036, DEC-037, DEC-038
 
 ### Decision consequences
 
 - `DEC-002`: Entregar o caminho de operação e verificação do destino Hyper-V preservando a ausência de dependência de WSL2.
 - `DEC-004`: Validar o perfil final no modelo e configuração de referência.
-- `DEC-005`: Produzir evidência de execução identificada como Docker VMM.
+- `DEC-037`: Produzir evidência de execução identificada como Docker Desktop com WSL2.
 - `DEC-023`: Escolher o dimensionamento com base nas medições da carga conjunta.
-- `DEC-030`: Preparar evidência local e roteiro de destino mantendo a validação Hyper-V real identificada como pendente.
+- `DEC-038`: Preparar evidência local e roteiro de destino mantendo a validação Hyper-V real identificada como pendente.
 - `DEC-031`: Usar o cenário Full HD com Insiders, projeto Salesforce e Chrome na avaliação.
 - `DEC-036`: Verificar todos os comandos e o atalho pelo CMD e preparar o roteiro Hyper-V sem dependência direta ou indireta de PowerShell.
 

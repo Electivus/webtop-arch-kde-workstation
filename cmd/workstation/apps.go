@@ -11,6 +11,14 @@ import (
 )
 
 func prepare(p profile, statusOnly bool) (any, error) {
+	args := []string{}
+	if statusOnly {
+		args = append(args, "--status")
+	}
+	return runApplications(p, args...)
+}
+
+func runApplications(p profile, arguments ...string) (map[string]any, error) {
 	c, err := ownedContainer(p)
 	if err != nil {
 		return nil, err
@@ -19,20 +27,16 @@ func prepare(p profile, statusOnly bool) (any, error) {
 		return nil, errors.New("start the workstation before preparing applications")
 	}
 	args := []string{"--context", p.DockerContext, "exec", "--user", "abc", p.Name, "workstation-network", "exec", "workstation-apps"}
-	if statusOnly {
-		args = append(args, "--status")
-	}
+	args = append(args, arguments...)
 	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
 	defer cancel()
 	command := exec.CommandContext(ctx, "docker", args...)
 	var output bytes.Buffer
 	command.Stdout, command.Stderr = &output, os.Stderr
-	if err := command.Run(); err != nil {
-		return nil, err
-	}
+	runErr := command.Run()
 	var result map[string]any
 	if err := json.Unmarshal(output.Bytes(), &result); err != nil {
-		return nil, err
+		return nil, errors.Join(runErr, err)
 	}
-	return result, nil
+	return result, runErr
 }

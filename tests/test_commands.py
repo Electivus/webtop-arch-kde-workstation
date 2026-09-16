@@ -38,7 +38,10 @@ def command(*args, cli=CLI, env=None):
                             for path in files if path.is_file()]
         result = with_certificate_dialog(fingerprints, lambda: invoke(cli, *args, env=env))
     else:
-        result = invoke(cli, *args, env=env, timeout=1500 if args[0] == "prepare" else 300)
+        # Full Salesforce copies stream several GiB through Docker Desktop.
+        # Windows/WSL2 transfer time can exceed the normal command deadline.
+        timeout = {"prepare": 1500, "backup": 900, "restore": 900}.get(args[0], 300)
+        result = invoke(cli, *args, env=env, timeout=timeout)
     if result.returncode:
         raise AssertionError(result.stderr or result.stdout)
     return json.loads(result.stdout)
