@@ -33,13 +33,21 @@ jobs:
           # Compilers and application runtimes are built inside Docker. Keep the
           # system Python and the tool-cache directory, but remove unused SDKs.
           test -x /usr/bin/python3
-          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /usr/share/swift /usr/local/.ghcup
+          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /usr/share/swift /usr/local/.ghcup \
+            /usr/lib/jvm /usr/lib/llvm-* /usr/lib/google-cloud-sdk /opt/az \
+            /opt/google /opt/microsoft /usr/local/share/powershell /usr/local/lib/node_modules
           sudo find /opt/hostedtoolcache -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+          # These are unused images of the disposable runner's original daemon;
+          # the isolated candidate engine is installed only in the next step.
+          docker image prune --all --force
+          docker builder prune --all --force
           python3 --version
+          command -v shellcheck
           df -h /
           available_kib=$(df --output=avail -k / | tail -n 1)
           if [ "$available_kib" -lt 54525952 ]; then
             echo 'Candidate archives and desktop recovery need at least 52 GiB free before building images.' >&2
+            sudo du -xhd1 /usr/local /usr/share /usr/lib /opt /var/lib | sort -h
             exit 1
           fi
       - name: Use a Docker image store that preserves OCI indexes
