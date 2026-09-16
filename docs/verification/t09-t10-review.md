@@ -15,7 +15,7 @@ Os dois achados P2 foram reproduzidos pelos comandos entregues:
 
 O teste de interrupção estabiliza uma solicitação de parada do Docker que pode sobreviver ao processo do host. O primeiro ensaio dessa fixture encontrou essa corrida adicional; a repetição estabilizada acima demonstrou os dois erros esperados. Recibos iniciais que haviam sido marcados incorretamente após falhas de subtestes foram corrigidos para `failed`; a fixture passou a registrar o resultado efetivo.
 
-O revisor Spec solicitou uma única passagem de acompanhamento para esses achados e regressões das correções. Essa passagem e o fechamento Planning ainda serão registrados após a validação.
+O revisor Spec solicitou uma única passagem de acompanhamento para esses achados e regressões das correções. Ela foi concluída no checkpoint `0e1df370678024f54e9d8a94cf46f4bbc92636b8`, mantendo o ponto fixo original: os dois P2 foram considerados resolvidos, sem regressão pertinente identificada. O revisor leu o diff completo, validou os marcadores Planning e confrontou a fonte com os recibos existentes, sem executar testes novos. Relatório preservado em `.local/wsl-resume/spec-followup.md`. O ciclo delimitado de revisão está encerrado; a regressão Windows ampla e o fechamento Planning continuam pendentes.
 
 ## Regressão e identidade dos artefatos
 
@@ -33,4 +33,4 @@ O executável entregue e os exemplares dentro das duas imagens têm o mesmo hash
 
 A regressão iniciada em `.local/t09-t10-review-regression/` ficou interrompida durante a migração; seu estado histórico `running`, sem resultado final, não constitui aprovação nem processo ainda ativo. A regressão ampla anterior dos demais componentes está documentada em `.local/t09-t10-regression-after-diagnostic/result.json` e nos documentos anteriores de verificação. Estes artefatos de desenvolvimento não representam publicação pública nem aceitação Hyper-V.
 
-A retomada em 2026-09-16 usa Docker Desktop com WSL2, conforme DEC-037/DEC-038. Os dois cenários das correções passaram também pelo controlador Linux: recuperação do perfil legado em 29,396 s e interrupção do comando em 41,241 s. A preparação e a correção da incompatibilidade de nginx encontrada ao reconstruir as imagens estão em [Retomada WSL2](wsl2-resume.md). A regressão Windows das imagens reconstruídas e o acompanhamento Spec permanecem necessários antes do fechamento.
+A retomada em 2026-09-16 usa Docker Desktop com WSL2, conforme DEC-037/DEC-038. Os dois cenários das correções passaram também pelo controlador Linux: recuperação do perfil legado em 29,396 s e interrupção do comando em 41,241 s. A preparação e a correção da incompatibilidade de nginx encontrada ao reconstruir as imagens estão em [Retomada WSL2](wsl2-resume.md). A regressão Windows das imagens reconstruídas permanece necessária antes do fechamento.
