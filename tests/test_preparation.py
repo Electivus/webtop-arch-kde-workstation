@@ -41,11 +41,17 @@ class PreparationAcceptance(unittest.TestCase):
         try:
             command("install", "--profile", profile, "--name", name, "--image", IMAGE,
                     "--port", "13409", "--memory", "2560", "--cpus", "2", "--no-shortcut")
-            installed = json.loads((profile / "profile.json").read_text())
-            docker("volume", "create", "--label", "io.electivus.workstation.installation=" + installed["installationId"], name + "-home")
+            # Let the public command establish the home and its image identity.
+            # Block downloads until the failing installation fixture is ready.
+            offline = profile / "offline-input.json"
+            offline.write_text(json.dumps({"proxy": "http://127.0.0.1:9"}), encoding="utf-8")
+            command("network", "--profile", profile, "--network-config", offline)
+            command("start", "--profile", profile)
             destination = "/config/.local/share/electivus/apps/chrome/versions"
-            docker("run", "--rm", "--mount", "type=volume,src=" + name + "-home,dst=/config", "--entrypoint", "sh", IMAGE,
-                   "-c", 'mkdir -p "$1" && chmod 555 "$1"', "fixture", destination)
+            docker("exec", "--user", "abc", name, "sh", "-c",
+                   'mkdir -p "$1" && chmod 555 "$1"', "fixture", destination)
+            command("stop", "--profile", profile)
+            command("network", "--profile", profile, "--clear")
             command("start", "--profile", profile)
             failed = invoke(CLI, "prepare", "--profile", profile)
             self.assertNotEqual(failed.returncode, 0)

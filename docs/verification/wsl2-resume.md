@@ -40,3 +40,13 @@ A verificação de isolamento passou no Linux em 2,328 s. A recuperação de per
 | --- | --- |
 | Base | `sha256:b0ec5818f2e777e492a4a947960406803c01ee0f64a653713e4cb0e1d590dccf` |
 | Salesforce | `sha256:f0aff2bc171cceff6ca0bf3c6a3ab4878671221e68687955fba148c41986c743` |
+
+## Preparação pública e aviso dos editores no WSL2
+
+A execução GitHub `35123540585`, job `104886937585`, aprovou o ciclo de comandos e encontrou uma fixture antiga: o teste de retomada do Chrome criava manualmente um volume sem identidade da imagem. O novo bloqueio de perfil legado recusou esse estado. A reprodução local falhou em 1,578 s. A fixture agora cria o ambiente pelo comando público, com downloads temporariamente bloqueados, e prepara a pasta sem permissão de escrita como o usuário do desktop. A falha de instalação, a retomada e a preservação do download verificado continuam exigidas. O caso passou em 44,338 s; os dois ajustes intermediários de propriedade da pasta foram falhas de fixture e estão registrados separadamente. Não houve alteração no bloqueio do produto.
+
+Dos 13 cenários de backup Windows, 12 passaram. A preparação Salesforce ficou esperando a confirmação interativa que o lançador oficial do VS Code exibe quando detecta `Microsoft` no kernel. Uma chamada independente do mesmo executável retornou 1 com a pergunta; com `DONT_PROMPT_WSL_INSTALL=1`, retornou 0 e a versão `1.138.0`. O processo interativo identificado dentro do container descartável foi encerrado para liberar a execução e registrar a falha; a suíte conservou o diagnóstico real. Evidências: `.local/wsl-resume/vscode-wsl-prompt.json` e `.local/wsl-resume/windows-ownership-regression/`.
+
+A imagem Salesforce declara essa variável, aplicável aos dois canais oficiais e à preparação automática. A imagem reconstruída é `sha256:956ff64450cad9575d3f635cff343b992942ab15f1eb48ef6c8337001547182d` ; a base e o controlador não mudaram. A variável na imagem e a identidade do controlador foram verificadas. A rodada `.local/resume-wsl-editor-windows-regression/` repete o backup Salesforce e continua pelas suítes de atualização de aplicativos e troca da imagem Salesforce; sua conclusão ainda é necessária.
+
+Na imagem corrigida, a preparação automática concluiu ambos os editores sem intervenção: Stable e Insiders têm recibos de instalação e versões executadas em `.local/wsl-resume/wsl-editors-prepared.json`. A preparação avançou para a CLI Salesforce. Isso valida a variável no fluxo real do desktop WSL2, além da reprodução isolada.
