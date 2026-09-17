@@ -400,7 +400,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/12; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/14
-  - verification: ["ticket ticket T11/#12; CI35154433830; source 85e13fae5732627ae24ff4393be2dc503d4481f7: T11 scope: weekly/manual workflow passed all13acceptance groups at85e13fa (55tests plus2Windows-only skips). Real failed CI35147084812 retained diagnostics/artifacts with approvalfalse; deliberate local rejection preserved its archive hashes. Public promotion remains T13."]
+  - verification: ["ticket ticket T11/#12; CI35154433830; source 85e13fae5732627ae24ff4393be2dc503d4481f7: T11 scope: weekly/manual workflow passed all13acceptance groups at85e13fa (55tests plus2Windows-only skips). Real failed CI35147084812 retained diagnostics/artifacts with approvalfalse; deliberate local rejection preserved its archive hashes. Public promotion remains T13.","ticket PR22 correction c7cc35aa3a756831c7176da23138f0cd77395cc8: Six local contract and real OCI transport tests passed; a temporary Git checkout reproduced the missing source guard before the fix and now rejects mismatched, staged, unstaged and untracked validator source before loading. The workflow isolates non-PR runs by run ID. Original production evidence remains scoped to 85e13fa; corrected full PR CI remains a required integration gate."]
 ## DEC-027
 - Status: active
 - Decision: Aplicar novas versoes da imagem no notebook por comando explicito, com backup antes da troca.
