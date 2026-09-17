@@ -6,7 +6,9 @@ Esta candidata acrescenta Chrome oficial, Git, Zsh/Oh My Zsh, a variante Salesfo
 
 ## Preparar e iniciar
 
-Até a publicação das imagens, construa a candidata a partir deste checkout:
+As [candidatas do GitHub Actions](docs/candidates.md) incluem as duas imagens, os comandos para CMD e o resultado da aceitação, identificados por versão, commit e digests. O guia explica como baixar e importar exatamente esses arquivos no notebook de teste.
+
+Para uma construção de desenvolvimento a partir deste checkout:
 
 ```bat
 docker build --file images/base/Dockerfile --build-arg VERSION=local --tag electivus/webtop-arch-kde-base:local .

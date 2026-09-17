@@ -9,7 +9,7 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
 WINDOWS = os.name == "nt"
-CLI = ROOT / ".local" / "cli" / ("workstation.cmd" if WINDOWS else "workstation")
+CLI = Path(os.environ.get("WORKSTATION_TEST_CLI", str(ROOT / ".local" / "cli" / ("workstation.cmd" if WINDOWS else "workstation"))))
 IMAGE = os.environ.get("WORKSTATION_TEST_IMAGE", "electivus/webtop-arch-kde-base:t01")
 
 
