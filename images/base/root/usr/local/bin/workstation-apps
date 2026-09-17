@@ -370,6 +370,45 @@ def prepare_cli(config, state, update=False):
         return promote(staging, root, installed, package["version"])
 
 
+def installed_plugin(identifier):
+    result = subprocess.run(['sf', 'plugins', 'inspect', identifier, '--json'],
+                            capture_output=True, text=True)
+    payload = json.loads(result.stdout)
+    if result.returncode:
+        message = payload.get('error', {}).get('message', '')
+        if message == identifier + ' not installed':
+            return None
+        raise RuntimeError(message or result.stderr or 'Cannot inspect Salesforce CLI plugin: ' + identifier)
+    for plugin in payload:
+        if plugin.get('name') == identifier and plugin.get('type') != 'jit':
+            return plugin
+    return None
+
+
+def prepare_plugins(config, state, update=False):
+    installed = dict(state['apps'].get('salesforce-plugins', {}))
+    for identifier, initial_version in config.get('cliPlugins', {}).items():
+        state['app'] = identifier
+        actual = installed_plugin(identifier)
+        previous = installed.get(identifier, {})
+        if actual is None or update:
+            save(state, 'update' if update else 'install')
+            # The official installer verifies signed Salesforce plugins. Only
+            # explicit application updates select a newer supplier release.
+            selected = identifier if update else identifier + '@' + previous.get('version', initial_version)
+            stream('sf', 'plugins', 'install', selected)
+            actual = installed_plugin(identifier)
+            if actual is None:
+                raise RuntimeError('Salesforce CLI plugin installation is incomplete: ' + identifier)
+        if previous.get('version') != actual['version']:
+            installed[identifier] = {'version': actual['version'],
+                                     'source': 'https://registry.npmjs.org/' + identifier,
+                                     'installedAt': now()}
+        state['apps']['salesforce-plugins'] = installed
+        write_json(STATE, state)
+    return installed
+
+
 def extension_versions(editor):
     return sorted(line for line in run(editor, "--list-extensions", "--show-versions").decode().splitlines()
                   if "@" in line)
@@ -467,6 +506,11 @@ def ready(config, state):
         if "salesforce" in config:
             if not installed_cli():
                 return False
+            for identifier in config['salesforce'].get('cliPlugins', {}):
+                plugin = installed_plugin(identifier)
+                recorded = state['apps'].get('salesforce-plugins', {}).get(identifier, {})
+                if plugin is None or plugin['version'] != recorded.get('version'):
+                    return False
             for editor in ("code", "code-insiders"):
                 versions = extension_versions(editor)
                 if not extension_requirements(editor, config["salesforce"], versions).issubset(
@@ -487,6 +531,7 @@ def prepare(config, state, update=False):
         state["app"] = "salesforce-cli"
         state["apps"]["salesforce-cli"] = prepare_cli(config["salesforce"], state, update=update)
         save(state, "ready")
+        state['apps']['salesforce-plugins'] = prepare_plugins(config['salesforce'], state, update=update)
         state["apps"]["extensions"] = prepare_extensions(config["salesforce"], state, update=update)
         state["runtime"] = {"node": run("node", "--version").decode().strip(),
                             "java": run("java", "--version").decode().strip()}

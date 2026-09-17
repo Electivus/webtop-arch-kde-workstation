@@ -8,9 +8,19 @@ import unittest
 import uuid
 
 from test_commands import ROOT, command, docker
+from test_packages import configure_test_network
 
 IMAGE = os.environ.get("WORKSTATION_SALESFORCE_TEST_IMAGE", "electivus/webtop-arch-kde-salesforce:t03")
 CPUS = str(min(4, int(docker("info", "--format", "{{.NCPU}}"))))
+
+
+def code_analyzer_ready(name, preparation):
+    docker('cp', str(ROOT / 'tests/code_analyzer_probe.py'), name + ':/config/code_analyzer_probe.py')
+    result = json.loads(docker('exec', '--user', 'abc', name, 'python3', '/config/code_analyzer_probe.py'))
+    recorded = preparation['apps']['salesforce-plugins'][result['plugin']]
+    if recorded['version'] != result['version']:
+        raise AssertionError('Preparation must record the effective Code Analyzer plugin version')
+    return result
 
 
 class SalesforceAcceptance(unittest.TestCase):
@@ -38,6 +48,7 @@ class SalesforceAcceptance(unittest.TestCase):
         try:
             command("install", "--profile", profile, "--name", name, "--image", IMAGE,
                     "--port", "13412", "--memory", "6144", "--cpus", CPUS, "--no-shortcut")
+            configure_test_network(profile)
             command("start", "--profile", profile)
             deadline = time.monotonic() + 600
             while time.monotonic() < deadline:
@@ -84,10 +95,12 @@ print(json.dumps({'bytes': artifact.stat().st_size, 'size': manifest['size'], 'a
         try:
             command("install", "--profile", profile, "--name", name, "--image", IMAGE,
                     "--port", "13410", "--memory", "6144", "--cpus", CPUS, "--no-shortcut")
+            configure_test_network(profile)
             command("start", "--profile", profile)
             prepared = command("prepare", "--profile", profile)
             self.assertEqual(prepared["state"], "completed")
-            self.assertEqual(set(prepared["apps"]), {"chrome", "code", "code-insiders", "salesforce-cli", "extensions"})
+            self.assertEqual(set(prepared["apps"]), {"chrome", "code", "code-insiders", "salesforce-cli", "salesforce-plugins", "extensions"})
+            code_analyzer_ready(name, prepared)
             for editor in ("code", "code-insiders"):
                 self.assertTrue(prepared["apps"][editor]["source"].startswith("https://packages.microsoft.com/repos/code/"))
                 self.assertEqual(len(prepared["apps"][editor]["sha256"]), 64)
@@ -115,6 +128,7 @@ print(json.dumps({'bytes': artifact.stat().st_size, 'size': manifest['size'], 'a
             command("start", "--profile", profile)
             reused = command("prepare", "--profile", profile)
             self.assertEqual(reused["apps"], prepared["apps"])
+            code_analyzer_ready(name, reused)
             docker("exec", "--user", "abc", name, "test", "-f", "/config/projects/sample/sfdx-project.json")
             docker("cp", str(ROOT / "tests/editor_probe"), name + ":/config/editor_probe")
             for editor in ("code", "code-insiders"):
@@ -136,6 +150,15 @@ print(json.dumps({'bytes': artifact.stat().st_size, 'size': manifest['size'], 'a
                 self.assertEqual(services["result"], "passed")
             (profile / "salesforce-result.json").write_text(json.dumps(reused, indent=2), encoding="utf-8")
             self.assert_extension_pack_repair(name, profile)
+            docker('exec', '--user', 'abc', name, 'sf', 'plugins', 'uninstall', '@salesforce/plugin-code-analyzer')
+            missing = subprocess.run(['docker', 'exec', '--user', 'abc', name, 'sf', 'plugins', 'inspect',
+                                      '@salesforce/plugin-code-analyzer', '--json'], capture_output=True, text=True)
+            self.assertNotEqual(missing.returncode, 0)
+            self.assertIn('not installed', missing.stdout)
+            repaired = command('prepare', '--profile', profile)
+            code_analyzer_ready(name, repaired)
+            self.assertEqual(repaired['apps']['salesforce-cli'], prepared['apps']['salesforce-cli'])
+            self.assertEqual(repaired['apps']['salesforce-plugins'], prepared['apps']['salesforce-plugins'])
         finally:
             if os.environ.get("WORKSTATION_KEEP_FAILED") and sys.exc_info()[0]:
                 print("Retained failed fixture for diagnosis:", profile, file=sys.stderr)
