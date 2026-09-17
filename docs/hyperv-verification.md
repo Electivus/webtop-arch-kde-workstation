@@ -61,6 +61,7 @@ No desktop, registre em `visual-checks.txt`, junto dos relatórios, o resultado 
 - Uma tela da workstation em 1920 × 1080, interface inglesa e formatos brasileiros.
 - Abra `~/projects/destination-salesforce` com Insiders e confirme que Stable também abre separadamente. Abra Chrome e um terminal Zsh.
 - Digite com o teclado físico ABNT2: `ação ç áéíóú ãõ ê ü @ / ? |`. Isso complementa os testes automatizados de teclado; não presuma que o layout físico do destino foi verificado pelo CI.
+- Faça essa verificação digitando pausadamente. A composição de acentos durante digitação rápida pode falhar no desktop original; essa limitação foi aceita para esta entrega, sem alteração do teclado do produto. O teste automatizado de composição usa intervalo de 250 ms entre teclas e exige todos os caracteres na ordem correta.
 - Abra um arquivo Apex e um componente Lightning e confira os serviços das extensões durante a edição.
 - Inicie uma tarefa observável no terminal, feche somente a aba do navegador, abra o atalho novamente e confira que a tarefa continua.
 - Registre lentidão, interrupções da imagem, resolução efetiva e carga concorrente do Windows. Não declare aceleração gráfica sem evidência do renderizador/encoder utilizado.

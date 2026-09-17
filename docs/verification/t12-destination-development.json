@@ -1,0 +1,96 @@
+{
+  "date": "2026-09-17",
+  "state": "passed",
+  "platform": "native Windows CMD with Docker Desktop WSL2",
+  "developmentFixture": true,
+  "sourceRevision": "89e19f54e55122902cfe3d8cbea053ed3cf572d2",
+  "fixtureImageId": "sha256:82364f8d4b73f6dfe3aa7ba0b1ba9be31a77d334f725654b94643cad455cc7bf",
+  "tests": 2,
+  "durationSeconds": 1222.772,
+  "checks": {
+    "docker": {
+      "serverVersion": "29.8.0",
+      "composeVersion": "5.5.1"
+    },
+    "git": "git version 2.55.0",
+    "zsh": "zsh 5.9.2 (x86_64-pc-linux-gnu)",
+    "chrome": "Google Chrome 153.0.8010.47",
+    "chromeRendered": true,
+    "locale": "LANG=en_US.UTF-8\nLC_CTYPE=\"en_US.UTF-8\"\nLC_NUMERIC=pt_BR.UTF-8\nLC_TIME=pt_BR.UTF-8\nLC_COLLATE=\"en_US.UTF-8\"\nLC_MONETARY=pt_BR.UTF-8\nLC_MESSAGES=\"en_US.UTF-8\"\nLC_PAPER=pt_BR.UTF-8\nLC_NAME=\"en_US.UTF-8\"\nLC_ADDRESS=\"en_US.UTF-8\"\nLC_TELEPHONE=\"en_US.UTF-8\"\nLC_MEASUREMENT=pt_BR.UTF-8\nLC_IDENTIFICATION=\"en_US.UTF-8\"\nLC_ALL=",
+    "keyboard": "rules:      evdev\nmodel:      abnt2\nlayout:     br",
+    "display": "Screen 0: minimum 1 x 1, current 1920 x 1080, maximum 1920 x 1080\nscreen connected 1920x1080+0+0 0mm x 0mm\n   1920x1080      0.00  \n   1920x1080_60.00  59.96*",
+    "salesforce": "@salesforce/cli/2.150.6 linux-x64 node-v24.21.0",
+    "codeAnalyzer": {
+      "name": "@salesforce/plugin-code-analyzer",
+      "version": "5.15.0"
+    },
+    "java": "openjdk 21.0.12.1 2026-08-18\nOpenJDK Runtime Environment (build 21.0.12.1+1)\nOpenJDK 64-Bit Server VM (build 21.0.12.1+1, mixed mode, sharing)",
+    "node": "v24.21.0",
+    "code": {
+      "version": "1.138.0\n7debcd0e2acdea1c52de81bf9ee1620444407dda\nx64",
+      "extensions": [
+        "salesforce.agent-script-language-client@2.10.0",
+        "salesforce.agentforce-vibes-autocomplete@1.0.2",
+        "salesforce.apex-language-server-extension@0.10.0",
+        "salesforce.salesforce-vscode-slds@2.0.12",
+        "salesforce.salesforcedx-einstein-gpt@4.33.0",
+        "salesforce.salesforcedx-metadata-visualizer-vscode@1.4.0",
+        "salesforce.salesforcedx-vscode@67.17.2",
+        "salesforce.salesforcedx-vscode-agents@1.17.2",
+        "salesforce.salesforcedx-vscode-apex@67.17.2",
+        "salesforce.salesforcedx-vscode-apex-log@67.17.2",
+        "salesforce.salesforcedx-vscode-apex-oas@67.17.2",
+        "salesforce.salesforcedx-vscode-apex-replay-debugger@67.17.2",
+        "salesforce.salesforcedx-vscode-apex-testing@67.17.2",
+        "salesforce.salesforcedx-vscode-core@67.17.2",
+        "salesforce.salesforcedx-vscode-lightning@67.17.2",
+        "salesforce.salesforcedx-vscode-lwc@67.17.2",
+        "salesforce.salesforcedx-vscode-metadata@67.17.2",
+        "salesforce.salesforcedx-vscode-org@67.17.2",
+        "salesforce.salesforcedx-vscode-org-browser@67.17.2",
+        "salesforce.salesforcedx-vscode-services@67.17.2",
+        "salesforce.salesforcedx-vscode-soql@67.17.2",
+        "salesforce.salesforcedx-vscode-visualforce@67.17.2",
+        "salesforce.sfdx-code-analyzer-vscode@1.22.0"
+      ]
+    },
+    "code-insiders": {
+      "version": "1.139.0-insider\n046944034292b5479b4e9a50ad1a508033ffb64f\nx64",
+      "extensions": [
+        "salesforce.agent-script-language-client@2.10.0",
+        "salesforce.agentforce-vibes-autocomplete@1.0.2",
+        "salesforce.apex-language-server-extension@0.10.0",
+        "salesforce.salesforce-vscode-slds@2.0.12",
+        "salesforce.salesforcedx-einstein-gpt@4.33.0",
+        "salesforce.salesforcedx-metadata-visualizer-vscode@1.4.0",
+        "salesforce.salesforcedx-vscode@67.17.2",
+        "salesforce.salesforcedx-vscode-agents@1.17.2",
+        "salesforce.salesforcedx-vscode-apex@67.17.2",
+        "salesforce.salesforcedx-vscode-apex-log@67.17.2",
+        "salesforce.salesforcedx-vscode-apex-oas@67.17.2",
+        "salesforce.salesforcedx-vscode-apex-replay-debugger@67.17.2",
+        "salesforce.salesforcedx-vscode-apex-testing@67.17.2",
+        "salesforce.salesforcedx-vscode-core@67.17.2",
+        "salesforce.salesforcedx-vscode-lightning@67.17.2",
+        "salesforce.salesforcedx-vscode-lwc@67.17.2",
+        "salesforce.salesforcedx-vscode-metadata@67.17.2",
+        "salesforce.salesforcedx-vscode-org@67.17.2",
+        "salesforce.salesforcedx-vscode-org-browser@67.17.2",
+        "salesforce.salesforcedx-vscode-services@67.17.2",
+        "salesforce.salesforcedx-vscode-soql@67.17.2",
+        "salesforce.salesforcedx-vscode-visualforce@67.17.2",
+        "salesforce.sfdx-code-analyzer-vscode@1.22.0"
+      ]
+    },
+    "salesforceProject": true,
+    "exchange": true,
+    "composeBuildAndWrite": true
+  },
+  "backupBytes": 7125114880,
+  "restoredProject": true,
+  "finalState": "stopped",
+  "limitations": [
+    "This is the local development fixture; the final candidate is validated separately.",
+    "Real Hyper-V execution and physical destination keyboard remain pending."
+  ]
+}

@@ -19,7 +19,7 @@ def main():
             'try { Integer value = 1; } catch (Exception e) {} } }\n')
         subprocess.run(['sf', 'code-analyzer', 'run', '--workspace', str(root),
                         '--rule-selector', 'pmd:EmptyCatchBlock', '--output-file', str(root / 'result.json')],
-                       capture_output=True, text=True, check=True, timeout=180)
+                       cwd=root, capture_output=True, text=True, check=True, timeout=180)
         result = json.loads((root / 'result.json').read_text())
         violations = result['violations']
         if not any(entry['rule'] == 'EmptyCatchBlock' and entry['engine'] == 'pmd' for entry in violations):

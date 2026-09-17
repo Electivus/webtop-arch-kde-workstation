@@ -51,6 +51,10 @@ def main():
               'hardware': hardware(), 'engine': json.loads(docker('info', '--format', '{{json .}}')),
               'controllerSha256': hashlib.sha256(CLI.with_name('workstation.exe').read_bytes()).hexdigest(),
               'scriptSha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), 'steps': []}
+    report['measurementFilesSha256'] = {
+        name: hashlib.sha256((ROOT / 'tests' / name).read_bytes()).hexdigest()
+        for name in ('latitude_scenario.py', 'windows_resources.py', 'Latitude-Response.js',
+                     'latitude-probe.html', 'rendering_probe.py', 'test_commands.py')}
     # Retain only nonpersonal engine properties needed to identify the platform.
     report['engine'] = {key: report['engine'][key] for key in (
         'ID', 'ServerVersion', 'OperatingSystem', 'OSType', 'Architecture', 'KernelVersion', 'NCPU', 'MemTotal')}
@@ -82,6 +86,12 @@ def main():
             save()
             print(row['state'].upper() + ' ' + name, flush=True)
 
+    def start_desktop():
+        state = command('start', '--profile', profile)
+        if state['imageId'] != report['image']:
+            raise RuntimeError('The running desktop differs from the selected measurement image')
+        return state
+
     try:
         step('baseline', lambda: time.sleep(20))
         if args.phase == 'prepare':
@@ -93,17 +103,17 @@ def main():
             if args.network_config:
                 options += ['--network-config', args.network_config]
             step('install', lambda: command(*options))
-            step('first-start', lambda: command('start', '--profile', profile))
+            step('first-start', start_desktop)
             step('first-preparation', lambda: command('prepare', '--profile', profile))
             step('network', lambda: command('network', '--profile', profile, '--check'))
             step('stop', lambda: command('stop', '--profile', profile))
         elif args.phase == 'measure':
             for attempt in range(3):
-                step('warm-start-' + str(attempt + 1), lambda: command('start', '--profile', profile))
+                step('warm-start-' + str(attempt + 1), start_desktop)
                 step('warm-preparation-' + str(attempt + 1), lambda: command('prepare', '--profile', profile))
                 step('warm-stop-' + str(attempt + 1), lambda: command('stop', '--profile', profile))
             # GUI scenario is performed from the retained profile after warm starts.
-            step('desktop-start', lambda: command('start', '--profile', profile))
+            step('desktop-start', start_desktop)
         else:
             browser = shutil.which('playwright-cli.cmd')
             if not browser:
@@ -131,7 +141,7 @@ def main():
                     time.sleep(0.5)
                 raise RuntimeError('Desktop window not ready: ' + pattern)
 
-            state = command('start', '--profile', profile)
+            state = start_desktop()
             certificate = command('certificate', '--profile', profile)
             trusted_before = any(hashlib.sha1(der).hexdigest().upper() == certificate['thumbprint']
                                  for der, encoding, trust in ssl.enum_certificates('ROOT'))
