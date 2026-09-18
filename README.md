@@ -22,7 +22,7 @@ distribution\windows\setup.cmd electivus/webtop-arch-kde-base:local "%LOCALAPPDA
 cd /d "%LOCALAPPDATA%\Electivus\workstation-tools"
 ```
 
-No Docker Desktop, selecione um contexto local e containers Linux. O perfil inicial acordado para a **VM Docker** é 8 GiB e 6 CPUs lógicas. A instalação reserva por padrão até 6 GiB e 4 CPUs para a workstation, deixando recursos para Windows e outros containers. Estes limites são ajustáveis; as medições do cenário Salesforce serão entregues em T12. A instalação recusa limites maiores que os disponíveis no engine.
+No Docker Desktop, selecione um contexto local e containers Linux. A instalação reserva por padrão até **6 GiB e 4 CPUs para a workstation**, perfil exercitado com Insiders e Chrome em Full HD. As [medições do Latitude](docs/verification/t12-latitude.md) registram pico de 5,56 GiB no container. A VM WSL2 realmente observada tinha 15,35 GiB e 14 CPUs; os **8 GiB e 6 CPUs propostos para a VM Hyper-V** continuam um ponto inicial a verificar no destino. Reserve recursos também para Windows e outros containers. A instalação recusa limites maiores que os disponíveis no engine.
 
 ```bat
 workstation.cmd install --image electivus/webtop-arch-kde-base:local
@@ -102,6 +102,8 @@ workstation.cmd prepare --profile "%LOCALAPPDATA%\Electivus\Workstation\salesfor
 
 A variante oferece Node 24 LTS e Java 21, instala a CLI Salesforce selecionada com integridade SHA-512 e o Salesforce Extension Pack do Marketplace nos dois editores. O preparo confere todos os membros e dependências declarados pelo Pack e recupera componentes ausentes. O resultado registra as versões efetivas, fontes, hashes e extensões instaladas. A CLI e os aplicativos persistem no volume; Java e Node acompanham a imagem.
 
+O preparo também instala `@salesforce/plugin-code-analyzer`, exigido pela extensão Code Analyzer, usando o instalador oficial da Salesforce CLI. A versão efetiva fica registrada em `salesforce-plugins`. `update-apps` atualiza esse plugin junto dos aplicativos, após o backup; iniciar a workstation preserva a versão preparada. Se o plugin for removido, `prepare` restaura a versão registrada. A [documentação Salesforce](https://developer.salesforce.com/docs/platform/salesforce-code-analyzer/guide/analyze-vscode.html) descreve essa dependência separada da extensão.
+
 No terminal Linux, `code-insiders` abre o editor padrão, `code` abre Stable e `workstation-project` abre o diretório atual no Insiders. Arquivos de texto e projetos `.code-workspace` usam Insiders por padrão. `sf project generate --name exemplo --output-dir ~/projects` cria um projeto sem credenciais de organização.
 
 Perfis novos dos editores desativam atualizações automáticas do editor e das extensões; configurações pessoais existentes são preservadas. O comando `prepare` recupera a preparação e mantém instalações já funcionais. Para atualizar os aplicativos sem trocar a imagem, use `workstation.cmd update-apps`; ele conclui um backup antes de modificar as ferramentas. O [guia de atualização de aplicativos](docs/application-updates.md) descreve a interrupção, as versões registradas, o diagnóstico e a recuperação.
@@ -147,4 +149,4 @@ O teste de comandos exercita o ponto de entrada CMD no Windows, inclusive caminh
 
 Os testes de aplicativos usam os comandos entregues, uma falha real de permissão e a interrupção do container durante o download de um editor. O teste de serviços abre o projeto de exemplo em cada VS Code entregue e usa a API pública de testes do editor para verificar diagnóstico Apex, sua correção e conclusão de atributo LWC. Essa instrumentação fica somente em `tests/`. A variante Salesforce requer o perfil de recursos indicado acima; limites de 2,5 e 3,25 GiB encerraram o editor por falta de memória no ensaio local.
 
-A validação local disponível usa VMM. O campo de backend do diagnóstico informa sua fonte (configuração do Docker Desktop); a evidência de execução é registrada separadamente. A primeira publicação dependerá das verificações completas e do roteiro executável de Hyper-V em T12/T13. Sucesso em VMM não declara Hyper-V validado.
+A validação local atual usa Docker Desktop com WSL2 no Latitude 5450. O campo de backend do diagnóstico informa sua fonte (configuração do Docker Desktop); a evidência de execução é registrada separadamente. O [roteiro executável de verificação Hyper-V](docs/hyperv-verification.md) usa CMD e não exige Python, WSL2 ou PowerShell no destino. A execução real nesse notebook permanece pendente; os ensaios locais em WSL2 não comprovam Hyper-V.

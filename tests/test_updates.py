@@ -134,6 +134,8 @@ class UpdateAcceptance(unittest.TestCase):
             discard_backup_archives(profile / 'backups')
 
     def exercise_salesforce_project(self, name, profile, stage):
+        from test_salesforce import code_analyzer_ready
+        code_analyzer_ready(name, command('prepare', '--profile', profile))
         workspace = '/config/projects/maintenance-sf'
         docker('cp', str(ROOT / 'tests/editor_probe'), name + ':/config/editor_probe')
         for editor in ['code', 'code-insiders']:
@@ -176,6 +178,7 @@ class UpdateAcceptance(unittest.TestCase):
             before = command('start', '--profile', profile)
             prepared = command('prepare', '--profile', profile)
             self.assertEqual(prepared['apps']['salesforce-cli']['version'], '2.149.1')
+            self.assertEqual(prepared['apps']['salesforce-plugins']['@salesforce/plugin-code-analyzer']['version'], '5.14.0')
             for editor in ['code', 'code-insiders']:
                 docker('exec', '--user', 'abc', name, editor, '--install-extension', older_extension, '--force')
                 self.assertIn(older_extension, docker('exec', '--user', 'abc', name, editor,
@@ -198,6 +201,8 @@ class UpdateAcceptance(unittest.TestCase):
             unchanged = []
             if updated['applications']['apps']['salesforce-cli']['version'] == '2.149.1':
                 unchanged.append('Salesforce CLI')
+            if updated['applications']['apps']['salesforce-plugins']['@salesforce/plugin-code-analyzer']['version'] == '5.14.0':
+                unchanged.append('Code Analyzer CLI plugin')
             for editor in ['code', 'code-insiders']:
                 actual = docker('exec', '--user', 'abc', name, editor, '--list-extensions', '--show-versions').splitlines()
                 self.assertEqual(sorted(actual), updated['applications']['apps']['extensions'][editor]['versions'])

@@ -15,9 +15,11 @@ O backup precisa concluir e passar pela verificação de integridade antes de mo
 
 ## Ferramentas e versões
 
-Na variante base, o comando atualiza o Google Chrome oficial. Na variante Salesforce, também atualiza VS Code Stable, VS Code Insiders, Salesforce CLI e extensões dos dois editores. O Insiders continua sendo o editor padrão.
+Na variante base, o comando atualiza o Google Chrome oficial. Na variante Salesforce, também atualiza VS Code Stable, VS Code Insiders, Salesforce CLI, o plugin Code Analyzer e extensões dos dois editores. O Insiders continua sendo o editor padrão.
 
 Chrome e VS Codes usam os índices assinados dos repositórios dos fornecedores. A CLI usa a versão estável corrente do pacote oficial `@salesforce/cli`, verificando a origem, a integridade do arquivo e a versão executada. A atualização de extensões usa a seleção de versões compatíveis do próprio editor e verifica os membros necessários do Salesforce Extension Pack.
+
+O plugin `@salesforce/plugin-code-analyzer`, necessário à extensão Code Analyzer, usa o instalador oficial `sf plugins install`. Sua versão efetiva aparece em `applications.apps.salesforce-plugins`. A atualização explícita seleciona a versão corrente; o preparo comum preserva a versão instalada e recupera a versão registrada se o plugin estiver ausente. A recuperação do backup também restaura o plugin anterior.
 
 Iniciar a workstation ou executar `prepare` reutiliza os aplicativos já instalados. Uma nova consulta para atualização depende de `update-apps`. O relatório registra as versões efetivas e a origem em `applications.apps`; uma ferramenta que já esteja atualizada pode conservar a mesma versão.
 

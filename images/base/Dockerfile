@@ -7,6 +7,7 @@ RUN test -z "$(gofmt -l cmd)" && go vet ./... && GOOS=windows GOARCH=amd64 go ve
     CGO_ENABLED=0 go build -trimpath -o /out/workstation ./cmd/workstation
 COPY distribution/windows/workstation.cmd /out/workstation.cmd
 COPY distribution/windows/setup.cmd /out/setup.cmd
+COPY distribution/windows/verify-target.cmd distribution/windows/verify-target.py /out/
 COPY cmd/workstation/MOBY-LICENSE cmd/workstation/THIRD-PARTY.md /out/licenses/
 COPY LICENSE /out/licenses/ELECTIVUS-LICENSE
 RUN cp /usr/local/go/LICENSE /out/licenses/GO-LICENSE
@@ -83,6 +84,7 @@ COPY images/base/root/etc/pacman.d/hooks/ /etc/pacman.d/hooks/
 RUN printf '\n%s\n' 'eval "$(workstation-network shell)"' >>/etc/zsh/zshenv
 RUN pacman -Q >/etc/electivus/image-packages.txt
 COPY --from=commands /out/workstation.exe /out/workstation.cmd /out/setup.cmd /opt/electivus/windows/
+COPY --from=commands /out/verify-target.cmd /out/verify-target.py /opt/electivus/windows/
 COPY --from=commands /out/licenses/ /opt/electivus/windows/licenses/
 
 HEALTHCHECK --interval=10s --timeout=8s --start-period=90s --retries=6 \

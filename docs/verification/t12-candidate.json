@@ -1,0 +1,203 @@
+{
+  "candidate": {
+    "version": "2026.09.17-35227601742-1",
+    "revision": "33f5a07ddf4951f0d5740643e5ff1888336e45a1",
+    "architecture": "linux/amd64"
+  },
+  "images": [
+    {
+      "variant": "base",
+      "reference": "electivus/webtop-arch-kde-base:2026.09.17-35227601742-1",
+      "digest": "sha256:54a82d2cacd384e06ced2e9e713b701f563e6f55ec947c1d039b9bb5a007a6df",
+      "archiveSha256": "f722fe043812bc102dade49e3f2325c66d28490f17cbdbafccac86b5a6d67ae4"
+    },
+    {
+      "variant": "salesforce",
+      "reference": "electivus/webtop-arch-kde-salesforce:2026.09.17-35227601742-1",
+      "digest": "sha256:430ca4d5abdf50f111df696ac0c401882360a6b2cb523522f7763bf0b11800e2",
+      "archiveSha256": "b175e8789c033461b6e7601872ba640a3c6d059c08db334895667b7d5f6283a5"
+    }
+  ],
+  "ci": {
+    "run": {
+      "conclusion": "success",
+      "databaseId": 35227601742,
+      "headSha": "33f5a07ddf4951f0d5740643e5ff1888336e45a1",
+      "status": "completed",
+      "url": "https://github.com/Electivus/webtop-arch-kde-workstation/actions/runs/35227601742"
+    },
+    "approved": true,
+    "checks": [
+      {
+        "id": "commands",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "preparation",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "projects",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "docker-projects",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "salesforce",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "network",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "network-apps",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "backups",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "packages",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "salesforce-packages",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "updates",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "image-updates",
+        "state": "passed",
+        "exitCode": 0
+      },
+      {
+        "id": "salesforce-image-updates",
+        "state": "passed",
+        "exitCode": 0
+      }
+    ]
+  },
+  "localBackend": "Docker Desktop WSL2",
+  "targetHyperV": "pending",
+  "nativeOperations": [
+    {
+      "operation": "latitude",
+      "state": "passed",
+      "startedAt": "2026-09-18T17:24:32.116220+00:00",
+      "completedAt": "2026-09-18T17:36:44.949690+00:00",
+      "steps": [
+        {
+          "name": "latitude-prepare",
+          "log": "native-latitude-prepare.log",
+          "startedAt": "2026-09-18T17:24:32.116293+00:00",
+          "exitCode": 0,
+          "completedAt": "2026-09-18T17:31:58.310312+00:00",
+          "logSha256": "7b8eb5533e4f7ff6289d6e110faf56c450f84b037fa898431dc99a9c004ec7b5"
+        },
+        {
+          "name": "latitude-measure",
+          "log": "native-latitude-measure.log",
+          "startedAt": "2026-09-18T17:31:58.313658+00:00",
+          "exitCode": 0,
+          "completedAt": "2026-09-18T17:33:40.969234+00:00",
+          "logSha256": "0a49b3f385b508cb0b7ffa707d87077d9926a8b67840690d9ab45b8fb70685e2"
+        },
+        {
+          "name": "latitude-gui",
+          "log": "native-latitude-gui.log",
+          "startedAt": "2026-09-18T17:33:40.971961+00:00",
+          "exitCode": 0,
+          "completedAt": "2026-09-18T17:36:44.947932+00:00",
+          "logSha256": "a69ff6cdc62863296ff2725b19163ab74c0b941e55b0b7107013089087ec2770"
+        }
+      ],
+      "receiptSha256": "524390e4342152b27f662e3886553462ed828c080c1dbd29c94ba2b3151efdbc"
+    },
+    {
+      "operation": "destination",
+      "state": "passed",
+      "startedAt": "2026-09-18T17:38:52.290587+00:00",
+      "completedAt": "2026-09-18T17:58:59.966123+00:00",
+      "steps": [
+        {
+          "name": "destination",
+          "log": "native-destination.log",
+          "startedAt": "2026-09-18T17:38:52.290703+00:00",
+          "exitCode": 0,
+          "completedAt": "2026-09-18T17:58:59.963981+00:00",
+          "logSha256": "87bf43f31c693deff4bf9ae56a552f3facb2faafabf233e0b912b83f9962eaca"
+        }
+      ],
+      "receiptSha256": "563ff938b1b12fdb921ab86f8b843782418bfd1ec4eba438f566071fc51ca5ea"
+    },
+    {
+      "operation": "shortcut",
+      "state": "passed",
+      "startedAt": "2026-09-18T18:00:23.116984+00:00",
+      "completedAt": "2026-09-18T18:01:03.644676+00:00",
+      "steps": [
+        {
+          "name": "shortcut",
+          "log": "native-shortcut.log",
+          "startedAt": "2026-09-18T18:00:23.117145+00:00",
+          "exitCode": 0,
+          "completedAt": "2026-09-18T18:01:03.641986+00:00",
+          "logSha256": "4bdbb0456bde055f3dce68f1b3c6c567a9d688b2e7b1162289001993e3139478"
+        }
+      ],
+      "receiptSha256": "20bf543fa71272f2034387de446eaa2686ecf6acc8f39ea533bc296885638d7e"
+    },
+    {
+      "operation": "browser",
+      "state": "passed",
+      "startedAt": "2026-09-18T18:01:14.917840+00:00",
+      "completedAt": "2026-09-18T18:02:40.253772+00:00",
+      "steps": [
+        {
+          "name": "browser",
+          "log": "native-browser.log",
+          "startedAt": "2026-09-18T18:01:14.918059+00:00",
+          "exitCode": 0,
+          "completedAt": "2026-09-18T18:02:40.250647+00:00",
+          "logSha256": "a38b9b0d4460bcb043154f231bfd5761a7356102091a9f235d928449b5303701"
+        }
+      ],
+      "receiptSha256": "a78272051d6d31d5f86aa178b64ccb34c9749f3e354b015aa678cf3d7ad3753e"
+    },
+    {
+      "operation": "image-update",
+      "state": "passed",
+      "startedAt": "2026-09-18T18:03:42.643256+00:00",
+      "completedAt": "2026-09-18T18:28:42.637175+00:00",
+      "steps": [
+        {
+          "name": "image-update",
+          "log": "native-image-update.log",
+          "startedAt": "2026-09-18T18:03:42.643309+00:00",
+          "exitCode": 0,
+          "completedAt": "2026-09-18T18:28:42.634906+00:00",
+          "logSha256": "674ae4bbf601d41b7a7770ebc92fa963fedb0187126f16499c1815fe9d05a283"
+        }
+      ],
+      "receiptSha256": "8d95d538101c35819746023146d0705acdfc1b0360338432d34966cd05aa8f65"
+    }
+  ]
+}

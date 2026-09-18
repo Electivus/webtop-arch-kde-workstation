@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Electivus Full HD probe</title>
+<style>
+body { margin: 40px; font: 20px system-ui; color: white; background: rgb(20,70,210); }
+</style>
+<h1>Chrome on the workstation</h1>
+<p>This local page checks keyboard input and the rendered desktop response.</p>
+<p>Press T to change the background color.</p>
+<script>
+let red = false;
+document.addEventListener('keydown', event => {
+    if (event.key.toLowerCase() === 't') {
+        red = !red;
+        document.body.style.background = red ? 'rgb(210,40,20)' : 'rgb(20,70,210)';
+    }
+});
+</script>
+</html>

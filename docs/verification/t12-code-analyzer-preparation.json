@@ -1,0 +1,61 @@
+{
+  "date": "2026-09-17",
+  "state": "passed",
+  "platform": "native Windows CMD with Docker Desktop WSL2",
+  "developmentFixture": true,
+  "fixtureImageId": "sha256:82364f8d4b73f6dfe3aa7ba0b1ba9be31a77d334f725654b94643cad455cc7bf",
+  "baseCandidate": "2026.09.17-35164853337-1",
+  "controllerSha256": "fba6ce1b23bcb1efe7ddc37a135536760dc6bcdb7099a01e906e9a1d5c407ea2",
+  "tests": [
+    {
+      "command": "python tests/test_salesforce.py SalesforceAcceptance.test_both_official_editors_and_cli_survive_recreation",
+      "durationSeconds": 561.647,
+      "result": "passed",
+      "checks": [
+        "automatic plugin preparation and recorded version",
+        "real PMD EmptyCatchBlock finding",
+        "container recreation preserves applications",
+        "both editors provide Apex diagnostics, repair and completion plus LWC completion",
+        "removed Extension Pack member and Code Analyzer CLI plugin restored by prepare"
+      ]
+    }
+  ],
+  "plugin": {
+    "@salesforce/plugin-code-analyzer": {
+      "installedAt": "2026-09-17T11:58:37.040197+00:00",
+      "source": "https://registry.npmjs.org/@salesforce/plugin-code-analyzer",
+      "version": "5.15.0"
+    }
+  },
+  "editors": {
+    "code": {
+      "editor": "Visual Studio Code",
+      "version": "1.138.0",
+      "result": "passed",
+      "step": "lwc-completion",
+      "apexDiagnostic": "Missing ';' at '}'",
+      "apexExtension": "67.17.2",
+      "apexRepair": "syntax error cleared after adding the missing semicolon",
+      "apexCompletion": "System.debug method",
+      "lwcCompletion": "lightning-button label attribute",
+      "lwcExtension": "67.17.2"
+    },
+    "code-insiders": {
+      "editor": "Visual Studio Code - Insiders",
+      "version": "1.139.0-insider",
+      "result": "passed",
+      "step": "lwc-completion",
+      "apexDiagnostic": "Missing ';' at '}'",
+      "apexExtension": "67.17.2",
+      "apexRepair": "syntax error cleared after adding the missing semicolon",
+      "apexCompletion": "System.debug method",
+      "lwcCompletion": "lightning-button label attribute",
+      "lwcExtension": "67.17.2"
+    }
+  },
+  "limitations": [
+    "Development fixture overlays only preparation code and configuration on the prior CI candidate. A new CI candidate must pass before publication.",
+    "The final missing-plugin and exact-receipt assertions were added after this Python process started and remain for the CI run.",
+    "Real Hyper-V destination execution remains pending."
+  ]
+}

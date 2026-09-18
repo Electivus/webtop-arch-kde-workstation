@@ -8,6 +8,7 @@ import subprocess
 import uuid
 
 from test_commands import command, docker, invoke, ROOT, IMAGE
+from test_packages import configure_test_network
 
 
 def main():
@@ -34,6 +35,7 @@ def main():
     try:
         command("install", "--profile", profile, "--name", name, "--image", IMAGE,
                 "--port", "13406", "--memory", "2560", "--cpus", "2", "--no-shortcut")
+        configure_test_network(profile)
         state = command("start", "--profile", profile)
         certificate = command("certificate", "--profile", profile)
         trusted_before = any(hashlib.sha1(der).hexdigest().upper() == certificate["thumbprint"]
