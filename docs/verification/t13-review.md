@@ -41,11 +41,14 @@ interrompido, retomada e nova execução idempotente. O formato HTTP 404 usado p
 GitHub foi conferido por uma leitura real; nenhum erro de autenticação é tratado
 como tag ausente.
 
-O revisor solicitou um único acompanhamento limitado a esse achado e à retomada
-de upload. Esse acompanhamento ainda será registrado aqui, mantendo o ponto fixo
-e o checkpoint lógico da revisão inicial.
+O único acompanhamento solicitado pelo revisor foi concluído no SHA
+`663c784ad6446067903c425a08c4192ccf424490`, mantendo o ponto fixo e o checkpoint
+lógico inicial. O agente confirmou a correção da ordem nas linhas 345 e 370 e
+executou independentemente os quatro testes direcionados, todos aprovados.
+Não encontrou regressões introduzidas pela correção dentro do escopo do achado
+e da retomada de uploads. O ciclo está encerrado, sem novo acompanhamento.
 
-Resultado inicial: um defeito de fonte corrigido; acompanhamento limitado pendente.
+Resultado final: um defeito de fonte corrigido e verificado; nenhum achado residual de Spec.
 
 ## Validação e limites
 
