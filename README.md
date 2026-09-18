@@ -4,6 +4,8 @@ Workstation Linux local para Windows 11 com Docker Desktop em modo de containers
 
 Esta candidata acrescenta Chrome oficial, Git, Zsh/Oh My Zsh, a variante Salesforce e comandos de manutenção ao desktop local. A publicação de `stable` segue nos tickets da [especificação](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1). Ainda não existe uma entrega pública aprovada.
 
+O código próprio e a documentação da Electivus estão disponíveis sob a [licença MIT](LICENSE). Os componentes de terceiros mantêm suas licenças; veja [licenciamento e distribuição](docs/licensing.md). A abertura do código não representa aprovação de uma candidata ou publicação das imagens no Docker Hub.
+
 ## Preparar e iniciar
 
 As [candidatas do GitHub Actions](docs/candidates.md) incluem as duas imagens, os comandos para CMD e o resultado da aceitação, identificados por versão, commit e digests. O guia explica como baixar e importar exatamente esses arquivos no notebook de teste.

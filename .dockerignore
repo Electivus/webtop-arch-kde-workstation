@@ -3,6 +3,7 @@
 !images/base/
 !images/base/**
 !go.mod
+!LICENSE
 !cmd/
 !cmd/**
 !distribution/
