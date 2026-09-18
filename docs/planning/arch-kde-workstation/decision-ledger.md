@@ -589,3 +589,18 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
   - specification: docs/planning/arch-kde-workstation/spec.md: publicacao apos testes locais definidos em WSL2 e roteiro CMD Hyper-V, mantendo a execucao no destino pendente.
   - tickets: docs/planning/arch-kde-workstation/tickets/12-validacao-latitude-hyperv.md; docs/planning/arch-kde-workstation/tickets/13-publicacao-docker-hub.md
   - verification: none
+
+## DEC-039
+- Status: active
+- Decision: Tornar publico o repositorio GitHub Electivus/webtop-arch-kde-workstation, licenciando o codigo e a documentacao proprios da Electivus sob MIT e preservando as licencas de terceiros.
+- Context: Em 2026-09-18, o usuario pediu priorizar a abertura do repositorio, confirmou a licenca MIT e reafirmou a autorizacao para continuar a mudanca de visibilidade.
+- Rationale: Disponibilizar o codigo para consulta e reutilizacao com termos explicitos, revisando previamente os dados que passarao a ser publicos.
+- ADR: none
+- Constraints: A abertura do GitHub e independente da aprovacao e publicacao das imagens; revisar historico, tracker e Actions, preservar avisos de terceiros e verificar o acesso publico.
+- Obligations: specification, verification
+- Coverage:
+  - specification: complete
+  - verification: pending
+- Evidence:
+  - specification: docs/planning/arch-kde-workstation/spec.md: historia 57, consequencia DEC-039 e cenario 18; manutencao do repositorio autorizada diretamente, sem novo ticket funcional.
+  - verification: none

@@ -67,7 +67,7 @@ DEC-015 mantém projetos no armazenamento Linux e uma pasta de troca com Windows
 
 O perfil inicial será `linux/amd64`, correspondente ao Latitude 5450 com Core Ultra 7 165U e 32 GB. A instalação parte de Docker Desktop já disponível com containers Linux; o notebook de destino utiliza Hyper-V e o notebook de teste utiliza Docker Desktop com WSL2 desde 2026-09-16. O fluxo Windows será documentado para CMD, sem executar PowerShell (DEC-036), com operações para instalar, iniciar, parar, atualizar a imagem, atualizar aplicativos, fazer backup, restaurar e diagnosticar. O acesso ao desktop será por um endpoint HTTPS limitado ao próprio notebook.
 
-Os comandos e as instruções necessários ao uso público deverão acompanhar a distribuição no Docker Hub. A solução de entrega desses arquivos será detalhada na implementação, preservando a visibilidade privada atual do repositório de código.
+Os comandos e as instruções necessários ao uso público deverão acompanhar a distribuição no Docker Hub. Em 2026-09-18, o usuário autorizou também tornar público o repositório de código, com licença MIT para o conteúdo próprio da Electivus e preservação das licenças de terceiros (DEC-039). Essa abertura é independente da aprovação das imagens.
 
 A verificação deverá cobrir as duas variantes: desktop e localização ABNT2; aplicativos oficiais e extensões nos dois canais do VS Code; retomada do preparo inicial; persistência de projetos e preferências; troca de arquivos com Windows; backup e recuperação; inventário e restauração assistida, incluindo falha de pacote extra; manutenção da sessão ao fechar a aba; e configuração opcional de rede com diagnóstico.
 

@@ -81,8 +81,9 @@ As imagens terão versões coordenadas, tags fixas e um alias stable. GitHub Act
 52. Como consumidor das imagens públicas, quero escolher uma versão fixa e identificar seu digest, para saber qual artefato da workstation estou usando.
 53. Como responsável pela distribuição, quero versões coordenadas de base e Salesforce, para identificar uma entrega compatível da família.
 54. Como responsável pela manutenção, quero produzir entregas semanalmente e sob demanda com testes antes de stable, para distribuir atualizações por um processo consistente.
-55. Como consumidor das imagens públicas, quero instruções e comandos de uso disponíveis com a distribuição, para instalar o ambiente sem acesso ao repositório privado de código.
+55. Como consumidor das imagens públicas, quero instruções e comandos de uso disponíveis com a distribuição, para instalar o ambiente sem precisar clonar o repositório de código.
 56. Como responsável pelo suporte, quero distinguir versão da imagem, versões dos aplicativos, resultado de restauração e backend testado, para interpretar corretamente um diagnóstico.
+57. Como responsável pelo projeto, quero disponibilizar o repositório GitHub público com licença MIT para o código próprio e avisos de terceiros preservados, após revisar o conteúdo que será exposto.
 
 ## Implementation Decisions
 
@@ -123,6 +124,7 @@ A implementação será organizada em três responsabilidades: composição e pr
 - DEC-034: Receber proxy e certificados necessários por configuração opcional assistida, manter os dados no notebook e diagnosticar a conectividade preservando TLS.
 - DEC-035: Usar electivus/webtop-arch-kde-base e electivus/webtop-arch-kde-salesforce nos artefatos publicados, comandos, documentação e automação.
 - DEC-036: Implementar todos os comandos de operação e o atalho usando CMD, sem executar PowerShell no notebook de destino; distribuir os componentes necessários e verificar o fluxo nessa condição.
+- DEC-039: Abrir o repositório GitHub após revisar histórico Git, conteúdo do tracker e resultados do Actions; aplicar MIT ao conteúdo próprio, distribuir os avisos de licença com os comandos e preservar as licenças dos terceiros. A abertura não aprova uma candidata nem publica imagens no Docker Hub.
 
 JDK 21 e Node.js Active LTS são os candidatos levantados para atender às dependências Salesforce; as versões exatas devem ser resolvidas e registradas com a verificação de compatibilidade da entrega. Pacotes Arch precisam de uma estratégia coerente de atualização, inclusive para recompilações AUR, sem combinar uma base nova com partes arbitrárias de um sistema antigo.
 
@@ -155,6 +157,7 @@ Os cenários devem usar projetos, dados e recursos Docker dedicados à validaç�
 15. **Automação e conteúdo público:** exercitar o acionamento sob demanda e validar a configuração semanal, além das instruções que permitem usar a distribuição pública. Inspecionar os artefatos para confirmar a estratégia de obtenção dos aplicativos oficiais e a ausência de configurações, credenciais e conteúdo corporativos embutidos.
 16. **Evidência de plataforma:** produzir relatório da validação WSL2 local e fornecer o roteiro executável Hyper-V com resultados e limitações identificáveis. A primeira publicação pode ocorrer com a execução no destino pendente; sucesso no WSL2 não deve ser reportado como teste real em Hyper-V.
 17. **Operação pelo CMD:** executar instalação, atalho e comandos de operação a partir de `cmd.exe`, sem invocar `powershell.exe` ou `pwsh.exe`; o roteiro de destino e as instruções públicas devem exercer o mesmo contrato.
+18. **Código público:** registrar o escopo e os limites da revisão de exposição, verificar as licenças no pacote de comandos e confirmar acesso anônimo ao código e reconhecimento de MIT pelo GitHub após a mudança de visibilidade.
 
 Os testes dos componentes fornecidos são critérios de aprovação da entrega. A tolerância à restauração parcial se limita aos programas extras do usuário. Não foi acordado um número fixo de latência, consumo ou tempo de instalação; o perfil deverá ser escolhido a partir das medições do cenário confirmado.
 
@@ -171,13 +174,13 @@ Os testes dos componentes fornecidos são critérios de aprovação da entrega. 
 - Suporte inicial validado para outras arquiteturas, múltiplas telas ou resoluções maiores que o cenário Full HD escolhido.
 - Garantia de aceleração gráfica ou desempenho que ainda não tenha sido medido no backend utilizado.
 - Inclusão de contas, projetos reais, credenciais ou configurações corporativas nos artefatos públicos; desativação de TLS como mecanismo de conectividade.
-- Alteração da visibilidade privada do repositório GitHub ou configuração de autenticação de organizações Salesforce específicas como parte da imagem genérica.
+- Configuração de autenticação de organizações Salesforce específicas como parte da imagem genérica.
 
 ## Further Notes
 
 O escopo resulta da entrevista Q1–Q27, encerrada e confirmada em 2026-09-14. O levantamento técnico anterior identificou a variante upstream Arch/KDE, o hardware local e Docker VMM; naquele momento, ainda não havia executado uma workstation derivada nem demonstrado desempenho, restauração, integração Compose ou compatibilidade real no notebook de destino. Esses resultados são entregáveis da implementação. As evidências VMM produzidas posteriormente permanecem históricas; novos testes locais usam WSL2.
 
-As 35 decisões ativas do ledger declaram as obrigações specification, tickets e verification. Cada uma possui uma consequência acionável em Implementation Decisions e está incluída no marcador abaixo. Não há decisão ativa sem obrigação de especificação que exija nota de inaplicabilidade. DEC-014 está substituída por DEC-019 e não constitui uma obrigação ativa desta especificação. DEC-036 registra a correção do usuário em 2026-09-14: a operação no destino deve usar CMD, pois PowerShell é bloqueado. DEC-037 e DEC-038 substituem DEC-005 e DEC-030 após a mudança do ambiente local para WSL2 em 2026-09-16, mantendo Hyper-V como requisito de destino.
+As 35 decisões ativas anteriores a DEC-039 declaram as obrigações specification, tickets e verification. DEC-039 acrescenta specification e verification; não exige novo ticket funcional porque é uma manutenção da publicação do repositório autorizada diretamente pelo usuário. Cada decisão ativa possui uma consequência acionável em Implementation Decisions e está incluída no marcador abaixo. DEC-014 está substituída por DEC-019 e não constitui uma obrigação ativa desta especificação. DEC-036 registra a correção do usuário em 2026-09-14: a operação no destino deve usar CMD, pois PowerShell é bloqueado. DEC-037 e DEC-038 substituem DEC-005 e DEC-030 após a mudança do ambiente local para WSL2 em 2026-09-16, mantendo Hyper-V como requisito de destino. DEC-039 remove a exclusão anterior da mudança de visibilidade GitHub, conforme pedido de 2026-09-18.
 
 A publicação desta especificação conclui a cobertura de specification, após seu registro no ledger. A decomposição em tickets e as evidências de execução são etapas posteriores; o checkpoint de planejamento usado aqui é intermediário. O marcador deverá ser atualizado para o checkpoint final quando a cobertura dos tickets estiver concluída, antes de uma nova sessão de implementação.
 

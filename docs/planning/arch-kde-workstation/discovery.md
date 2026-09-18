@@ -4,7 +4,7 @@ Observações técnicas de 2026-09-13 e entrevista encerrada em 2026-09-14, hor�
 
 ## Evidência local
 
-A sessão de inspeção executou no Windows, em PowerShell, no checkout `C:\Users\msilvane\git\webtop-arch-kde-workstation`. As instruções genéricas sobre Arch/WSL não descrevem o shell efetivo desta sessão.
+A sessão de inspeção executou no Windows, em PowerShell, no checkout `%USERPROFILE%\git\webtop-arch-kde-workstation`. As instruções genéricas sobre Arch/WSL não descrevem o shell efetivo desta sessão. O caminho foi generalizado para publicação; este parágrafo registra o ambiente histórico da descoberta.
 
 | Item | Resultado observado | Origem |
 | --- | --- | --- |
@@ -44,7 +44,7 @@ Recomendação técnica ainda sujeita aos testes: derivar da variante mantida `l
 
 Consulta somente de leitura em 2026-09-13, horário de America/Bahia:
 
-- `gh repo view manoelcalixto/webtop-arch-kde-workstation`: repositório GitHub privado, branch padrão `main`, permissão `ADMIN` para a conta autenticada. O remoto local `origin` aponta para esse mesmo repositório. Nenhuma alteração de visibilidade do GitHub foi solicitada; a escolha de imagens públicas no Docker Hub não a modifica.
+- `gh repo view manoelcalixto/webtop-arch-kde-workstation`: repositório GitHub privado, branch padrão `main`, permissão `ADMIN` para a conta autenticada. O remoto local `origin` apontava para esse mesmo repositório. Naquela data, nenhuma alteração de visibilidade do GitHub havia sido solicitada. O pedido posterior de abertura do código em 2026-09-18 está registrado em DEC-039.
 - `docker buildx imagetools inspect lscr.io/linuxserver/webtop:arch-kde`: índice OCI `sha256:ed197a60c161b5d45a0d0137a5c47ecd136964c57791bf3151d01ad41ac6b988`; manifesto `linux/amd64` `sha256:da08c127461269d148bf8191a85b8da735c8516969100dc3c63d7877b15302aa`. O índice também contém `linux/arm64` e atestações. Esses valores são uma fotografia do registry; não houve download das camadas ou execução da imagem.
 - Consultas anônimas a `electivus/webtop-arch-kde-base` e `electivus/webtop-arch-kde-salesforce` na API pública do Docker Hub retornaram HTTP 404. Isso significa que não estavam visíveis publicamente nessas consultas; não comprova disponibilidade para criação nem permissões de publicação. A verificação autenticada permanece necessária na preparação da publicação.
 
