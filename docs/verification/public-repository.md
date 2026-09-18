@@ -72,5 +72,30 @@ na revisão. Não foram adicionados ao Git.
 
 Uma varredura sem achados não prova ausência absoluta de dados sensíveis.
 Novos commits, comentários e artefatos precisam conservar a mesma separação
-entre material público e estado pessoal. A confirmação de visibilidade pública,
-acesso anônimo e configurações de proteção deve ser registrada após a mudança.
+entre material público e estado pessoal.
+
+## Confirmação após a abertura
+
+Em 2026-09-18, às 12:23 UTC, o repositório respondeu como público e com licença
+MIT na API sem autenticação. O arquivo `LICENSE` obtido anonimamente foi
+comparado byte a byte com o texto preparado. `git ls-remote`, executado sem
+configurações globais, helper de credenciais ou headers de autenticação,
+confirmou `HEAD` e `main` em
+`ec9397ff47b8b7c4b25325ee7c7be805ab17afae`, o commit da preparação. A
+especificação publicada na issue #1 foi sincronizada após confirmar o
+checkpoint de planejamento no remoto.
+
+As configurações lidas novamente do GitHub confirmaram:
+
+- Secret scanning e proteção de pushes habilitados.
+- Canal privado de relatos de vulnerabilidades habilitado.
+- Aprovação de workflows de PRs originados de forks exigida para todos os
+  contribuidores externos.
+- Permissões padrão de workflows somente para leitura, sem permitir que
+  Actions aprove reviews de PRs.
+
+Não havia rulesets ou proteção da branch `main` antes da mudança. Nenhuma regra
+existente foi removida ou relaxada. A consulta inicial de alertas de segredos
+abertos retornou vazia; isso não é prova de conclusão de todas as análises
+assíncronas do GitHub. A abertura do código não promove tags de imagens nem
+altera os critérios de aprovação das candidatas.

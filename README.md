@@ -6,6 +6,8 @@ Esta candidata acrescenta Chrome oficial, Git, Zsh/Oh My Zsh, a variante Salesfo
 
 O código próprio e a documentação da Electivus estão disponíveis sob a [licença MIT](LICENSE). Os componentes de terceiros mantêm suas licenças; veja [licenciamento e distribuição](docs/licensing.md). A abertura do código não representa aprovação de uma candidata ou publicação das imagens no Docker Hub.
 
+Para relatar vulnerabilidades sem expor detalhes publicamente, use o [canal privado de segurança](https://github.com/Electivus/webtop-arch-kde-workstation/security/advisories/new). A [revisão para abertura do repositório](docs/verification/public-repository.md) registra as verificações realizadas e seus limites.
+
 ## Preparar e iniciar
 
 As [candidatas do GitHub Actions](docs/candidates.md) incluem as duas imagens, os comandos para CMD e o resultado da aceitação, identificados por versão, commit e digests. O guia explica como baixar e importar exatamente esses arquivos no notebook de teste.
