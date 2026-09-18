@@ -604,3 +604,18 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: docs/planning/arch-kde-workstation/spec.md: historia 57, consequencia DEC-039 e cenario 18; manutencao do repositorio autorizada diretamente, sem novo ticket funcional.
   - verification: docs/verification/public-repository.md: historico Git, tracker e logs/diagnosticos de CI revisados sem segredos identificados; build commands-export com vet Linux/Windows e avisos conferidos; acesso anonimo API/Git/LICENSE e MIT confirmados em 2026-09-18; secret scanning, push protection, relato privado e aprovacao de forks externos habilitados.
+
+## DEC-040
+- Status: active
+- Decision: Proteger o repositorio publico com PR obrigatorio e verificacoes de CI e seguranca, preservando commits de planejamento, restringindo Actions e mantendo orientacoes publicas de contribuicao e relato privado.
+- Context: Em 2026-09-18, apos a abertura do codigo, o usuario solicitou aplicar as boas praticas de configuracao para repositorios publicos; a inspeção confirmou um unico mantenedor com escrita.
+- Rationale: Reduzir mudancas diretas sem verificacao, exposicao de segredos e risco de dependencias, mantendo um fluxo viavel para o mantenedor e a rastreabilidade dos checkpoints.
+- ADR: none
+- Constraints: Preservar os testes existentes, usar merge commit, bloquear force push e exclusao de main e alteracao/exclusao de tags Git; sem bypass; zero aprovacoes humanas adicionais enquanto houver um unico mantenedor. Nao alterar a aprovacao das imagens nem ampliar a exposicao da workstation.
+- Obligations: specification, verification
+- Coverage:
+  - specification: complete
+  - verification: pending
+- Evidence:
+  - specification: docs/repository-security.md: regras de main e tags, checks, CodeQL, Dependabot, Actions e fluxo de contribuicao; manutencao do repositorio autorizada diretamente, sem novo ticket funcional.
+  - verification: none
