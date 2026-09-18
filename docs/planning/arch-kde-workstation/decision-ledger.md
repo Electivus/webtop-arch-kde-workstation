@@ -632,7 +632,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Supersedes: DEC-040
 - Coverage:
   - specification: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: docs/repository-security.md e docs/planning/arch-kde-workstation/spec.md: PR e checks obrigatorios, uma aprovacao com bypass admin somente via PR em ruleset separado; manutencao autorizada diretamente, sem novo ticket funcional.
-  - verification: none
+  - verification: docs/verification/public-repository-settings.md: rulesets ativos 23657276/23657280/23657404 relidos; uma aprovacao com bypass Admin somente pull_request na regra separada, checks sem bypass; PR23 REVIEW_REQUIRED/BLOCKED; Security35346654169 e CodeQL35346652169 passaram; Gitleaks rejeitou credencial ficticia local e passou no historico; actionlint, YAML/JSON, CODEOWNERS e politica raiz validados. A integracao final permanece condicionada ao desktop-lifecycle no PR23.
