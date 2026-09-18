@@ -1,0 +1,89 @@
+name: Publish
+on:
+  workflow_run:
+    workflows: [Checks]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Successful main Checks run ID; reuse the same ID to resume a partial publication'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: docker-hub-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: >-
+      github.repository == 'Electivus/webtop-arch-kde-workstation' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event != 'pull_request' &&
+      github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      actions: read
+      contents: write # Create the coordinated release and its consumer assets.
+      id-token: write # Exchange the main-only identity for Docker Hub credentials.
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check publication configuration and runner space
+        env:
+          CONNECTION_ID: ${{ vars.DOCKERHUB_OIDC_CONNECTIONID }}
+        run: |
+          test -n "$CONNECTION_ID" || { echo 'Configure the restricted Docker Hub OIDC connection first.' >&2; exit 1; }
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /usr/share/swift
+          available_kib=$(df --output=avail -k / | tail -n 1)
+          test "$available_kib" -ge 25165824 || { echo 'Publication needs at least 24 GiB free.' >&2; exit 1; }
+      - name: Use an image store that preserves the tested OCI indexes
+        uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5
+        with:
+          version: v29.7.2
+          daemon-config: |
+            {"features": {"containerd-snapshotter": true}}
+      - name: Download only the approved main candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_RUN: ${{ inputs.run_id }}
+          COMPLETED_RUN: ${{ github.event.workflow_run.id }}
+        run: |
+          run_id="${REQUESTED_RUN:-$COMPLETED_RUN}"
+          case "$run_id" in ''|*[!0-9]*) echo 'Invalid Checks run ID.' >&2; exit 1;; esac
+          python3 scripts/publish.py fetch --run-id "$run_id" --directory .local/publication-candidate
+      - name: Authenticate with short-lived Docker Hub credentials
+        uses: docker/login-action@06fb636fac595d6fb4b28a5dfcb21a6f5091859c # v4.5.0
+        env:
+          DOCKERHUB_OIDC_CONNECTIONID: ${{ vars.DOCKERHUB_OIDC_CONNECTIONID }}
+        with:
+          username: electivus
+      - name: Publish the fixed pair and verify stable
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish.py publish --directory .local/publication-candidate --report .local/publication.json
+      - name: Package the tested commands and public installation guide
+        run: python3 scripts/publish.py bundle --directory .local/publication-candidate --report .local/publication.json --output .local/release
+      - name: Publish the coordinated consumer release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish.py release --assets .local/release
+      - name: Preserve publication progress even after an interruption
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: publication-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .local/publication.json
+            .local/publication-candidate/source.json
+            .local/release/
+          retention-days: 30
+          if-no-files-found: warn

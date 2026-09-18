@@ -41,9 +41,10 @@ tags de imagens no Docker Hub, que seguem o fluxo de distribuição.
   precisarem de escrita devem declarar a permissão específica e justificar seu
   uso. Os checkouts do projeto não persistem credenciais Git.
 - Todos os contribuidores externos precisam de aprovação para executar
-  workflows originados de forks. São permitidas Actions do GitHub e as duas
-  Actions Docker já utilizadas (`docker/setup-docker-action` e
-  `docker/setup-buildx-action`), exigindo referências de commit completas.
+  workflows originados de forks. São permitidas Actions do GitHub e as Actions
+  Docker utilizadas (`docker/setup-docker-action`, `docker/setup-buildx-action`
+  e `docker/login-action`), exigindo referências de commit completas. O login usa
+  a conexão OIDC restrita descrita no [fluxo de publicação](publication.md).
 - O workflow [Security](../.github/workflows/security.yml) verifica todo o
   histórico Git com Gitleaks fixado por digest, sem rede dentro do scanner e
   com valores sensíveis ocultos na saída. Não há chave comercial do Gitleaks.
