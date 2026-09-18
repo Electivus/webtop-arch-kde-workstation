@@ -8,6 +8,8 @@ O código próprio e a documentação da Electivus estão disponíveis sob a [li
 
 Para relatar vulnerabilidades sem expor detalhes publicamente, use o [canal privado de segurança](https://github.com/Electivus/webtop-arch-kde-workstation/security/advisories/new). A [revisão para abertura do repositório](docs/verification/public-repository.md) registra as verificações realizadas e seus limites.
 
+Para contribuir, consulte [CONTRIBUTING.md](CONTRIBUTING.md), a [política de segurança](SECURITY.md) e as [proteções do repositório](docs/repository-security.md).
+
 ## Preparar e iniciar
 
 As [candidatas do GitHub Actions](docs/candidates.md) incluem as duas imagens, os comandos para CMD e o resultado da aceitação, identificados por versão, commit e digests. O guia explica como baixar e importar exatamente esses arquivos no notebook de teste.

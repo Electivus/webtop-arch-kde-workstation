@@ -1,0 +1,39 @@
+name: Relatar um defeito
+description: Um comportamento que falhou na workstation ou nos comandos.
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: Use dados fictícios. Remova tokens, nomes de clientes e informações corporativas de logs e capturas.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Ambiente e versão
+      description: Informe variante, tag/digest ou commit, Windows/Linux e versão/backend do Docker Desktop.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Como reproduzir
+      description: Passos mínimos, com comandos e dados genéricos.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Resultado esperado e observado
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidências sem dados sensíveis
+      description: Trecho de log ou captura que ajude a identificar a falha; não anexe perfis nem backups pessoais.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacidade
+      options:
+        - label: Revisei o conteúdo e removi credenciais e informações pessoais ou corporativas.
+          required: true

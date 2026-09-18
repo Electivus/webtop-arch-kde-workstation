@@ -84,6 +84,7 @@ As imagens terão versões coordenadas, tags fixas e um alias stable. GitHub Act
 55. Como consumidor das imagens públicas, quero instruções e comandos de uso disponíveis com a distribuição, para instalar o ambiente sem precisar clonar o repositório de código.
 56. Como responsável pelo suporte, quero distinguir versão da imagem, versões dos aplicativos, resultado de restauração e backend testado, para interpretar corretamente um diagnóstico.
 57. Como responsável pelo projeto, quero disponibilizar o repositório GitHub público com licença MIT para o código próprio e avisos de terceiros preservados, após revisar o conteúdo que será exposto.
+58. Como mantenedor do repositório público, quero integrar alterações por PR com verificações obrigatórias, proteger o histórico e receber alertas e contribuições por canais definidos.
 
 ## Implementation Decisions
 
@@ -125,6 +126,7 @@ A implementação será organizada em três responsabilidades: composição e pr
 - DEC-035: Usar electivus/webtop-arch-kde-base e electivus/webtop-arch-kde-salesforce nos artefatos publicados, comandos, documentação e automação.
 - DEC-036: Implementar todos os comandos de operação e o atalho usando CMD, sem executar PowerShell no notebook de destino; distribuir os componentes necessários e verificar o fluxo nessa condição.
 - DEC-039: Abrir o repositório GitHub após revisar histórico Git, conteúdo do tracker e resultados do Actions; aplicar MIT ao conteúdo próprio, distribuir os avisos de licença com os comandos e preservar as licenças dos terceiros. A abertura não aprova uma candidata nem publica imagens no Docker Hub.
+- DEC-041: Aplicar as proteções descritas em docs/repository-security.md: PR e CI obrigatórios, CodeQL, revisão de dependências e segredos, preservação de commits e tags Git, Actions restritas e documentação de contribuição e segurança. Exigir uma aprovação, com bypass de administradores somente para essa aprovação ao integrar por PR; checks e demais proteções permanecem sem bypass.
 
 JDK 21 e Node.js Active LTS são os candidatos levantados para atender às dependências Salesforce; as versões exatas devem ser resolvidas e registradas com a verificação de compatibilidade da entrega. Pacotes Arch precisam de uma estratégia coerente de atualização, inclusive para recompilações AUR, sem combinar uma base nova com partes arbitrárias de um sistema antigo.
 
@@ -158,6 +160,7 @@ Os cenários devem usar projetos, dados e recursos Docker dedicados à validaç�
 16. **Evidência de plataforma:** produzir relatório da validação WSL2 local e fornecer o roteiro executável Hyper-V com resultados e limitações identificáveis. A primeira publicação pode ocorrer com a execução no destino pendente; sucesso no WSL2 não deve ser reportado como teste real em Hyper-V.
 17. **Operação pelo CMD:** executar instalação, atalho e comandos de operação a partir de `cmd.exe`, sem invocar `powershell.exe` ou `pwsh.exe`; o roteiro de destino e as instruções públicas devem exercer o mesmo contrato.
 18. **Código público:** registrar o escopo e os limites da revisão de exposição, verificar as licenças no pacote de comandos e confirmar acesso anônimo ao código e reconhecimento de MIT pelo GitHub após a mudança de visibilidade.
+19. **Proteções do repositório:** validar os workflows e formulários, executar a verificação de segredos com um controle positivo local, ler novamente as configurações efetivas do GitHub e integrar o PR de configuração pelos checks exigidos, preservando os checkpoints de planejamento.
 
 Os testes dos componentes fornecidos são critérios de aprovação da entrega. A tolerância à restauração parcial se limita aos programas extras do usuário. Não foi acordado um número fixo de latência, consumo ou tempo de instalação; o perfil deverá ser escolhido a partir das medições do cenário confirmado.
 
@@ -180,7 +183,7 @@ Os testes dos componentes fornecidos são critérios de aprovação da entrega. 
 
 O escopo resulta da entrevista Q1–Q27, encerrada e confirmada em 2026-09-14. O levantamento técnico anterior identificou a variante upstream Arch/KDE, o hardware local e Docker VMM; naquele momento, ainda não havia executado uma workstation derivada nem demonstrado desempenho, restauração, integração Compose ou compatibilidade real no notebook de destino. Esses resultados são entregáveis da implementação. As evidências VMM produzidas posteriormente permanecem históricas; novos testes locais usam WSL2.
 
-As 35 decisões ativas anteriores a DEC-039 declaram as obrigações specification, tickets e verification. DEC-039 acrescenta specification e verification; não exige novo ticket funcional porque é uma manutenção da publicação do repositório autorizada diretamente pelo usuário. Cada decisão ativa possui uma consequência acionável em Implementation Decisions e está incluída no marcador abaixo. DEC-014 está substituída por DEC-019 e não constitui uma obrigação ativa desta especificação. DEC-036 registra a correção do usuário em 2026-09-14: a operação no destino deve usar CMD, pois PowerShell é bloqueado. DEC-037 e DEC-038 substituem DEC-005 e DEC-030 após a mudança do ambiente local para WSL2 em 2026-09-16, mantendo Hyper-V como requisito de destino. DEC-039 remove a exclusão anterior da mudança de visibilidade GitHub, conforme pedido de 2026-09-18.
+As 35 decisões ativas anteriores a DEC-039 declaram as obrigações specification, tickets e verification. DEC-039 e DEC-041 acrescentam specification e verification; não exigem novos tickets funcionais porque são manutenções da publicação e proteção do repositório autorizadas diretamente pelo usuário. Cada decisão ativa possui uma consequência acionável em Implementation Decisions e está incluída no marcador abaixo. DEC-014 está substituída por DEC-019 e não constitui uma obrigação ativa desta especificação. DEC-036 registra a correção do usuário em 2026-09-14: a operação no destino deve usar CMD, pois PowerShell é bloqueado. DEC-037 e DEC-038 substituem DEC-005 e DEC-030 após a mudança do ambiente local para WSL2 em 2026-09-16, mantendo Hyper-V como requisito de destino. DEC-039 remove a exclusão anterior da mudança de visibilidade GitHub, conforme pedido de 2026-09-18; DEC-041 substitui DEC-040 para exigir uma aprovação e permitir bypass administrativo somente da aprovação em PRs, preservando as demais boas práticas solicitadas depois da abertura.
 
 A publicação desta especificação conclui a cobertura de specification, após seu registro no ledger. A decomposição em tickets e as evidências de execução são etapas posteriores; o checkpoint de planejamento usado aqui é intermediário. O marcador deverá ser atualizado para o checkpoint final quando a cobertura dos tickets estiver concluída, antes de uma nova sessão de implementação.
 
@@ -194,5 +197,5 @@ O mecanismo de caminhos compartilhados com Docker/Compose, o preparo dos aplicat
 - Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: 6b9f83fa52a61d2c655064f2c74d1b4476571886
-- Decisions: DEC-001, DEC-002, DEC-003, DEC-004, DEC-006, DEC-007, DEC-008, DEC-009, DEC-010, DEC-011, DEC-012, DEC-013, DEC-015, DEC-016, DEC-017, DEC-018, DEC-019, DEC-020, DEC-021, DEC-022, DEC-023, DEC-024, DEC-025, DEC-026, DEC-027, DEC-028, DEC-029, DEC-031, DEC-032, DEC-033, DEC-034, DEC-035, DEC-036, DEC-037, DEC-038, DEC-039
+- Planning checkpoint: 0dee9084ec3f3e1ad0fdb93a029a5c28a42d9d70
+- Decisions: DEC-001, DEC-002, DEC-003, DEC-004, DEC-006, DEC-007, DEC-008, DEC-009, DEC-010, DEC-011, DEC-012, DEC-013, DEC-015, DEC-016, DEC-017, DEC-018, DEC-019, DEC-020, DEC-021, DEC-022, DEC-023, DEC-024, DEC-025, DEC-026, DEC-027, DEC-028, DEC-029, DEC-031, DEC-032, DEC-033, DEC-034, DEC-035, DEC-036, DEC-037, DEC-038, DEC-039, DEC-041
