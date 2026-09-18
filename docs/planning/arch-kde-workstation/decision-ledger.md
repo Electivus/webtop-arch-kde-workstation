@@ -600,7 +600,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Obligations: specification, verification
 - Coverage:
   - specification: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: docs/planning/arch-kde-workstation/spec.md: historia 57, consequencia DEC-039 e cenario 18; manutencao do repositorio autorizada diretamente, sem novo ticket funcional.
-  - verification: none
+  - verification: docs/verification/public-repository.md: historico Git, tracker e logs/diagnosticos de CI revisados sem segredos identificados; build commands-export com vet Linux/Windows e avisos conferidos; acesso anonimo API/Git/LICENSE e MIT confirmados em 2026-09-18; secret scanning, push protection, relato privado e aprovacao de forks externos habilitados.
