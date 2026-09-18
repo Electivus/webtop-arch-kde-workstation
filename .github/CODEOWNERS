@@ -1,2 +1,2 @@
-# Routing only: a second human approval is not required while there is one maintainer.
+# Routes review requests; approval and administrator PR bypass are set by rulesets.
 * @manoelcalixto

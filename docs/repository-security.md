@@ -1,7 +1,7 @@
 # Configurações do repositório público
 
 Política inicial de 2026-09-18 para
-`Electivus/webtop-arch-kde-workstation` (DEC-040). Os arquivos abaixo registram a
+`Electivus/webtop-arch-kde-workstation` (DEC-041, que substitui DEC-040). Os arquivos abaixo registram a
 configuração esperada; consulte também o estado efetivo em **Settings** e os
 resultados das execuções em **Actions**.
 
@@ -14,10 +14,16 @@ resultados e bloqueia novos alertas de erro e vulnerabilidades de severidade alt
 ou crítica introduzidos pelo PR. Alertas anteriores continuam abertos para triagem.
 Force push e exclusão da branch principal são bloqueados, sem atores de bypass.
 
-Há um único mantenedor com escrita, `@manoelcalixto`; por isso são exigidas zero
-aprovações humanas adicionais. Isso não libera push direto nem dispensa os
-checks. `CODEOWNERS` encaminha a responsabilidade e deverá ser revisto junto da
-quantidade de aprovações quando a equipe crescer.
+O ruleset adicional [Require review with admin PR bypass](../.github/rulesets/review.json)
+exige **uma aprovação** e permite bypass a `RepositoryRole` Admin (ID 5) somente
+em `pull_request`. O GitHub não permite aprovar o próprio PR; nos seus PRs, o
+administrador pode dispensar essa aprovação para integrar após os checks.
+
+As regras se acumulam: a aprovação fica separada para que seu bypass não
+dispense testes, CodeQL, conversas resolvidas ou as demais proteções de
+`Protect main`. O campo de zero aprovações em `main.json` não anula a exigência
+de uma aprovação em `review.json`. `CODEOWNERS` encaminha a responsabilidade
+ao mantenedor `@manoelcalixto`.
 
 Somente **merge commit** é permitido. Squash, rebase e a exigência de histórico
 linear são incompatíveis com a preservação dos SHAs de Planning checkpoints

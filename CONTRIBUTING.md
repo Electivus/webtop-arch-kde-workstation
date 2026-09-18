@@ -20,11 +20,11 @@ com checkpoints de planejamento: especificações, tickets e evidências apontam
 para esses SHAs. Leia `docs/agents/planning.md` quando o trabalho consumir um
 marcador de Planning context.
 
-Há um único mantenedor com escrita no início desta política. PRs continuam
-obrigatórios, mas não exigem uma segunda aprovação humana. `CODEOWNERS` indica
-o responsável; não concede acesso de escrita a contribuidores. O mantenedor
-decide a integração após as verificações. Ao ampliar a equipe, revise a
-quantidade de aprovações exigidas.
+É exigida pelo menos **uma aprovação**. Administradores podem dispensar essa
+aprovação somente ao integrar por PR; esse bypass não dispensa CI, análise de
+segurança, resolução de conversas ou as demais proteções. O GitHub não permite
+aprovar o próprio PR: use o bypass administrativo quando necessário, após os
+checks. `CODEOWNERS` indica o responsável, sem conceder acesso de escrita.
 
 Dependabot propõe atualizações de Actions e das imagens ancestrais. Esses PRs
 seguem as mesmas verificações. Versões e digests devem ser revisados juntos;

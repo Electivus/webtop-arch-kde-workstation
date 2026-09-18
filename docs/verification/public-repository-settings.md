@@ -1,6 +1,6 @@
 # Verificação das configurações públicas
 
-Data: 2026-09-18. Decisão: DEC-040. Base da alteração:
+Data: 2026-09-18. Decisão: DEC-041 (substitui DEC-040). Base da alteração:
 `e5c2f6ea35b36e9cd396b74591360a19c26e91db`.
 
 ## Configurações e validação local
@@ -8,6 +8,9 @@ Data: 2026-09-18. Decisão: DEC-040. Base da alteração:
 - Rulesets ativos `Protect main` (23657276) e `Protect published tags`
   (23657280), sem bypass. A API retornou PR obrigatório, verificações exigidas,
   CodeQL, bloqueio de force push/exclusão da main e alteração/exclusão de tags.
+- Ruleset `Require review with admin PR bypass` (23657404) exige uma aprovação.
+  A API confirmou somente `RepositoryRole` Admin (5), em modo `pull_request`,
+  como bypass dessa regra. Os outros dois rulesets mantêm bypass vazio.
 - Actions restritas ao GitHub e às duas Actions Docker utilizadas, com SHA
   obrigatório. Token padrão somente leitura, sem aprovação de reviews; todos os
   contribuidores externos precisam de aprovação para executar workflows de forks.
@@ -38,6 +41,21 @@ Os alertas estão na [área de CodeQL](https://github.com/Electivus/webtop-arch-
 
 ## Integração
 
-Os resultados do PR e a conferência final das configurações serão registrados
-após a execução dos novos workflows. Esta mudança configura o repositório e
-não valida o notebook Hyper-V nem publica imagens no Docker Hub.
+O [PR #23](https://github.com/Electivus/webtop-arch-kde-workstation/pull/23)
+exerce as regras com as novas restrições de Actions ativas. No commit
+`9e14e3e6d9b63365545a89e8837ed10bb332c99a`,
+[Security 35346654169](https://github.com/Electivus/webtop-arch-kde-workstation/actions/runs/35346654169)
+passou em `secrets` e `dependency-review`;
+[CodeQL 35346652169](https://github.com/Electivus/webtop-arch-kde-workstation/actions/runs/35346652169)
+passou nas quatro análises e no check agregado. A API de CODEOWNERS retornou
+`errors: []`.
+
+Após adicionar a exigência de aprovação, a leitura do PR retornou
+`reviewDecision: REVIEW_REQUIRED` e `mergeStateStatus: BLOCKED`, com o teste
+`desktop-lifecycle` ainda em execução. Isso comprova que a exigência de revisão
+está efetiva; o bypass não é uma aprovação de autoria própria. A configuração
+foi relida pela API de regras efetivas de `main`, além de cada ruleset.
+
+Os checks do PR registram os resultados da revisão final e a integração depende
+do sucesso dos testes, usando bypass administrativo somente da aprovação.
+Nenhum resultado desse PR comprova Hyper-V ou publica imagens no Docker Hub.
