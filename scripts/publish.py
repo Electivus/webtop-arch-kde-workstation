@@ -21,7 +21,28 @@ REPOSITORY = 'Electivus/webtop-arch-kde-workstation'
 
 
 def github_api(path):
-    return json.loads(subprocess.check_output(['gh', 'api', 'repos/' + REPOSITORY + '/' + path], text=True))
+    return json.loads(subprocess.check_output(['gh', 'api', 'repos/' + REPOSITORY + '/' + path],
+                                             text=True, stderr=subprocess.PIPE))
+
+
+def ensure_release_tag(tag, revision):
+    try:
+        reference = github_api('git/ref/tags/' + tag)['object']
+    except subprocess.CalledProcessError as error:
+        # Only an explicit provider 404 permits creation. Authentication/network
+        # errors must not be treated as a missing tag.
+        try:
+            missing = str(json.loads(error.output).get('status')) == '404'
+        except (ValueError, AttributeError):
+            missing = False
+        if not missing:
+            raise
+        subprocess.run(['gh', 'api', 'repos/' + REPOSITORY + '/git/refs', '--method', 'POST', '--input', '-'],
+                       input=json.dumps({'ref': 'refs/tags/' + tag, 'sha': revision}),
+                       text=True, capture_output=True, check=True)
+        reference = github_api('git/ref/tags/' + tag)['object']
+    if reference['type'] != 'commit' or reference['sha'] != revision:
+        raise ValueError('The release tag does not identify the tested source revision; preserve it')
 
 
 def approved_run(run_id):
@@ -321,6 +342,7 @@ def release(args):
         if path.is_symlink() or candidate_transport.sha256_file(path) != digest:
             raise ValueError('Release asset checksum mismatch: ' + name)
     tag = 'v' + version
+    ensure_release_tag(tag, revision)
     view_command = ['gh', 'release', 'view', tag, '--repo', REPOSITORY, '--json', 'isDraft,assets,targetCommitish,tagName']
     existing = subprocess.run(view_command, capture_output=True, text=True)
     if existing.returncode:
@@ -345,6 +367,7 @@ def release(args):
             if candidate_transport.sha256_file(Path(temporary) / name) != digest:
                 raise ValueError('The remote release asset differs; do not overwrite it: ' + name)
     if metadata['isDraft']:
+        ensure_release_tag(tag, revision)
         subprocess.run(['gh', 'release', 'edit', tag, '--repo', REPOSITORY, '--draft=false'], check=True)
     reference = github_api('git/ref/tags/' + tag)['object']
     if reference['type'] != 'commit' or reference['sha'] != revision:

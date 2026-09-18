@@ -401,7 +401,7 @@ else:
                                                     for path in sorted(assets.iterdir())))
             provider = directory / 'provider'
             provider.mkdir()
-            (provider / 'fail-once').touch()
+            (provider / 'tag.json').write_text(json.dumps({'type': 'commit', 'sha': '0' * 40}))
             gh = directory / 'gh'
             gh.write_text('#!' + sys.executable + '''
 import json, os, shutil, sys
@@ -410,7 +410,12 @@ root=Path(os.environ['GITHUB_RELEASE_FIXTURE'])
 args=sys.argv[1:]
 state=root/'state.json'
 if args[0]=='api':
-    print(json.dumps({'object':{'type':'commit','sha':json.loads(state.read_text())['targetCommitish']}}))
+    if args[1].endswith('/git/refs'):
+        data=json.load(sys.stdin)
+        (root/'tag.json').write_text(json.dumps({'type':'commit','sha':data['sha']}))
+    if not (root/'tag.json').exists():
+        print(json.dumps({'status':'404','message':'Not Found'})); sys.exit(1)
+    print(json.dumps({'object':json.loads((root/'tag.json').read_text())}))
     sys.exit(0)
 assert args[0]=='release' and args[args.index('--repo')+1]=='Electivus/webtop-arch-kde-workstation'
 operation=args[1]
@@ -443,6 +448,16 @@ else: sys.exit(2)
             environment = dict(os.environ, PATH=str(directory) + os.pathsep + os.environ['PATH'],
                                GITHUB_RELEASE_FIXTURE=str(provider))
             command = [sys.executable, ROOT / 'scripts/publish.py', 'release', '--assets', assets]
+            conflicting = subprocess.run(command, env=environment, capture_output=True, text=True)
+            self.assertNotEqual(conflicting.returncode, 0)
+            state = provider / 'state.json'
+            self.assertTrue(not state.exists() or json.loads(state.read_text())['isDraft'],
+                            'A conflicting Git tag must be rejected before the release becomes public')
+            self.assertIn('tag', conflicting.stderr.lower())
+            # Reset only this synthetic provider to exercise a fresh draft and retry.
+            for path in provider.iterdir():
+                path.unlink()
+            (provider / 'fail-once').touch()
             interrupted = subprocess.run(command, env=environment, capture_output=True, text=True)
             self.assertNotEqual(interrupted.returncode, 0)
             self.assertTrue((provider / 'state.json').exists(), interrupted.stdout + interrupted.stderr)
