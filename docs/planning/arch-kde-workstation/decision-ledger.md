@@ -606,7 +606,8 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
   - verification: docs/verification/public-repository.md: historico Git, tracker e logs/diagnosticos de CI revisados sem segredos identificados; build commands-export com vet Linux/Windows e avisos conferidos; acesso anonimo API/Git/LICENSE e MIT confirmados em 2026-09-18; secret scanning, push protection, relato privado e aprovacao de forks externos habilitados.
 
 ## DEC-040
-- Status: active
+- Status: superseded
+- Superseded by: DEC-041
 - Decision: Proteger o repositorio publico com PR obrigatorio e verificacoes de CI e seguranca, preservando commits de planejamento, restringindo Actions e mantendo orientacoes publicas de contribuicao e relato privado.
 - Context: Em 2026-09-18, apos a abertura do codigo, o usuario solicitou aplicar as boas praticas de configuracao para repositorios publicos; a inspeção confirmou um unico mantenedor com escrita.
 - Rationale: Reduzir mudancas diretas sem verificacao, exposicao de segredos e risco de dependencias, mantendo um fluxo viavel para o mantenedor e a rastreabilidade dos checkpoints.
@@ -618,4 +619,20 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
   - verification: pending
 - Evidence:
   - specification: docs/repository-security.md: regras de main e tags, checks, CodeQL, Dependabot, Actions e fluxo de contribuicao; manutencao do repositorio autorizada diretamente, sem novo ticket funcional.
+  - verification: none
+
+## DEC-041
+- Status: active
+- Decision: Proteger o repositorio publico com PR, CI e seguranca obrigatorios e pelo menos uma aprovacao, permitindo a administradores dispensar somente a aprovacao ao integrar por PR; preservar commits de planejamento, tags e Actions restritas.
+- Context: Em 2026-09-18, o usuario ajustou a politica publica: pediu pelo menos uma aprovacao e bypass admin para pull requests, para conseguir integrar seus proprios PRs.
+- Rationale: Exigir revisao no fluxo normal sem bloquear o mantenedor em PRs de sua autoria, preservando os testes obrigatorios e a rastreabilidade dos checkpoints.
+- ADR: none
+- Constraints: Merge commit; bloquear force push e exclusao de main e alteracao/exclusao de tags Git. Bypass RepositoryRole Admin somente pull_request em regra separada de aprovacao; checks e demais protecoes sem bypass. GitHub nao permite aprovar o proprio PR. Nao alterar aprovacao de imagens ou exposicao da workstation.
+- Obligations: specification, verification
+- Supersedes: DEC-040
+- Coverage:
+  - specification: complete
+  - verification: pending
+- Evidence:
+  - specification: docs/repository-security.md e docs/planning/arch-kde-workstation/spec.md: PR e checks obrigatorios, uma aprovacao com bypass admin somente via PR em ruleset separado; manutencao autorizada diretamente, sem novo ticket funcional.
   - verification: none
