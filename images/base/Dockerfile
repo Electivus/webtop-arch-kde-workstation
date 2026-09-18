@@ -8,6 +8,7 @@ RUN test -z "$(gofmt -l cmd)" && go vet ./... && GOOS=windows GOARCH=amd64 go ve
 COPY distribution/windows/workstation.cmd /out/workstation.cmd
 COPY distribution/windows/setup.cmd /out/setup.cmd
 COPY cmd/workstation/MOBY-LICENSE cmd/workstation/THIRD-PARTY.md /out/licenses/
+COPY LICENSE /out/licenses/ELECTIVUS-LICENSE
 RUN cp /usr/local/go/LICENSE /out/licenses/GO-LICENSE
 
 FROM scratch AS commands-export

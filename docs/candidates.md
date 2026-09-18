@@ -12,7 +12,7 @@ A [verificação de referência](verification/t11-candidates.md) registra uma ex
 
 ## Levar a candidata ao Windows
 
-Na execução identificada do GitHub Actions, baixe os três artefatos: `candidate-results-RUN-TENTATIVA`, `webtop-arch-kde-base-RUN-TENTATIVA` e `webtop-arch-kde-salesforce-RUN-TENTATIVA`. Extraia os ZIPs na mesma pasta. O acesso aos artefatos segue a visibilidade privada do repositório, e a retenção é de sete dias.
+Na execução identificada do GitHub Actions, baixe os três artefatos: `candidate-results-RUN-TENTATIVA`, `webtop-arch-kde-base-RUN-TENTATIVA` e `webtop-arch-kde-salesforce-RUN-TENTATIVA`. Extraia os ZIPs na mesma pasta. O repositório público permite consultar o código e os resultados; o download de artefatos pelo GitHub exige uma conta autenticada. A retenção é de sete dias. Nenhum desses arquivos deve conter perfis pessoais, credenciais ou configurações corporativas reais.
 
 Confira a aprovação e anote a versão de `candidate.json`. O fluxo abaixo usa CMD e Docker Desktop. Substitua `VERSAO_DO_MANIFESTO` pela versão registrada:
 
