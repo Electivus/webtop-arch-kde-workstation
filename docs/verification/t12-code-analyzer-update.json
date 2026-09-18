@@ -1,0 +1,31 @@
+{
+  "state": "passed",
+  "sourceRevision": "89e19f54e55122902cfe3d8cbea053ed3cf572d2",
+  "developmentFixture": true,
+  "durationSeconds": 1401.62,
+  "initial": {
+    "salesforceCli": "2.149.1",
+    "codeAnalyzer": "5.14.0",
+    "visualforce": "67.14.0"
+  },
+  "updated": {
+    "salesforceCli": "2.150.6",
+    "codeAnalyzer": "5.16.0",
+    "visualforce": {
+      "code": [
+        "salesforce.salesforcedx-vscode-visualforce@67.17.2"
+      ],
+      "code-insiders": [
+        "salesforce.salesforcedx-vscode-visualforce@67.17.2"
+      ]
+    }
+  },
+  "backupState": "completed",
+  "bothEditorsAfterUpdateAndRestore": true,
+  "checks": [
+    "explicit command changes older supplied plugin version",
+    "real PMD scan works after update and after restore",
+    "backup restores all original application receipts and project content",
+    "both editors retain Apex and LWC services after update and restore"
+  ]
+}

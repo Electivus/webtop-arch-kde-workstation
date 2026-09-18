@@ -25,6 +25,7 @@
   "salesforce": {
     "cliVersion": "2.150.6",
     "cliIntegrity": "sha512-PDsV7xVFkM//GKDFifUA4KQgoRZ48HPnpY8qq3EC2e+jjVe3f3PfVjC/yVR4cHf7X3Y2lPNUJhRCE7WBeuosZA==",
+    "cliPlugins": {"@salesforce/plugin-code-analyzer": "5.15.0"},
     "extensions": ["salesforce.salesforcedx-vscode"],
     "requiredExtensions": [
       "salesforce.salesforcedx-vscode",
