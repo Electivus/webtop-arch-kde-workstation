@@ -34,7 +34,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/13
-  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: tests/test_commands.py exercised install/start/stop and the native Windows shortcut through CMD without WSL or PowerShell; Hyper-V destination execution remains in T12."]
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: tests/test_commands.py exercised install/start/stop and the native Windows shortcut through CMD without WSL or PowerShell; Hyper-V destination execution remains in T12.","ticket ticket T12/#13; evidence commit a0978cda363c4034416a79d098a8979b4e092fa9; reviewed source33f5a07; CI35227601742: CI35227601742 native CMD destination guide passed installation, prerequisites, applications, projects, Compose, exchange, backup and restoration; real Hyper-V remains pending. docs/verification/t12-candidate.json."]
 ## DEC-003
 - Status: active
 - Decision: Publicar a imagem no Docker Hub da organizacao Electivus.
@@ -65,7 +65,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/2; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/13
-  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: CMD status reports actual Docker VM allocation and adjustable limits; lifecycle and browser checks passed at 2560 MiB and 2 CPUs."]
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: CMD status reports actual Docker VM allocation and adjustable limits; lifecycle and browser checks passed at 2560 MiB and 2 CPUs.","ticket ticket T12/#13; evidence commit a0978cda363c4034416a79d098a8979b4e092fa9; reviewed source33f5a07; CI35227601742: Latitude5450 CoreUltra7165U, 32GB and one1920x1080 display measured with the exact33f5a07 candidate and preserved OCI digests. docs/verification/t12-latitude.json."]
 ## DEC-005
 - Status: superseded
 - Superseded by: DEC-037
@@ -172,7 +172,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/3; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/4; https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/11
-  - verification: ["ticket commits d3fc05b/ea1927c; docs/verification/t02-t03-apps.md; docs/verification/t02-t03-review.md: Chrome, Git, both official editors, Salesforce CLI and full Extension Pack verified; removed Visualforce restored in both channels.","ticket T09/T10 at 66f705e8ffca613bb5d370d11318f4c070e15b8e; CI 35128163401: Windows WSL2 acceptance preserves official Chrome, Stable/Insiders, Salesforce CLI and extensions; four real Apex/LWC service receipts pass after Salesforce image update and recovery. docs/verification/t09-t10-wsl2-final.json."]
+  - verification: ["ticket commits d3fc05b/ea1927c; docs/verification/t02-t03-apps.md; docs/verification/t02-t03-review.md: Chrome, Git, both official editors, Salesforce CLI and full Extension Pack verified; removed Visualforce restored in both channels.","ticket T09/T10 at 66f705e8ffca613bb5d370d11318f4c070e15b8e; CI 35128163401: Windows WSL2 acceptance preserves official Chrome, Stable/Insiders, Salesforce CLI and extensions; four real Apex/LWC service receipts pass after Salesforce image update and recovery. docs/verification/t09-t10-wsl2-final.json.","ticket ticket T12/#13; evidence commit a0978cda363c4034416a79d098a8979b4e092fa9; reviewed source33f5a07; CI35227601742: Both VS Codes, Salesforce tools and Code Analyzer preparation/update/recovery were verified; FullHD scenario opened the generic Salesforce project in Insiders. docs/verification/t12-code-analyzer.md."]
 ## DEC-012
 - Status: active
 - Decision: Usar Zsh como shell padrao, com Oh My Zsh e plugins recomendados.
@@ -350,12 +350,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/13
-  - verification: none
-
+  - verification: ["ticket ticket T12/#13; evidence commit a0978cda363c4034416a79d098a8979b4e092fa9; reviewed source33f5a07; CI35227601742: Container6GiB/4CPU sustained the tested workload at5.561GiB peak; Windowsavailable3.586GiB minimum and other-container load recorded. ActualWSL VM15.35GiB/14CPU is distinguished from unvalidated HyperV8GiB/6CPU proposal."]
 ## DEC-024
 - Status: active
 - Decision: Usar VS Code Insiders como editor padrao para abrir projetos e arquivos, mantendo VS Code Stable disponivel separadamente.
@@ -430,7 +429,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/11
-  - verification: ["ticket T09/T10 at 66f705e8ffca613bb5d370d11318f4c070e15b8e; CI 35128163401: All six Windows application-update cases pass in 2915.393s, including actual CLI/extension version changes, unchanged image, supplier receipts, no silent retry, failures and recovery with Apex/LWC in both editors. Real terminated host commands become interrupted. docs/verification/wsl2-resume.md."]
+  - verification: ["ticket T09/T10 at 66f705e8ffca613bb5d370d11318f4c070e15b8e; CI 35128163401: All six Windows application-update cases pass in 2915.393s, including actual CLI/extension version changes, unchanged image, supplier receipts, no silent retry, failures and recovery with Apex/LWC in both editors. Real terminated host commands become interrupted. docs/verification/wsl2-resume.md.","ticket ticket T12/#13; evidence commit a0978cda363c4034416a79d098a8979b4e092fa9; reviewed source33f5a07; CI35227601742: Explicit CodeAnalyzer update preserved version receipts and absent-plugin preparation restored the recorded version; final native image-update/recovery retained functional applications. docs/verification/t12-code-analyzer.md; docs/verification/t12-candidate.json."]
 ## DEC-029
 - Status: active
 - Decision: Fazer backup local no Windows de projetos, perfil pessoal, aplicativos persistidos e inventario antes das atualizacoes e sob demanda, mantendo os dois backups concluidos mais recentes.
@@ -472,12 +471,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/1
   - tickets: https://github.com/manoelcalixto/webtop-arch-kde-workstation/issues/13
-  - verification: none
-
+  - verification: ["ticket ticket T12/#13; evidence commit a0978cda363c4034416a79d098a8979b4e092fa9; reviewed source33f5a07; CI35227601742: FullHD Insiders+Salesforce project+Chrome passed with120s/29resource samples,10visual response samples57.7-120.5ms and software CPU encoder evidence. docs/verification/t12-latitude.md."]
 ## DEC-032
 - Status: active
 - Decision: Quando a restauracao de programas extras pacman/AUR falhar apos uma atualizacao, disponibilizar o ambiente atualizado com os aplicativos que funcionaram, relatar as falhas e permitir nova tentativa ou recuperacao do backup.
@@ -554,8 +552,7 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Evidence:
   - specification: docs/planning/arch-kde-workstation/spec.md
   - tickets: docs/planning/arch-kde-workstation/tickets/01-desktop-local.md; docs/planning/arch-kde-workstation/tickets/12-validacao-latitude-hyperv.md; docs/planning/arch-kde-workstation/tickets/13-publicacao-docker-hub.md
-  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: Shipped setup.cmd and workstation.cmd, native Windows shortcut and CryptoAPI passed public-command tests; all PowerShell operation scripts were removed.","ticket commit 646085e; docs/verification/t01-desktop.md: Evidence covers shipped T01 CMD operations only; full diagnostics, backup, recovery and updates remain pending in their tickets and T12/T13."]
-
+  - verification: ["commit bb082747b1a8c38132c07768f097795fe3a94872: Shipped setup.cmd and workstation.cmd, native Windows shortcut and CryptoAPI passed public-command tests; all PowerShell operation scripts were removed.","ticket commit 646085e; docs/verification/t01-desktop.md: Evidence covers shipped T01 CMD operations only; full diagnostics, backup, recovery and updates remain pending in their tickets and T12/T13.","ticket ticket T12/#13; evidence commit a0978cda363c4034416a79d098a8979b4e092fa9; reviewed source33f5a07; CI35227601742: All five final native Windows operations passed using the candidate CMD/controller bytes, including shortcut, certificate trust, browser reconnect and image update/recovery; no product PowerShell/hostPython dependency. docs/verification/t12-candidate.json."]
 ## DEC-037
 - Status: active
 - Decision: Usar Docker Desktop com backend WSL2 neste notebook para os novos testes locais, mantendo Hyper-V sem dependencia de WSL2 como requisito do notebook de destino.
@@ -567,12 +564,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: docs/planning/arch-kde-workstation/spec.md: novos testes locais em Docker Desktop com WSL2; evidencias VMM historicas e destino Hyper-V distintos.
   - tickets: docs/planning/arch-kde-workstation/tickets/01-desktop-local.md; docs/planning/arch-kde-workstation/tickets/12-validacao-latitude-hyperv.md
-  - verification: none
-
+  - verification: ["ticket ticket T12/#13; evidence commit a0978cda363c4034416a79d098a8979b4e092fa9; reviewed source33f5a07; CI35227601742: Current acceptance reports DockerDesktop29.8.0 WSL2 kernel6.18.35.2 and actual engine resources; historical VMM results are not presented as new evidence."]
 ## DEC-038
 - Status: active
 - Decision: Permitir a primeira publicacao apos os testes locais definidos no Docker Desktop com WSL2, declarando a validacao real em Hyper-V como pendente e entregando o roteiro executavel pelo CMD para o notebook de destino.
@@ -584,12 +580,11 @@ Decision meanings are immutable after a Planning checkpoint. Coverage advances f
 - Coverage:
   - specification: complete
   - tickets: complete
-  - verification: pending
+  - verification: complete
 - Evidence:
   - specification: docs/planning/arch-kde-workstation/spec.md: publicacao apos testes locais definidos em WSL2 e roteiro CMD Hyper-V, mantendo a execucao no destino pendente.
   - tickets: docs/planning/arch-kde-workstation/tickets/12-validacao-latitude-hyperv.md; docs/planning/arch-kde-workstation/tickets/13-publicacao-docker-hub.md
-  - verification: none
-
+  - verification: ["ticket ticket T12/#13; evidence commit a0978cda363c4034416a79d098a8979b4e092fa9; reviewed source33f5a07; CI35227601742: Approved CI pair passed all13groups and all5final native operations. HyperV physical validation remains explicitly pending with CMD guide; the new MIT-containing public candidate needs its own CI identity in T13."]
 ## DEC-039
 - Status: active
 - Decision: Tornar publico o repositorio GitHub Electivus/webtop-arch-kde-workstation, licenciando o codigo e a documentacao proprios da Electivus sob MIT e preservando as licencas de terceiros.

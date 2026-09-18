@@ -24,7 +24,7 @@ distribution\windows\setup.cmd electivus/webtop-arch-kde-base:local "%LOCALAPPDA
 cd /d "%LOCALAPPDATA%\Electivus\workstation-tools"
 ```
 
-No Docker Desktop, selecione um contexto local e containers Linux. O perfil inicial acordado para a **VM Docker** é 8 GiB e 6 CPUs lógicas. A instalação reserva por padrão até 6 GiB e 4 CPUs para a workstation, deixando recursos para Windows e outros containers. Estes limites são ajustáveis; as medições do cenário Salesforce serão entregues em T12. A instalação recusa limites maiores que os disponíveis no engine.
+No Docker Desktop, selecione um contexto local e containers Linux. A instalação reserva por padrão até **6 GiB e 4 CPUs para a workstation**, perfil exercitado com Insiders e Chrome em Full HD. As [medições do Latitude](docs/verification/t12-latitude.md) registram pico de 5,56 GiB no container. A VM WSL2 realmente observada tinha 15,35 GiB e 14 CPUs; os **8 GiB e 6 CPUs propostos para a VM Hyper-V** continuam um ponto inicial a verificar no destino. Reserve recursos também para Windows e outros containers. A instalação recusa limites maiores que os disponíveis no engine.
 
 ```bat
 workstation.cmd install --image electivus/webtop-arch-kde-base:local
