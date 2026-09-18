@@ -76,6 +76,7 @@ COPY marker /salesforce-marker
                 commands = directory / 'commands'
                 (commands / 'licenses').mkdir(parents=True)
                 for filename in ('setup.cmd', 'workstation.cmd', 'workstation.exe', 'workstation',
+                                 'verify-target.cmd', 'verify-target.py',
                                  'licenses/ELECTIVUS-LICENSE', 'licenses/THIRD-PARTY.md',
                                  'licenses/GO-LICENSE', 'licenses/MOBY-LICENSE'):
                     (commands / filename).write_text('Candidate transport fixture: ' + filename)
@@ -373,10 +374,9 @@ else:
             with zipfile.ZipFile(archive_path) as archive:
                 for name, digest in candidate['commands'].items():
                     self.assertEqual(hashlib.sha256(archive.read(name)).hexdigest(), digest)
-                for name in ('verify-target.cmd', 'verify-target.py', 'docs/hyperv-verification.md'):
-                    source = 'distribution/windows/' + name if '/' not in name else name
+                for name in ('docs/hyperv-verification.md',):
                     self.assertEqual(archive.read(name), subprocess.check_output(
-                        ['git', 'show', candidate['revision'] + ':' + source], cwd=ROOT))
+                        ['git', 'show', candidate['revision'] + ':' + name], cwd=ROOT))
                 guide = archive.read('START-HERE.md').decode()
                 self.assertIn(candidate['images'][1]['digest'], guide)
                 self.assertIn('workstation.cmd install', guide)

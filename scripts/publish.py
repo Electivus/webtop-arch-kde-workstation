@@ -240,6 +240,7 @@ def bundle(args):
         raise ValueError('Only a completed coordinated publication can supply a consumer bundle')
     commands = candidate['commands']
     required = {'setup.cmd', 'workstation.cmd', 'workstation.exe', 'workstation',
+                'verify-target.cmd', 'verify-target.py',
                 'licenses/ELECTIVUS-LICENSE', 'licenses/GO-LICENSE', 'licenses/MOBY-LICENSE',
                 'licenses/THIRD-PARTY.md'}
     if set(commands) != required:
@@ -250,11 +251,10 @@ def bundle(args):
         if path.is_symlink() or candidate_transport.sha256_file(path) != digest:
             raise ValueError('The consumer command differs from its tested artifact: ' + name)
         files[name] = path.read_bytes()
-    for name in ('verify-target.cmd', 'verify-target.py', 'docs/hyperv-verification.md',
+    for name in ('docs/hyperv-verification.md',
                  'docs/backups.md', 'docs/image-updates.md', 'docs/application-updates.md',
                  'docs/network.md', 'docs/projects.md', 'docs/packages.md', 'docs/licensing.md', 'LICENSE'):
-        source = 'distribution/windows/' + name if name.startswith('verify-target.') else name
-        files[name] = subprocess.check_output(['git', 'show', candidate['revision'] + ':' + source], cwd=ROOT)
+        files[name] = subprocess.check_output(['git', 'show', candidate['revision'] + ':' + name], cwd=ROOT)
     image = candidate['images'][1]
     reference = image['reference'].split(':')[0] + '@' + image['digest']
     guide = f'''# Instalar a workstation Salesforce

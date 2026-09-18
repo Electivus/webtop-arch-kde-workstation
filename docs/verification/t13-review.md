@@ -65,3 +65,25 @@ ativados e lidos novamente via API em 2026-09-18. A revisão de fonte não compr
 ativação OIDC, integração, primeiro push público, pull/início da imagem publicada
 ou a aceitação física Hyper-V. Esses resultados continuam separados da evidência
 local; o fechamento de T13 depende das provas de entrega que ainda faltam.
+
+## Integração com o pacote corrigido do T12
+
+Após a revisão de fonte, o feedback publicado no PR #25 identificou que o
+verificador Hyper-V precisava acompanhar também `commands.tar` e a cópia
+embutida na imagem. O commit T12 `607b4ed8d788bdf0d46ec44e86a8e2b87228b711`
+corrige essa distribuição. O publicador passou a exigir os dois arquivos no
+manifesto de comandos e a preservar exatamente seus bytes e hashes no ZIP,
+sem substituí-los por uma cópia obtida separadamente da fonte Git.
+
+A regressão no limite do pacote consumidor rejeitou o novo conjunto de arquivos
+antes dessa adaptação. Depois dela, os 11 testes de publicação passaram em
+28,594 segundos, incluindo integridade do ZIP, interrupção/retomada e conflitos
+de versão. Foi feita uma auto-revisão restrita à lista de arquivos e à sua
+origem; o ciclo independente acima não foi reiniciado. Um primeiro invólucro
+Docker falhou na proteção de propriedade do Git; o teste passou a declarar
+somente o checkout de teste, montado em leitura, como diretório seguro dentro
+daquele processo descartável. Nenhuma configuração Git do host foi alterada.
+
+Os READMEs das duas imagens foram salvos e conferidos pela interface Docker Hub.
+Eles descrevem instalação, conteúdo, versões e a pendência de Hyper-V; ainda
+identificam a primeira publicação como em validação. Não são evidência de push.
