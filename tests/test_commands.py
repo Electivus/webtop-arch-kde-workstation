@@ -1,4 +1,5 @@
 """Behavior checks through the shipped command; Docker fixtures are disposable."""
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -65,6 +66,10 @@ class CommandAcceptance(unittest.TestCase):
             copied_cli = profile / "tools" / CLI.name
             started = command("start", "--profile", profile, cli=copied_cli)
             self.assertTrue(started["healthy"])
+            for filename in ("verify-target.cmd", "verify-target.py"):
+                expected = hashlib.sha256((ROOT / "distribution/windows" / filename).read_bytes()).hexdigest()
+                self.assertEqual(docker("exec", name, "sha256sum", "/opt/electivus/windows/" + filename).split()[0],
+                                 expected)
             container = json.loads(docker("inspect", name))[0]
             self.assertEqual(container["NetworkSettings"]["Ports"]["3001/tcp"],
                              [{"HostIp": "127.0.0.1", "HostPort": "13404"}])
@@ -147,6 +152,9 @@ class CommandAcceptance(unittest.TestCase):
         bundle = ROOT / ".local" / (name + " extracted commands")
         setup = invoke(ROOT / "distribution" / "windows" / "setup.cmd", IMAGE, bundle)
         self.assertEqual(setup.returncode, 0, setup.stderr + setup.stdout)
+        for filename in ("verify-target.cmd", "verify-target.py"):
+            self.assertEqual((bundle / filename).read_bytes(),
+                             (ROOT / "distribution/windows" / filename).read_bytes())
         extracted_cli = bundle / "workstation.cmd"
         certificate = None
         try:

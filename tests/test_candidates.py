@@ -99,6 +99,9 @@ LABEL io.electivus.workstation.variant="salesforce" org.opencontainers.image.bas
                 self.assertEqual(produced['images'][1]['baseDigest'], produced['images'][0]['digest'])
                 self.assertTrue((bundle / 'commands' / 'workstation.exe').is_file())
                 self.assertTrue((bundle / 'commands' / 'workstation').is_file())
+                for filename in ('verify-target.cmd', 'verify-target.py'):
+                    self.assertEqual((bundle / 'commands' / filename).read_bytes(),
+                                     (source / 'distribution/windows' / filename).read_bytes())
                 self.assertEqual(json.loads((bundle / 'build.json').read_text(encoding='utf-8'))['state'], 'built')
                 controller = (bundle / 'commands/workstation.exe').read_bytes()
                 command_directory = (bundle / 'commands').resolve()
@@ -106,6 +109,9 @@ LABEL io.electivus.workstation.variant="salesforce" org.opencontainers.image.bas
                 shutil.rmtree(command_directory)
                 run(sys.executable, 'scripts/candidate.py', 'load', '--directory', bundle)
                 self.assertEqual((bundle / 'commands/workstation.exe').read_bytes(), controller)
+                for filename in ('verify-target.cmd', 'verify-target.py'):
+                    self.assertEqual((bundle / 'commands' / filename).read_bytes(),
+                                     (source / 'distribution/windows' / filename).read_bytes())
                 rejected = subprocess.run([sys.executable, str(source / 'scripts/candidate.py'), 'test', '--directory', str(bundle),
                                            '--prove-test-failure'], cwd=source, capture_output=True, text=True, encoding='utf-8')
                 self.assertNotEqual(rejected.returncode, 0)

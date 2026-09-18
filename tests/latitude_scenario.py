@@ -143,7 +143,7 @@ def main():
 
             state = start_desktop()
             certificate = command('certificate', '--profile', profile)
-            trusted_before = any(hashlib.sha1(der).hexdigest().upper() == certificate['thumbprint']
+            trusted_before = any(hashlib.sha256(der).hexdigest().upper() == certificate['sha256']
                                  for der, encoding, trust in ssl.enum_certificates('ROOT'))
             try:
                 step('trust', lambda: command('trust', '--profile', profile))
