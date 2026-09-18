@@ -1,0 +1,23 @@
+name: Propor uma melhoria
+description: Uma necessidade ou alteração de comportamento para discutir.
+labels: [enhancement, needs-triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qual problema precisa ser resolvido?
+      description: Descreva o caso de uso com dados genéricos.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Resultado desejado
+      description: Explique como reconhecer que a melhoria atende à necessidade.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Alternativas e restrições
+      description: Informe limitações de plataforma ou compatibilidade, sem informações corporativas privadas.
