@@ -92,6 +92,7 @@ jobs:
         run: |
           python3 tests/test_acceptance_contract.py
           python3 tests/test_candidates.py
+          python3 tests/test_publication.py
       - name: Select the coordinated candidate version
         env:
           REQUESTED_VERSION: ${{ inputs.version }}
@@ -99,8 +100,8 @@ jobs:
           python3 - <<'PY'
           import datetime, os, re
           version = os.environ.get('REQUESTED_VERSION') or (datetime.datetime.now(datetime.timezone.utc).strftime('%Y.%m.%d') + '-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
-          if not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}', version):
-              raise SystemExit('Invalid candidate version')
+          if not re.fullmatch(r'[0-9][A-Za-z0-9_.-]{0,127}', version):
+              raise SystemExit('Use a numeric version prefix covered by the Docker Hub immutable tag policy')
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
               output.write('CANDIDATE_VERSION=' + version + '\n')
           PY

@@ -2,7 +2,7 @@
 
 Workstation Linux local para Windows 11 com Docker Desktop em modo de containers Linux. O destino usa Hyper-V e opera pelo **CMD, com PowerShell bloqueado**. Os comandos e o atalho usam um executável Windows autossuficiente; não exigem WSL2, PowerShell, Python, Go ou habilitação de virtualização no notebook.
 
-Esta candidata acrescenta Chrome oficial, Git, Zsh/Oh My Zsh, a variante Salesforce e comandos de manutenção ao desktop local. A publicação de `stable` segue nos tickets da [especificação](https://github.com/Electivus/webtop-arch-kde-workstation/issues/1). Ainda não existe uma entrega pública aprovada.
+As variantes base e Salesforce oferecem Chrome oficial, Git, Zsh/Oh My Zsh e comandos de manutenção do desktop local. As entregas aprovadas usam versões coordenadas e `stable` nos dois repositórios Docker Hub. Consulte as [entregas publicadas](https://github.com/Electivus/webtop-arch-kde-workstation/releases) para obter uma versão disponível e seus digests; a existência do repositório, por si só, não significa que há uma entrega publicada.
 
 O código próprio e a documentação da Electivus estão disponíveis sob a [licença MIT](LICENSE). Os componentes de terceiros mantêm suas licenças; veja [licenciamento e distribuição](docs/licensing.md). A abertura do código não representa aprovação de uma candidata ou publicação das imagens no Docker Hub.
 
@@ -11,6 +11,8 @@ Para relatar vulnerabilidades sem expor detalhes publicamente, use o [canal priv
 Para contribuir, consulte [CONTRIBUTING.md](CONTRIBUTING.md), a [política de segurança](SECURITY.md) e as [proteções do repositório](docs/repository-security.md).
 
 ## Preparar e iniciar
+
+Para usar no outro notebook, baixe o ZIP Windows da [entrega publicada](https://github.com/Electivus/webtop-arch-kde-workstation/releases/latest), extraia pelo Explorador de Arquivos e siga `START-HERE.md` no CMD. O pacote inclui os comandos, licenças e roteiro Hyper-V; não exige checkout, PowerShell, Python ou WSL2. O [guia de publicação e versões](docs/publication.md) explica os digests, a automação e a retomada de falhas. A validação real em Hyper-V permanece pendente.
 
 As [candidatas do GitHub Actions](docs/candidates.md) incluem as duas imagens, os comandos para CMD e o resultado da aceitação, identificados por versão, commit e digests. O guia explica como baixar e importar exatamente esses arquivos no notebook de teste.
 

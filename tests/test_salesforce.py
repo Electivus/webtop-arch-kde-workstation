@@ -147,7 +147,7 @@ print(json.dumps({'bytes': artifact.stat().st_size, 'size': manifest['size'], 'a
                 self.assertEqual(copied.returncode, 0, "Editor produced no service result. See " + str(profile / (editor + "-services.log")))
                 services = json.loads((profile / (editor + "-services.json")).read_text())
                 self.assertEqual(exercised.returncode, 0, exercised.stdout + exercised.stderr)
-                self.assertEqual(services["result"], "passed")
+                self.assertEqual(services["result"], "passed", json.dumps(services, indent=2))
             (profile / "salesforce-result.json").write_text(json.dumps(reused, indent=2), encoding="utf-8")
             self.assert_extension_pack_repair(name, profile)
             docker('exec', '--user', 'abc', name, 'sf', 'plugins', 'uninstall', '@salesforce/plugin-code-analyzer')

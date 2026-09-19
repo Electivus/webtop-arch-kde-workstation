@@ -26,7 +26,7 @@ As duas imagens aprovadas chegam ao Docker Hub com instruções públicas, tags 
 - Repository: Electivus/webtop-arch-kde-workstation
 - Effort: arch-kde-workstation
 - Decision ledger: `docs/planning/arch-kde-workstation/decision-ledger.md`
-- Planning checkpoint: 9c9f2c44531269dae4d785e4f8b7d197e56f0082
+- Planning checkpoint: 0dee9084ec3f3e1ad0fdb93a029a5c28a42d9d70
 - Decisions: DEC-003, DEC-008, DEC-018, DEC-026, DEC-035, DEC-036, DEC-038
 
 ### Decision consequences
