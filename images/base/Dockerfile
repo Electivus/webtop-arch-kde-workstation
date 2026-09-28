@@ -15,7 +15,7 @@ RUN cp /usr/local/go/LICENSE /out/licenses/GO-LICENSE
 FROM scratch AS commands-export
 COPY --from=commands /out/ /
 
-FROM lscr.io/linuxserver/webtop:arch-kde@sha256:ed197a60c161b5d45a0d0137a5c47ecd136964c57791bf3151d01ad41ac6b988
+FROM lscr.io/linuxserver/webtop:arch-kde@sha256:d55dd7f34fe70e9e39fb004e3f7ef5eb0fd74b24a771ba972a25a24ce24f65a6
 
 ARG VERSION=development
 ARG REVISION=unknown
